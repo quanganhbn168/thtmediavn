@@ -243,110 +243,48 @@
 </section>
 @endif
 
-@if($faceProducts->isNotEmpty())
-<section class="section-space">
-    <div class="container">
-        <div class="product-section-shell">
-            <div class="product-section-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                <div>
-                    <h2 class="product-section-title">Chăm sóc da</h2>
+@foreach([
+    ['id' => 'face', 'title' => 'Chăm sóc da', 'slug' => 'cham-soc-mat', 'tabs' => $faceCategoryTabs, 'sectionClass' => ''],
+    ['id' => 'makeup', 'title' => 'Trang điểm', 'slug' => 'trang-diem', 'tabs' => $makeupCategoryTabs, 'sectionClass' => 'pt-0'],
+    ['id' => 'body', 'title' => 'Chăm sóc cơ thể', 'slug' => 'cham-soc-co-the', 'tabs' => $bodyCategoryTabs, 'sectionClass' => 'pt-0 bg-soft'],
+] as $categorySection)
+    @if($categorySection['tabs']->isNotEmpty())
+    <section class="section-space {{ $categorySection['sectionClass'] }}">
+        <div class="container">
+            <div class="product-section-shell">
+                <div class="product-section-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <h2 class="product-section-title">{{ $categorySection['title'] }}</h2>
+                    <ul class="nav product-tabs" id="{{ $categorySection['id'] }}Tabs" role="tablist">
+                        @foreach($categorySection['tabs'] as $tabIndex => $tab)
+                            <li class="nav-item" role="presentation">
+                                <button
+                                    class="nav-link {{ $tabIndex === 0 ? 'active' : '' }}"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#{{ $tab['id'] }}"
+                                    type="button"
+                                    role="tab"
+                                >{{ $tab['name'] }}</button>
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
-                <ul class="nav product-tabs" id="faceTabs" role="tablist">
-                    <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#face-cleansing" type="button" role="tab">Tẩy trang</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#face-sunscreen" type="button" role="tab">Chống nắng</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#face-moisture" type="button" role="tab">Kem dưỡng</button></li>
-                </ul>
-            </div>
-            <div class="product-section-content tab-content">
-                @foreach([
-                    ['id' => 'face-cleansing', 'items' => $faceProducts->take(5)],
-                    ['id' => 'face-sunscreen', 'items' => $faceProducts->slice(1, 5)],
-                    ['id' => 'face-moisture', 'items' => $faceProducts->slice(3, 5)],
-                ] as $tabIndex => $tab)
-                    <div class="tab-pane fade {{ $tabIndex === 0 ? 'show active' : '' }}" id="{{ $tab['id'] }}" role="tabpanel">
-                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
-                            @foreach($tab['items'] as $product)
-                                <div class="col"><x-product-card :product="$product" /></div>
-                            @endforeach
+                <div class="product-section-content tab-content">
+                    @foreach($categorySection['tabs'] as $tabIndex => $tab)
+                        <div class="tab-pane fade {{ $tabIndex === 0 ? 'show active' : '' }}" id="{{ $tab['id'] }}" role="tabpanel">
+                            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+                                @foreach($tab['products'] as $product)
+                                    <div class="col"><x-product-card :product="$product" /></div>
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
-                @endforeach
-                <div class="text-center mt-4"><a class="btn btn-outline-primary" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => 'cham-soc-mat']) }}">Xem sản phẩm</a></div>
+                    @endforeach
+                    <div class="text-center mt-4"><a class="btn btn-outline-primary" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $categorySection['slug']]) }}">Xem sản phẩm</a></div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
-@endif
-
-@if($makeupProducts->isNotEmpty())
-<section class="section-space pt-0">
-    <div class="container">
-        <div class="product-section-shell">
-            <div class="product-section-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                <div>
-                    <h2 class="product-section-title">Trang điểm</h2>
-                </div>
-                <ul class="nav product-tabs" role="tablist">
-                    <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#makeup-lip" type="button" role="tab">Son</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#makeup-base" type="button" role="tab">Nền & cushion</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#makeup-eye" type="button" role="tab">Trang điểm mắt</button></li>
-                </ul>
-            </div>
-            <div class="product-section-content tab-content">
-                @foreach([
-                    ['id' => 'makeup-lip', 'items' => $makeupProducts->take(5)],
-                    ['id' => 'makeup-base', 'items' => $makeupProducts->slice(1, 5)],
-                    ['id' => 'makeup-eye', 'items' => $makeupProducts->slice(2, 5)],
-                ] as $tabIndex => $tab)
-                    <div class="tab-pane fade {{ $tabIndex === 0 ? 'show active' : '' }}" id="{{ $tab['id'] }}" role="tabpanel">
-                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
-                            @foreach($tab['items'] as $product)
-                                <div class="col"><x-product-card :product="$product" /></div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
-                <div class="text-center mt-4"><a class="btn btn-outline-primary" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => 'trang-diem']) }}">Xem sản phẩm</a></div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif
-
-@if($bodyProducts->isNotEmpty())
-<section class="section-space pt-0 bg-soft">
-    <div class="container">
-        <div class="product-section-shell">
-            <div class="product-section-header d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                <div>
-                    <h2 class="product-section-title">Chăm sóc cơ thể</h2>
-                </div>
-                <ul class="nav product-tabs" role="tablist">
-                    <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#body-wash" type="button" role="tab">Sữa tắm</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#body-lotion" type="button" role="tab">Kem dưỡng ẩm</button></li>
-                    <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#body-hair" type="button" role="tab">Tẩy tế bào chết</button></li>
-                </ul>
-            </div>
-            <div class="product-section-content tab-content">
-                @foreach([
-                    ['id' => 'body-wash', 'items' => $bodyProducts->take(5)],
-                    ['id' => 'body-lotion', 'items' => $bodyProducts->slice(1, 5)],
-                    ['id' => 'body-hair', 'items' => $bodyProducts->slice(2, 5)],
-                ] as $tabIndex => $tab)
-                    <div class="tab-pane fade {{ $tabIndex === 0 ? 'show active' : '' }}" id="{{ $tab['id'] }}" role="tabpanel">
-                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
-                            @foreach($tab['items'] as $product)
-                                <div class="col"><x-product-card :product="$product" /></div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endforeach
-                <div class="text-center mt-4"><a class="btn btn-outline-primary" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => 'cham-soc-co-the']) }}">Xem sản phẩm</a></div>
-            </div>
-        </div>
-    </div>
-</section>
-@endif
+    </section>
+    @endif
+@endforeach
 
 @if($homepageSections->contains('brands') && $brands->isNotEmpty())
 <section class="section-space">

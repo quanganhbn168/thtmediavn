@@ -146,11 +146,7 @@
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="product_is_featured" name="is_featured" value="1" @checked(old('is_featured'))>
-                                <label class="form-check-label cursor-pointer font-weight-bold" for="product_is_featured">Sản phẩm nổi bật</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="product_is_home" name="is_home" value="1" @checked(old('is_home'))>
-                                <label class="form-check-label cursor-pointer font-weight-bold" for="product_is_home">Hiển thị ở trang chủ</label>
+                                <label class="form-check-label cursor-pointer font-weight-bold" for="product_is_featured">Sản phẩm nổi bật (hiển thị ở trang chủ)</label>
                             </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="product_allow_preorder" name="allow_preorder" value="1" @checked(old('allow_preorder'))>
@@ -169,6 +165,9 @@
 
         <div class="d-flex justify-content-end gap-2 mt-3">
             <a class="btn btn-default" href="{{ route('admin.products.index') }}">Quay lại</a>
+            <button class="btn btn-info text-white" type="submit" name="submit_action" value="save_and_create">
+                <i class="bi bi-plus-circle me-1"></i>Lưu &amp; tạo mới <span class="d-none d-md-inline">(Ctrl + Shift + S)</span>
+            </button>
             <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
         </div>
     </form>

@@ -231,46 +231,36 @@
                     editor.save();
                 });
 
+                const submitAdminForm = function (form, saveAndCreate = false) {
+                    const saveAndCreateButton = form.querySelector(
+                        '[type="submit"][name="submit_action"][value="save_and_create"]'
+                    );
+                    const regularSaveButton = Array.from(
+                        form.querySelectorAll('button[type="submit"], input[type="submit"]')
+                    ).find((button) => button !== saveAndCreateButton);
+                    const submitButton = saveAndCreate && saveAndCreateButton
+                        ? saveAndCreateButton
+                        : (regularSaveButton || saveAndCreateButton);
+
+                    if (submitButton) {
+                        form.requestSubmit(submitButton);
+                    } else {
+                        form.requestSubmit();
+                    }
+                };
+
                 // Phím tắt Ctrl + S / Cmd + S khi đang gõ trong TinyMCE editor
                 editor.addShortcut('meta+s', 'Save Form', function () {
                     editor.save();
                     const form = editor.getElement().closest('form');
-                    if (form) {
-                        let submitActionInput = form.querySelector('input[name="submit_action"]');
-                        if (submitActionInput) {
-                            submitActionInput.value = '';
-                        }
-
-                        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
-                        if (submitBtn) {
-                            submitBtn.click();
-                        } else {
-                            form.submit();
-                        }
-                    }
+                    if (form) submitAdminForm(form);
                 });
 
                 // Phím tắt Ctrl + Shift + S / Cmd + Shift + S khi đang gõ trong TinyMCE editor
                 editor.addShortcut('meta+shift+s', 'Save and Create New', function () {
                     editor.save();
                     const form = editor.getElement().closest('form');
-                    if (form) {
-                        let submitActionInput = form.querySelector('input[name="submit_action"]');
-                        if (!submitActionInput) {
-                            submitActionInput = document.createElement('input');
-                            submitActionInput.type = 'hidden';
-                            submitActionInput.name = 'submit_action';
-                            form.appendChild(submitActionInput);
-                        }
-                        submitActionInput.value = 'save_and_create';
-
-                        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
-                        if (submitBtn) {
-                            submitBtn.click();
-                        } else {
-                            form.submit();
-                        }
-                    }
+                    if (form) submitAdminForm(form, true);
                 });
             }
         });

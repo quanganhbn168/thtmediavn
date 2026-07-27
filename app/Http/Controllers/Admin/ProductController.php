@@ -31,6 +31,13 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request): RedirectResponse
     {
         $product = $this->productService->create($request->validated());
+
+        if ($request->input('submit_action') === 'save_and_create') {
+            return redirect()
+                ->route('admin.products.create')
+                ->with('success', 'Đã tạo sản phẩm và sẵn sàng tạo sản phẩm mới.');
+        }
+
         return redirect()->route('admin.products.edit', $product)->with('success', 'Đã tạo sản phẩm.');
     }
 
@@ -42,6 +49,13 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
         $this->productService->update($product, $request->validated());
+
+        if ($request->input('submit_action') === 'save_and_create') {
+            return redirect()
+                ->route('admin.products.create')
+                ->with('success', 'Đã lưu sản phẩm và sẵn sàng tạo sản phẩm mới.');
+        }
+
         return back()->with('success', 'Đã cập nhật sản phẩm.');
     }
 
@@ -56,4 +70,3 @@ class ProductController extends Controller
         return view($product->exists ? 'admin.products.edit' : 'admin.products.create', $this->productService->formContext($product));
     }
 }
-

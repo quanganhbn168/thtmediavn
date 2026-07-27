@@ -565,6 +565,8 @@ class AdminEcommerceTest extends TestCase
         $response->assertOk()
             ->assertSee('Thông tin bán hàng')
             ->assertSee('Sản phẩm có biến thể')
+            ->assertSee('Lưu &amp; tạo mới', false)
+            ->assertSee('value="save_and_create"', false)
             ->assertSee('productVariantManager', false);
 
         $html = $response->getContent();
@@ -572,6 +574,41 @@ class AdminEcommerceTest extends TestCase
         $this->assertStringNotContainsString('fontsource-source-sans-3', $html);
         $this->assertStringContainsString('moneyInput({ initialValue: null, decimals: 0 })', $html);
         $this->assertLessThan(strpos($html, 'alpinejs.min.js'), strpos($html, 'alpinejs-mask.min.js'));
+    }
+
+    public function test_product_can_save_and_continue_creating_a_new_product(): void
+    {
+        $admin = User::role('admin')->firstOrFail();
+        $category = ProductCategory::query()->firstOrFail();
+        $name = 'Sản phẩm lưu và tạo mới '.Str::uuid();
+        $filename = 'product-save-and-create-'.Str::uuid().'.png';
+        $temporaryPath = 'uploads/tmp/'.$filename;
+
+        File::ensureDirectoryExists(public_path('uploads/tmp'));
+        File::put(public_path($temporaryPath), base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='));
+
+        $response = $this->actingAs($admin, 'admin')->post(route('admin.products.store'), [
+            'product_category_id' => $category->id,
+            'name' => $name,
+            'description' => '<p>Thông tin sản phẩm.</p>',
+            'status' => 'active',
+            'variant_selection_mode' => 'combination',
+            'image' => $temporaryPath,
+            'has_variants' => 0,
+            'variants' => [[
+                'name' => 'Mặc định',
+                'list_price' => 100000,
+                'stock' => 10,
+                'is_default' => 1,
+                'is_active' => 1,
+            ]],
+            'submit_action' => 'save_and_create',
+        ]);
+
+        $response
+            ->assertRedirect(route('admin.products.create'))
+            ->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('products', ['name' => $name]);
     }
 
     public function test_product_edit_form_renders_existing_product_cleanly(): void

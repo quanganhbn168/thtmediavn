@@ -33,16 +33,15 @@ class HomeController extends FrontendController
             ? $flashSale->items->map(fn ($item) => $this->presentProduct($item->product, (float) $item->sale_price, $item->variant))->filter()
             : collect();
 
-        $faceProducts = $this->productsForCategory('cham-soc-mat');
-        $makeupProducts = $this->productsForCategory('trang-diem');
-        $bodyProducts = $this->productsForCategory('cham-soc-co-the');
+        $faceCategoryTabs = $this->productTabsForCategory('cham-soc-mat');
+        $makeupCategoryTabs = $this->productTabsForCategory('trang-diem');
+        $bodyCategoryTabs = $this->productTabsForCategory('cham-soc-co-the');
 
         $featuredProducts = Product::query()
             ->where('is_active', true)
-            ->where('is_home', true)
+            ->where('is_featured', true)
             ->visibleOnSite()
             ->with($this->productRelations())
-            ->orderByDesc('is_featured')
             ->latest('published_at')
             ->take(15)
             ->get()
@@ -65,9 +64,9 @@ class HomeController extends FrontendController
             'flashProducts' => $flashProducts,
             'flashSale' => $flashSale,
             'featuredProducts' => $featuredProducts,
-            'faceProducts' => $faceProducts,
-            'makeupProducts' => $makeupProducts,
-            'bodyProducts' => $bodyProducts,
+            'faceCategoryTabs' => $faceCategoryTabs,
+            'makeupCategoryTabs' => $makeupCategoryTabs,
+            'bodyCategoryTabs' => $bodyCategoryTabs,
             'brands' => Brand::query()
                 ->where('is_active', true)
                 ->where('is_featured', true)
@@ -92,25 +91,48 @@ class HomeController extends FrontendController
         ]);
     }
 
-    private function productsForCategory(string $slug, int $limit = 8): Collection
+    private function productTabsForCategory(string $slug, int $limit = 5): Collection
     {
-        $category = ProductCategory::query()->with('children:id,parent_id')->where('slug', $slug)->first();
+        $category = ProductCategory::query()
+            ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')])
+            ->where('is_active', true)
+            ->where('slug', $slug)
+            ->first();
         if (! $category) {
             return collect();
         }
 
-        $categoryIds = $category->children->pluck('id')->prepend($category->id);
-
-        return Product::query()
+        $tabCategories = $category->children->prepend($category);
+        $productsByCategory = Product::query()
             ->where('is_active', true)
             ->visibleOnSite()
-            ->whereIn('product_category_id', $categoryIds)
+            ->whereIn('product_category_id', $tabCategories->pluck('id'))
             ->with($this->productRelations())
             ->orderByDesc('is_featured')
             ->latest('published_at')
-            ->take($limit)
             ->get()
-            ->map(fn (Product $product) => $this->presentProduct($product));
+            ->groupBy('product_category_id');
+
+        return $tabCategories
+            ->map(function (ProductCategory $tabCategory) use ($productsByCategory, $limit): ?array {
+                $products = collect($productsByCategory->get($tabCategory->id, []))
+                    ->take($limit)
+                    ->map(fn (Product $product) => $this->presentProduct($product))
+                    ->values();
+
+                if ($products->isEmpty()) {
+                    return null;
+                }
+
+                return [
+                    'id' => 'home-category-'.$tabCategory->id,
+                    'name' => $tabCategory->name,
+                    'slug' => $tabCategory->slug,
+                    'products' => $products,
+                ];
+            })
+            ->filter()
+            ->values();
     }
 
     private function coreValues(): Collection

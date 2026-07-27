@@ -385,15 +385,21 @@ class EcommerceSiteTest extends TestCase
         $this->assertSame(2, substr_count($response->getContent(), 'assets/images/zalo.svg'));
     }
 
-    public function test_homepage_uses_home_flags_and_caps_featured_grid_at_fifteen_products(): void
+    public function test_homepage_uses_the_featured_product_flag_and_caps_featured_grid_at_fifteen_products(): void
     {
-        $hiddenProduct = Product::query()->where('is_home', true)->firstOrFail();
+        [$featuredProduct, $nonFeaturedHomeProduct] = Product::query()
+            ->where('is_active', true)
+            ->visibleOnSite()
+            ->take(2)
+            ->get()
+            ->all();
         $hiddenCategory = ProductCategory::query()
             ->where('is_home', true)
             ->whereHas('products')
             ->firstOrFail();
 
-        $hiddenProduct->update(['is_home' => false]);
+        $featuredProduct->update(['is_featured' => true, 'is_home' => false]);
+        $nonFeaturedHomeProduct->update(['is_featured' => false, 'is_home' => true]);
         $hiddenCategory->update(['is_home' => false]);
 
         $response = $this->get(route('home'))->assertOk();
@@ -401,8 +407,28 @@ class EcommerceSiteTest extends TestCase
         $categories = collect($response->viewData('categories'));
 
         $this->assertLessThanOrEqual(15, $featuredProducts->count());
-        $this->assertNotContains($hiddenProduct->id, $featuredProducts->pluck('id')->all());
+        $this->assertContains($featuredProduct->id, $featuredProducts->pluck('id')->all());
+        $this->assertNotContains($nonFeaturedHomeProduct->id, $featuredProducts->pluck('id')->all());
         $this->assertNotContains($hiddenCategory->slug, $categories->pluck('slug')->all());
+    }
+
+    public function test_homepage_only_shows_category_pills_that_have_visible_products(): void
+    {
+        $parent = ProductCategory::query()->where('slug', 'cham-soc-mat')->firstOrFail();
+        $emptyCategory = ProductCategory::query()->create([
+            'parent_id' => $parent->id,
+            'name' => 'Danh mục không có sản phẩm',
+            'slug' => 'danh-muc-khong-co-san-pham',
+            'sort_order' => 999,
+            'is_active' => true,
+        ]);
+
+        $response = $this->get(route('home'))->assertOk();
+        $categoryTabs = collect($response->viewData('faceCategoryTabs'));
+
+        $this->assertNotContains($emptyCategory->slug, $categoryTabs->pluck('slug')->all());
+        $this->assertTrue($categoryTabs->every(fn (array $tab): bool => collect($tab['products'])->isNotEmpty()));
+        $response->assertDontSee($emptyCategory->name);
     }
 
     public function test_homepage_loads_and_displays_the_brand_logo(): void
