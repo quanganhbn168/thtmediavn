@@ -117,7 +117,7 @@ class HomeController extends FrontendController
     private function productTabsForCategory(ProductCategory $category, int $limit = 5): Collection
     {
         $tabCategories = $category->children->prepend($category);
-        $productsByCategory = Product::query()
+        $products = Product::query()
             ->where('is_active', true)
             ->where('is_home', true)
             ->visibleOnSite()
@@ -125,11 +125,19 @@ class HomeController extends FrontendController
             ->with($this->productRelations())
             ->orderByDesc('is_featured')
             ->latest('published_at')
-            ->get()
-            ->groupBy('product_category_id');
+            ->get();
 
-        return $tabCategories
-            ->map(function (ProductCategory $tabCategory) use ($category, $productsByCategory, $limit): ?array {
+        if ($products->isEmpty()) {
+            return collect();
+        }
+
+        $productsByCategory = $products->groupBy('product_category_id');
+        $allProducts = $products
+            ->map(fn (Product $product) => $this->presentProduct($product))
+            ->values();
+
+        $childTabs = $category->children
+            ->map(function (ProductCategory $tabCategory) use ($productsByCategory, $limit): ?array {
                 $products = collect($productsByCategory->get($tabCategory->id, []))
                     ->take($limit)
                     ->map(fn (Product $product) => $this->presentProduct($product))
@@ -141,13 +149,20 @@ class HomeController extends FrontendController
 
                 return [
                     'id' => 'home-category-'.$tabCategory->id,
-                    'name' => $tabCategory->is($category) ? 'Tất cả' : $tabCategory->name,
+                    'name' => $tabCategory->name,
                     'slug' => $tabCategory->slug,
                     'products' => $products,
                 ];
             })
             ->filter()
             ->values();
+
+        return collect([[
+            'id' => 'home-category-all-'.$category->id,
+            'name' => 'Tất cả',
+            'slug' => $category->slug,
+            'products' => $allProducts,
+        ]])->concat($childTabs)->values();
     }
 
     private function coreValues(): Collection

@@ -434,10 +434,22 @@ class EcommerceSiteTest extends TestCase
         $homeProductSections = collect($response->viewData('homeProductSections'));
         $faceSection = $homeProductSections->firstWhere('slug', $parent->slug);
         $categoryTabs = collect(data_get($faceSection, 'tabs', []));
+        $allProductsTab = $categoryTabs->first();
+        $expectedHomeProductCount = Product::query()
+            ->where('is_active', true)
+            ->where('is_home', true)
+            ->visibleOnSite()
+            ->whereIn('product_category_id', ProductCategory::query()
+                ->where('id', $parent->id)
+                ->orWhere('parent_id', $parent->id)
+                ->pluck('id'))
+            ->count();
 
         $this->assertNotNull($faceSection);
         $this->assertTrue($homeProductSections->every(fn (array $section): bool => ProductCategory::query()->where('slug', $section['slug'])->whereNull('parent_id')->exists()));
         $this->assertNotContains($hiddenRootCategory->slug, $homeProductSections->pluck('slug')->all());
+        $this->assertSame('Tất cả', data_get($allProductsTab, 'name'));
+        $this->assertCount($expectedHomeProductCount, data_get($allProductsTab, 'products', []));
         $this->assertNotContains($emptyCategory->slug, $categoryTabs->pluck('slug')->all());
         $this->assertNotContains($nonHomeCategorySlug, $categoryTabs->pluck('slug')->all());
         $this->assertTrue($categoryTabs->every(fn (array $tab): bool => collect($tab['products'])->isNotEmpty()));
