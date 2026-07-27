@@ -66,6 +66,7 @@
                     <th>Danh mục</th>
                     <th>Giá</th>
                     <th class="text-center" style="width:110px">Nổi bật</th>
+                    <th class="text-center" style="width:110px">Trang chủ</th>
                     <th class="text-end">Thao tác</th>
                     </tr>
                 </thead>
@@ -94,6 +95,9 @@
                             <td><strong>{{ number_format($defaultPrice, 0, ',', '.') }}₫</strong></td>
                             <td class="text-center">
                                 <x-toggle model="Product" :id="$product->id" field="is_featured" :checked="$product->is_featured" label="" />
+                            </td>
+                            <td class="text-center">
+                                <x-toggle model="Product" :id="$product->id" field="is_home" :checked="$product->is_home" label="" />
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">

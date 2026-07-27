@@ -422,11 +422,17 @@ class EcommerceSiteTest extends TestCase
             'sort_order' => 999,
             'is_active' => true,
         ]);
+        $nonHomeProduct = Product::query()
+            ->whereHas('category', fn ($query) => $query->where('slug', 'tay-trang'))
+            ->firstOrFail();
+        $nonHomeCategorySlug = $nonHomeProduct->category->slug;
+        $nonHomeProduct->update(['is_home' => false]);
 
         $response = $this->get(route('home'))->assertOk();
         $categoryTabs = collect($response->viewData('faceCategoryTabs'));
 
         $this->assertNotContains($emptyCategory->slug, $categoryTabs->pluck('slug')->all());
+        $this->assertNotContains($nonHomeCategorySlug, $categoryTabs->pluck('slug')->all());
         $this->assertTrue($categoryTabs->every(fn (array $tab): bool => collect($tab['products'])->isNotEmpty()));
         $response->assertDontSee($emptyCategory->name);
     }

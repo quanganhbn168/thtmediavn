@@ -105,6 +105,7 @@ class HomeController extends FrontendController
         $tabCategories = $category->children->prepend($category);
         $productsByCategory = Product::query()
             ->where('is_active', true)
+            ->where('is_home', true)
             ->visibleOnSite()
             ->whereIn('product_category_id', $tabCategories->pluck('id'))
             ->with($this->productRelations())

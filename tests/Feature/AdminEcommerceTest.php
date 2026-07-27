@@ -565,6 +565,7 @@ class AdminEcommerceTest extends TestCase
         $response->assertOk()
             ->assertSee('Thông tin bán hàng')
             ->assertSee('Sản phẩm có biến thể')
+            ->assertSee('Hiển thị ở các khối danh mục trang chủ')
             ->assertSee('Lưu &amp; tạo mới', false)
             ->assertSee('value="save_and_create"', false)
             ->assertSee('productVariantManager', false);
