@@ -427,10 +427,17 @@ class EcommerceSiteTest extends TestCase
             ->firstOrFail();
         $nonHomeCategorySlug = $nonHomeProduct->category->slug;
         $nonHomeProduct->update(['is_home' => false]);
+        $hiddenRootCategory = ProductCategory::query()->where('slug', 'cham-soc-co-the')->firstOrFail();
+        $hiddenRootCategory->update(['is_home' => false]);
 
         $response = $this->get(route('home'))->assertOk();
-        $categoryTabs = collect($response->viewData('faceCategoryTabs'));
+        $homeProductSections = collect($response->viewData('homeProductSections'));
+        $faceSection = $homeProductSections->firstWhere('slug', $parent->slug);
+        $categoryTabs = collect(data_get($faceSection, 'tabs', []));
 
+        $this->assertNotNull($faceSection);
+        $this->assertTrue($homeProductSections->every(fn (array $section): bool => ProductCategory::query()->where('slug', $section['slug'])->whereNull('parent_id')->exists()));
+        $this->assertNotContains($hiddenRootCategory->slug, $homeProductSections->pluck('slug')->all());
         $this->assertNotContains($emptyCategory->slug, $categoryTabs->pluck('slug')->all());
         $this->assertNotContains($nonHomeCategorySlug, $categoryTabs->pluck('slug')->all());
         $this->assertTrue($categoryTabs->every(fn (array $tab): bool => collect($tab['products'])->isNotEmpty()));

@@ -243,12 +243,7 @@
 </section>
 @endif
 
-@foreach([
-    ['id' => 'face', 'title' => 'Chăm sóc da', 'slug' => 'cham-soc-mat', 'tabs' => $faceCategoryTabs, 'sectionClass' => ''],
-    ['id' => 'makeup', 'title' => 'Trang điểm', 'slug' => 'trang-diem', 'tabs' => $makeupCategoryTabs, 'sectionClass' => 'pt-0'],
-    ['id' => 'body', 'title' => 'Chăm sóc cơ thể', 'slug' => 'cham-soc-co-the', 'tabs' => $bodyCategoryTabs, 'sectionClass' => 'pt-0 bg-soft'],
-] as $categorySection)
-    @if($categorySection['tabs']->isNotEmpty())
+@foreach($homeProductSections as $categorySection)
     <section class="section-space {{ $categorySection['sectionClass'] }}">
         <div class="container">
             <div class="product-section-shell">
@@ -283,7 +278,6 @@
             </div>
         </div>
     </section>
-    @endif
 @endforeach
 
 @if($homepageSections->contains('brands') && $brands->isNotEmpty())

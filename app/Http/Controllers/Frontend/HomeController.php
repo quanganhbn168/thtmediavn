@@ -33,9 +33,7 @@ class HomeController extends FrontendController
             ? $flashSale->items->map(fn ($item) => $this->presentProduct($item->product, (float) $item->sale_price, $item->variant))->filter()
             : collect();
 
-        $faceCategoryTabs = $this->productTabsForCategory('cham-soc-mat');
-        $makeupCategoryTabs = $this->productTabsForCategory('trang-diem');
-        $bodyCategoryTabs = $this->productTabsForCategory('cham-soc-co-the');
+        $homeProductSections = $this->homeProductSections();
 
         $featuredProducts = Product::query()
             ->where('is_active', true)
@@ -64,9 +62,7 @@ class HomeController extends FrontendController
             'flashProducts' => $flashProducts,
             'flashSale' => $flashSale,
             'featuredProducts' => $featuredProducts,
-            'faceCategoryTabs' => $faceCategoryTabs,
-            'makeupCategoryTabs' => $makeupCategoryTabs,
-            'bodyCategoryTabs' => $bodyCategoryTabs,
+            'homeProductSections' => $homeProductSections,
             'brands' => Brand::query()
                 ->where('is_active', true)
                 ->where('is_featured', true)
@@ -91,17 +87,35 @@ class HomeController extends FrontendController
         ]);
     }
 
-    private function productTabsForCategory(string $slug, int $limit = 5): Collection
+    private function homeProductSections(): Collection
     {
-        $category = ProductCategory::query()
-            ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')])
+        return ProductCategory::query()
+            ->whereNull('parent_id')
             ->where('is_active', true)
-            ->where('slug', $slug)
-            ->first();
-        if (! $category) {
-            return collect();
-        }
+            ->where('is_home', true)
+            ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(function (ProductCategory $category): array {
+                return [
+                    'id' => 'home-product-section-'.$category->id,
+                    'title' => $category->name,
+                    'slug' => $category->slug,
+                    'tabs' => $this->productTabsForCategory($category),
+                ];
+            })
+            ->filter(fn (array $section): bool => $section['tabs']->isNotEmpty())
+            ->values()
+            ->map(function (array $section, int $index): array {
+                $section['sectionClass'] = $index === 0 ? '' : 'pt-0';
 
+                return $section;
+            });
+    }
+
+    private function productTabsForCategory(ProductCategory $category, int $limit = 5): Collection
+    {
         $tabCategories = $category->children->prepend($category);
         $productsByCategory = Product::query()
             ->where('is_active', true)
