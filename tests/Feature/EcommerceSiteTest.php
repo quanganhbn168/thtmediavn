@@ -396,10 +396,9 @@ class EcommerceSiteTest extends TestCase
 
     public function test_homepage_loads_and_displays_the_brand_logo(): void
     {
-        $brand = Brand::query()
-            ->whereHas('products', fn ($query) => $query->where('is_active', true)->visibleOnSite())
-            ->firstOrFail();
-        $brand->update([
+        $brand = Brand::query()->create([
+            'name' => 'Thương hiệu không có sản phẩm',
+            'slug' => 'thuong-hieu-khong-co-san-pham',
             'logo' => 'uploads/brands/logo-trang-chu.webp',
             'is_active' => true,
             'is_featured' => true,

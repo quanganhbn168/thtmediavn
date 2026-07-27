@@ -71,7 +71,6 @@ class HomeController extends FrontendController
             'brands' => Brand::query()
                 ->where('is_active', true)
                 ->where('is_featured', true)
-                ->whereHas('products', fn ($query) => $query->where('is_active', true)->visibleOnSite())
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->take(12)
