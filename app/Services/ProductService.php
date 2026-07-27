@@ -122,6 +122,7 @@ class ProductService
             'slug' => $slug !== '' ? $slug : Str::slug($name),
             'summary' => $data['summary'] ?? null,
             'description' => $data['description'] ?? null,
+            'ingredients' => $data['ingredients'] ?? null,
             'usage' => $data['usage'] ?? null,
             'status' => $data['status'] ?? 'active',
             'variant_selection_mode' => $data['variant_selection_mode'] ?? 'combination',

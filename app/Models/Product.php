@@ -17,7 +17,7 @@ class Product extends Model implements HasMedia
 {
     use HasSlug, InteractsWithMedia, SoftDeletes;
 
-    protected $fillable = ['product_category_id', 'brand_id', 'name', 'slug', 'summary', 'description', 'usage', 'sold_count', 'status', 'variant_selection_mode', 'track_inventory', 'allow_preorder', 'is_featured', 'is_home', 'is_active', 'seo_title', 'seo_description', 'published_at'];
+    protected $fillable = ['product_category_id', 'brand_id', 'name', 'slug', 'summary', 'description', 'ingredients', 'usage', 'sold_count', 'status', 'variant_selection_mode', 'track_inventory', 'allow_preorder', 'is_featured', 'is_home', 'is_active', 'seo_title', 'seo_description', 'published_at'];
 
     protected $casts = ['sold_count' => 'integer', 'track_inventory' => 'boolean', 'allow_preorder' => 'boolean', 'is_featured' => 'boolean', 'is_home' => 'boolean', 'is_active' => 'boolean', 'published_at' => 'datetime'];
 

@@ -28,6 +28,7 @@ class StoreProductRequest extends FormRequest
             ],
             'summary' => ['nullable', 'string'],
             'description' => ['required', 'string'],
+            'ingredients' => ['nullable', 'string'],
             'usage' => ['nullable', 'string'],
             'status' => ['required', 'in:active,draft,archived'],
             'variant_selection_mode' => ['required', 'in:combination,options'],

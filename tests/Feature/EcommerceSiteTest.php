@@ -122,15 +122,26 @@ class EcommerceSiteTest extends TestCase
     public function test_product_detail_has_real_purchase_actions_sticky_bar_and_approved_review_scope(): void
     {
         $product = Product::query()->where('is_active', true)->firstOrFail();
+        $product->update([
+            'description' => '<p>Thông tin sản phẩm kiểm thử.</p>',
+            'ingredients' => '<p>Niacinamide và Panthenol.</p>',
+            'usage' => '<p>Dùng sau bước làm sạch.</p>',
+        ]);
 
         $this->get(route('product.show', $product->slug))
             ->assertOk()
             ->assertSee('name="action" value="buy_now"', false)
             ->assertSee('data-buy-now', false)
             ->assertSee('product-mobile-buybar', false)
-            ->assertSee('Sản phẩm này dành cho ai?')
+            ->assertSee('Thông tin sản phẩm')
+            ->assertSee('Thành phần cấu tạo')
+            ->assertSee('Hướng dẫn sử dụng')
+            ->assertSee('Niacinamide và Panthenol.')
+            ->assertSee('Dùng sau bước làm sạch.')
             ->assertSee('Đánh giá được kiểm duyệt')
             ->assertDontSee('Vui lòng đăng nhập để đánh giá sản phẩm.')
+            ->assertDontSee('description-product-callout', false)
+            ->assertDontSee('Cách đưa vào routine')
             ->assertDontSee('nên được đồng bộ với chính sách vận hành thực tế');
     }
 

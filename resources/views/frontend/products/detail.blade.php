@@ -48,11 +48,18 @@
     $minimumVariantPrice = (float) (collect($variantSelectionData)->min('price') ?? $product['price']);
     $availability = $product['availability'] ?? ($product['stock'] ? 'in_stock' : 'out_of_stock');
     $summaryText = trim(strip_tags((string) $productModel->summary));
+    $ingredientAttributeSlugs = ['thanh-phan', 'thanh-phan-noi-bat'];
     $attributeValuesBySlug = $productModel->attributeValues->groupBy(fn ($item) => $item->attribute?->slug ?? 'khac');
     $skinTypes = $attributeValuesBySlug->get('loai-da', collect())->pluck('value');
     $skinConcerns = $attributeValuesBySlug->get('van-de', collect())->pluck('value');
-    $ingredients = $attributeValuesBySlug->get('thanh-phan', collect())->merge($attributeValuesBySlug->get('thanh-phan-noi-bat', collect()))->pluck('value')->unique();
-    $textures = $attributeValuesBySlug->get('ket-cau', collect())->pluck('value');
+    $ingredients = $attributeValuesBySlug
+        ->only($ingredientAttributeSlugs)
+        ->flatten()
+        ->pluck('value')
+        ->unique()
+        ->values();
+    $productInformationAttributes = $productModel->attributeValues
+        ->reject(fn ($item) => in_array($item->attribute?->slug, $ingredientAttributeSlugs, true));
     $approvedReviews = $productModel->reviews;
     $averageRating = $approvedReviews->isNotEmpty() ? (float) $approvedReviews->avg('rating') : 0;
 @endphp
@@ -263,53 +270,21 @@
     <div class="container">
     <div class="content-card product-description">
             <ul class="nav nav-pills product-tabs mb-4" role="tablist">
-                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button">Dành cho ai?</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#benefits" type="button">Công dụng chính</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#usage" type="button">Thành phần &amp; routine</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#specs" type="button">Thông tin sản phẩm</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#policy" type="button">Chính sách đổi trả</button></li>
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#product-information" type="button">Thông tin sản phẩm</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#ingredients" type="button">Thành phần cấu tạo</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#usage" type="button">Hướng dẫn sử dụng</button></li>
             </ul>
             <div class="tab-content">
-                <div class="tab-pane fade show active" id="description">
-                        <h2 class="h4">Sản phẩm này dành cho ai?</h2>
-                        @if($skinTypes->isNotEmpty())<p><strong>Loại da phù hợp:</strong> {{ $skinTypes->implode(', ') }}.</p>@endif
-                        @if($skinConcerns->isNotEmpty())<p><strong>Vấn đề da:</strong> {{ $skinConcerns->implode(', ') }}.</p>@endif
-                        @if($textures->isNotEmpty())<p><strong>Kết cấu:</strong> {{ $textures->implode(', ') }}.</p>@endif
-                        <p class="text-muted">Khi da đang kích ứng mạnh, có tổn thương hoặc đang theo liệu trình chuyên môn, nên hỏi người phụ trách điều trị trước khi thêm sản phẩm mới.</p>
-                        <div class="description-product-callout mt-4">
-                            <img src="{{ $product['image'] }}" alt="{{ $product['name'] }}" width="600" height="600">
-                            <div>
-                                <div class="product-brand">{{ $product['brand'] }}</div>
-                                <div class="fw-bold mb-2">{{ $displayName }}</div>
-                                <div class="product-price mb-2">{{ number_format($product['price'], 0, ',', '.') }}₫</div>
-                                <a class="btn btn-sm btn-secondary" href="#top">Xem thông tin mua hàng</a>
-                            </div>
-                        </div>
-                </div>
-                <div class="tab-pane fade" id="benefits">
-                    <h2 class="h4">Công dụng chính</h2>
-                    @if($summaryText !== '')<p class="lead fs-6">{{ $summaryText }}</p>@endif
-                    {!! $productModel->description ?: '<p>Thông tin công dụng đang được cập nhật.</p>' !!}
-                </div>
-                <div class="tab-pane fade" id="usage">
-                    <h2 class="h4">Thành phần nổi bật</h2>
-                    @if($ingredients->isNotEmpty())
-                        <ul class="product-ingredient-list">@foreach($ingredients as $ingredient)<li>{{ $ingredient }}</li>@endforeach</ul>
-                    @else
-                        <p class="text-muted">Thông tin thành phần nổi bật đang được cập nhật.</p>
-                    @endif
-                    <h2 class="h4 mt-4">Cách đưa vào routine</h2>
-                    {!! $productModel->usage ?: '<p>Hướng dẫn sử dụng đang được cập nhật.</p>' !!}
-                    <div class="routine-guide mt-3"><strong>Nguyên tắc chung:</strong> làm sạch → sản phẩm đặc trị/serum → kem dưỡng → chống nắng vào ban ngày. Ưu tiên hướng dẫn riêng trên bao bì sản phẩm.</div>
-                </div>
-                <div class="tab-pane fade" id="specs">
+                <div class="tab-pane fade show active" id="product-information">
                     <h2 class="h4">Thông tin sản phẩm</h2>
-                    @if($productModel->attributeValues->isNotEmpty())
-                                     <div class="table-responsive">
-                                         <table class="table table-sm table-borderless">
-                                             <tbody>
+                    {!! $productModel->description ?: '<p>Thông tin sản phẩm đang được cập nhật.</p>' !!}
+
+                    @if($productInformationAttributes->isNotEmpty())
+                        <div class="table-responsive mt-4">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tbody>
                                     @php
-                                        $attributeGroups = $productModel->attributeValues->groupBy(fn ($item) => $item->attribute?->name ?? 'Thông số');
+                                        $attributeGroups = $productInformationAttributes->groupBy(fn ($item) => $item->attribute?->name ?? 'Thông số');
                                     @endphp
                                     @foreach($attributeGroups as $attributeName => $values)
                                         <tr>
@@ -320,14 +295,21 @@
                                 </tbody>
                             </table>
                         </div>
-                    @else
-                        <p class="text-muted">Thông tin sản phẩm đang được cập nhật.</p>
                     @endif
                 </div>
-                <div class="tab-pane fade" id="policy">
-                    <h2 class="h4">Chính sách đổi trả</h2>
-                    <p>Kiểm tra tên sản phẩm, số lượng và tình trạng bao bì khi nhận hàng. Nếu giao nhầm, thiếu hàng hoặc sản phẩm có dấu hiệu lỗi, vui lòng giữ nguyên tem và bao bì rồi liên hệ RHEA để được kiểm tra.</p>
-                    <a class="btn btn-outline-primary btn-sm" href="{{ route('policies.returns') }}">Xem chính sách đổi trả</a>
+                <div class="tab-pane fade" id="ingredients">
+                    <h2 class="h4">Thành phần cấu tạo</h2>
+                    @if(filled($productModel->ingredients))
+                        {!! $productModel->ingredients !!}
+                    @elseif($ingredients->isNotEmpty())
+                        <ul class="product-ingredient-list">@foreach($ingredients as $ingredient)<li>{{ $ingredient }}</li>@endforeach</ul>
+                    @else
+                        <p class="text-muted">Thông tin thành phần cấu tạo đang được cập nhật.</p>
+                    @endif
+                </div>
+                <div class="tab-pane fade" id="usage">
+                    <h2 class="h4">Hướng dẫn sử dụng</h2>
+                    {!! $productModel->usage ?: '<p>Hướng dẫn sử dụng đang được cập nhật.</p>' !!}
                 </div>
             </div>
         </div>

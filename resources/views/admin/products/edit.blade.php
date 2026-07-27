@@ -52,7 +52,10 @@
                             <x-textarea name="summary" label="Mô tả ngắn" :value="$product->summary" rows="3" />
                         </div>
                         <div class="col-12">
-                            <x-tinymce name="description" label="Mô tả sản phẩm" :value="$product->description" />
+                            <x-tinymce name="description" label="Thông tin sản phẩm" :value="$product->description" />
+                        </div>
+                        <div class="col-12">
+                            <x-tinymce name="ingredients" label="Thành phần cấu tạo" :value="$product->ingredients" />
                         </div>
                         <div class="col-12">
                             <x-tinymce name="usage" label="Hướng dẫn sử dụng" :value="$product->usage" />
