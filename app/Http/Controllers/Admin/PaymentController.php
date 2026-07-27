@@ -1,14 +1,16 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Payment\IndexPaymentRequest;
 use App\Http\Requests\Admin\Payment\StorePaymentRequest;
 use App\Http\Requests\Admin\Payment\UpdatePaymentRequest;
-use App\Services\PaymentService;
-use App\Models\Order;
 use App\Models\Payment;
+use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+
 class PaymentController extends Controller
 {
     public function __construct(private readonly PaymentService $paymentService) {}
@@ -36,8 +38,16 @@ class PaymentController extends Controller
             ->with('success', 'Đã ghi nhận giao dịch.');
     }
 
-    public function edit(Payment $payment): View
+    public function edit(Payment $payment): View|RedirectResponse
     {
+        if ($payment->is_automatic) {
+            if ($payment->payment_transaction_id) {
+                return redirect()->route('admin.payment-transactions.show', $payment->payment_transaction_id);
+            }
+
+            abort(409, 'Giao dịch tự động là dữ liệu chỉ đọc.');
+        }
+
         return view('admin.payments.edit', compact('payment') + $this->paymentService->formContext());
     }
 

@@ -155,6 +155,24 @@
     });
   }
 
+  function initBeforeAfterFeedback() {
+    qsa('[data-before-after]').forEach(comparison => {
+      const range = qs('[data-before-after-range]', comparison);
+      const beforeImage = qs('[data-before-after-before]', comparison);
+      const divider = qs('[data-before-after-divider]', comparison);
+      if (!range || !beforeImage || !divider) return;
+
+      const update = () => {
+        const position = Math.max(0, Math.min(100, Number(range.value) || 50));
+        beforeImage.style.clipPath = `inset(0 ${100 - position}% 0 0)`;
+        divider.style.left = `${position}%`;
+      };
+
+      range.addEventListener('input', update);
+      update();
+    });
+  }
+
   function initFlashSaleSwiper() {
     if (typeof window.Swiper === 'undefined') return;
 
@@ -305,7 +323,9 @@
     qsa('[data-add-cart]').forEach(button => {
       button.addEventListener('click', async event => {
         event.preventDefault();
-        const form = button.closest('form');
+        const form = button.dataset.purchaseForm
+          ? qs(button.dataset.purchaseForm)
+          : button.closest('form');
         const quantityTarget = button.dataset.quantityTarget
           ? qs(button.dataset.quantityTarget, form || document)
           : null;
@@ -325,18 +345,60 @@
           showToast('Không xác định được sản phẩm', 'info');
           return;
         }
-        const payload = { product_id: productId, quantity };
+        const buyNow = button.hasAttribute('data-buy-now');
+        const payload = { product_id: productId, quantity, action: buyNow ? 'buy_now' : 'add_to_cart' };
         if (variantInput?.value) payload.variant_id = variantInput.value;
         else if (buttonVariantId) payload.variant_id = buttonVariantId;
-        const response = await fetch('/gio-hang', { method: 'POST', headers: { 'X-CSRF-TOKEN': qs('meta[name="csrf-token"]')?.content || '', 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) });
-        const data = await response.json();
-        if (!response.ok) {
-          showToast(data.message || 'Không thể thêm sản phẩm', 'info');
-          return;
+
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${buyNow ? 'Đang chuyển' : 'Đang thêm'}`;
+        try {
+          const response = await fetch('/gio-hang', { method: 'POST', headers: { 'X-CSRF-TOKEN': qs('meta[name="csrf-token"]')?.content || '', 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) });
+          const data = await response.json();
+          if (!response.ok) {
+            showToast(Object.values(data.errors || {}).flat()[0] || data.message || 'Không thể thêm sản phẩm', 'info');
+            return;
+          }
+          qsa('[data-cart-count]').forEach(el => { el.textContent = String(data.count); });
+          if (buyNow && data.redirect) {
+            window.location.assign(data.redirect);
+            return;
+          }
+          showCartConfirmation(data.product_name || button.dataset.productName || 'Sản phẩm');
+        } catch (_) {
+          showToast('Không thể kết nối để thêm sản phẩm. Vui lòng thử lại.', 'error');
+        } finally {
+          button.disabled = false;
+          button.innerHTML = original;
         }
-        qsa('[data-cart-count]').forEach(el => { el.textContent = String(data.count); });
-        showToast(data.message);
       });
+    });
+  }
+
+  function showCartConfirmation(productName) {
+    const panel = qs('[data-cart-confirmation]');
+    if (!panel) {
+      showToast(`Đã thêm ${productName} vào giỏ`);
+      return;
+    }
+    const name = qs('[data-cart-confirmation-name]', panel);
+    if (name) name.textContent = productName;
+    panel.classList.add('is-visible');
+    panel.setAttribute('aria-hidden', 'false');
+    window.clearTimeout(panel._hideTimer);
+    panel._hideTimer = window.setTimeout(() => {
+      panel.classList.remove('is-visible');
+      panel.setAttribute('aria-hidden', 'true');
+    }, 6500);
+  }
+
+  function initCartConfirmation() {
+    const panel = qs('[data-cart-confirmation]');
+    const close = qs('[data-cart-confirmation-close]', panel || document);
+    close?.addEventListener('click', () => {
+      panel?.classList.remove('is-visible');
+      panel?.setAttribute('aria-hidden', 'true');
     });
   }
 
@@ -352,6 +414,7 @@
       const price = qs('[data-quick-price]', modalEl);
       const oldPrice = qs('[data-quick-old-price]', modalEl);
       const addButton = qs('[data-add-cart]', modalEl);
+      const selectVariantLink = qs('[data-quick-select-variant]', modalEl);
       const wishlistButton = qs('[data-wishlist]', modalEl);
       if (image) { image.src = button.dataset.image || ''; image.alt = button.dataset.title || 'Sản phẩm'; }
       if (brand) brand.textContent = button.dataset.brand || '';
@@ -364,6 +427,10 @@
       if (addButton) addButton.dataset.productName = button.dataset.title || '';
       if (addButton) addButton.dataset.productId = button.dataset.productId || '';
       if (addButton) addButton.dataset.variantId = button.dataset.variantId || '';
+      const canQuickAdd = button.dataset.canQuickAdd === '1' && button.dataset.availability !== 'out_of_stock';
+      addButton?.classList.toggle('d-none', !canQuickAdd);
+      selectVariantLink?.classList.toggle('d-none', canQuickAdd || button.dataset.availability === 'out_of_stock');
+      if (selectVariantLink) selectVariantLink.href = button.dataset.detailUrl || '/san-pham';
       if (wishlistButton) wishlistButton.dataset.wishlist = button.dataset.productId || '';
     });
   }
@@ -397,13 +464,12 @@
 
   function initVariants() {
     const updateActionAvailability = (picker, variant, selectionComplete = true) => {
-      const actions = qs('[data-variant-actions]', picker.closest('form'));
       const tracksInventory = picker.dataset.trackInventory === '1';
       const allowsPreorder = picker.dataset.allowPreorder === '1';
       const outOfStock = variant && tracksInventory && !allowsPreorder && Number(variant.stock) < 1;
       const unavailable = selectionComplete && (!variant || outOfStock);
 
-      actions?.classList.toggle('d-none', unavailable);
+      qsa('[data-variant-actions]').forEach(actions => actions.classList.toggle('d-none', unavailable));
     };
 
     const updateDisplayedPrice = (price, oldPrice = null) => {
@@ -416,6 +482,8 @@
       const formatPrice = value => `${new Intl.NumberFormat('vi-VN').format(Number(value) || 0)}₫`;
 
       if (currentPrice) currentPrice.textContent = formatPrice(numericPrice);
+      const mobilePrice = qs('[data-mobile-product-price]');
+      if (mobilePrice) mobilePrice.textContent = formatPrice(numericPrice);
       if (comparePrice) {
         comparePrice.textContent = numericOldPrice > numericPrice ? formatPrice(numericOldPrice) : '';
         comparePrice.classList.toggle('d-none', numericOldPrice <= numericPrice);
@@ -479,6 +547,8 @@
         }
 
         currentPrice.textContent = formatPrice(variant.price);
+        const mobilePrice = qs('[data-mobile-product-price]');
+        if (mobilePrice) mobilePrice.textContent = formatPrice(variant.price);
         if (comparePrice) {
           comparePrice.textContent = variant.compare_price ? formatPrice(variant.compare_price) : '';
           comparePrice.classList.toggle('d-none', !variant.compare_price);
@@ -619,12 +689,19 @@
     const couponCode = qs('[data-cart-coupon-code]');
     if (couponCode) couponCode.textContent = summary.coupon?.code || '';
 
-    const subtotal = Number(summary.subtotal) || 0;
-    const remain = Math.max(0, 1000000 - subtotal);
-    const percent = Math.min(100, Math.round(subtotal / 1000000 * 100));
+    const remain = Number(summary.freeShippingRemain) || 0;
+    const percent = Number(summary.freeShippingPercent) || 0;
     if (qs('[data-shipping-message]')) qs('[data-shipping-message]').textContent = remain > 0 ? `Mua thêm ${formatMoney(remain)} để được miễn phí vận chuyển` : 'Đơn hàng đã được miễn phí vận chuyển';
     if (qs('[data-shipping-percent]')) qs('[data-shipping-percent]').textContent = `${percent}%`;
     if (qs('[data-shipping-progress]')) qs('[data-shipping-progress]').style.width = `${percent}%`;
+
+    const unavailableCount = Array.isArray(summary.unavailableItems)
+      ? summary.unavailableItems.length
+      : Object.keys(summary.unavailableItems || {}).length;
+    const checkoutControl = qs('[data-cart-checkout]');
+    if (checkoutControl && unavailableCount === 0 && checkoutControl.tagName === 'BUTTON') {
+      checkoutControl.outerHTML = '<a class="btn btn-primary w-100 py-3" href="/thanh-toan" data-cart-checkout><i class="bi bi-shield-lock me-2"></i>Tiến hành thanh toán</a>';
+    }
 
     if (!qs('[data-cart-row]')) {
       const content = qs('[data-cart-content]');
@@ -649,6 +726,79 @@
   function initCheckout() {
     const form = qs('[data-checkout-form]');
     if (!form) return;
+
+    const invoiceToggle = qs('[data-invoice-toggle]', form);
+    const invoiceFields = qs('[data-invoice-fields]', form);
+    const syncInvoice = () => {
+      const enabled = !!invoiceToggle?.checked;
+      invoiceFields?.classList.toggle('d-none', !enabled);
+      qsa('input', invoiceFields || document).forEach(input => { input.required = enabled; });
+    };
+    invoiceToggle?.addEventListener('change', syncInvoice);
+    syncInvoice();
+
+    const provinceSelect = qs('[data-shipping-province]', form);
+    const wardSelect = qs('[data-shipping-ward]', form);
+    const districtInput = qs('[name="shipping_district"]', form);
+    const loadWards = async (provinceCode, selectedWard = '') => {
+      if (!wardSelect) return;
+      wardSelect.disabled = true;
+      wardSelect.innerHTML = '<option value="">Đang tải phường/xã…</option>';
+      if (!provinceCode) {
+        wardSelect.innerHTML = '<option value="">Chọn tỉnh/thành trước</option>';
+        return;
+      }
+      try {
+        const response = await fetch(`https://provinces.open-api.vn/api/v2/w/?province=${encodeURIComponent(provinceCode)}`, { headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('location');
+        const wards = await response.json();
+        wardSelect.innerHTML = '<option value="">Chọn phường/xã</option>';
+        wards.forEach(ward => {
+          const option = document.createElement('option');
+          option.value = ward.name;
+          option.textContent = ward.name;
+          option.selected = ward.name === selectedWard;
+          wardSelect.append(option);
+        });
+        if (selectedWard && !wards.some(ward => ward.name === selectedWard)) {
+          const option = new Option(selectedWard, selectedWard, true, true);
+          wardSelect.append(option);
+        }
+        wardSelect.disabled = false;
+      } catch (_) {
+        wardSelect.innerHTML = '<option value="">Không tải được danh mục phường/xã — vui lòng thử lại</option>';
+        wardSelect.disabled = false;
+        showToast('Chưa tải được danh mục phường/xã. Vui lòng kiểm tra kết nối.', 'info');
+      }
+    };
+
+    provinceSelect?.addEventListener('change', () => {
+      const option = provinceSelect.options[provinceSelect.selectedIndex];
+      if (districtInput) districtInput.value = '';
+      loadWards(option?.dataset.code || '', '');
+    });
+    if (provinceSelect?.value) {
+      const option = provinceSelect.options[provinceSelect.selectedIndex];
+      loadWards(option?.dataset.code || '', wardSelect?.dataset.selected || '');
+    }
+
+    const addressSelect = qs('[data-saved-address]', form);
+    addressSelect?.addEventListener('change', () => {
+      const option = addressSelect.options[addressSelect.selectedIndex];
+      if (!option?.dataset.address) return;
+      let address;
+      try { address = JSON.parse(option.dataset.address); } catch (_) { return; }
+      const setValue = (name, value) => { const field = qs(`[name="${name}"]`, form); if (field) field.value = value || ''; };
+      setValue('customer_name', address.name);
+      setValue('customer_phone', address.phone);
+      setValue('shipping_address', address.address);
+      if (districtInput) districtInput.value = address.district || '';
+      if (provinceSelect) {
+        provinceSelect.value = address.province || '';
+        const provinceOption = provinceSelect.options[provinceSelect.selectedIndex];
+        loadWards(provinceOption?.dataset.code || '', address.ward || '');
+      }
+    });
 
     form.addEventListener('submit', async event => {
       event.preventDefault();
@@ -706,6 +856,19 @@
     qsa('[data-bs-toggle="tooltip"]').forEach(el => bootstrap.Tooltip.getOrCreateInstance(el));
   }
 
+  function initCopyFields() {
+    qsa('[data-copy-value]').forEach(button => {
+      button.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(button.dataset.copyValue || '');
+          showToast('Đã sao chép', 'info');
+        } catch (_) {
+          showToast('Không thể sao chép tự động', 'info');
+        }
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     updateHeaderCounts();
     initBootstrapHelpers();
@@ -713,6 +876,7 @@
     initMegaMenus();
     initHomeHeroSwiper();
     initHomeAdviceSwiper();
+    initBeforeAfterFeedback();
     initFlashSaleSwiper();
     initProductGallerySwiper();
     initBackToTop();
@@ -720,6 +884,7 @@
     initVoucherCopy();
     initWishlist();
     initAddToCart();
+    initCartConfirmation();
     initQuickView();
     initQuantityControls();
     initGallery();
@@ -728,5 +893,6 @@
     initCartRows();
     initCartForms();
     initCheckout();
+    initCopyFields();
   });
 })();

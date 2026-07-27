@@ -359,7 +359,8 @@ class AdminEcommerceTest extends TestCase
             ->get(route('admin.testimonials.create'))
             ->assertOk()
             ->assertViewIs('admin.testimonials.create')
-            ->assertSee('Thêm cảm nhận khách hàng');
+            ->assertSee('Thêm cảm nhận khách hàng')
+            ->assertSee('Feedback trước / sau');
 
         $this->actingAs($admin, 'admin')
             ->post(route('admin.testimonials.store'), [

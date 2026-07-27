@@ -150,7 +150,7 @@
                 </div>
                 <div class="tab-pane fade" id="policy">
                     <h2 class="h4">Chính sách đổi trả</h2>
-                    <p>Kiểm tra tình trạng sản phẩm khi nhận hàng. Quy trình đổi trả, điều kiện niêm phong và thời hạn xử lý nên được đồng bộ với chính sách vận hành thực tế của cửa hàng.</p>
+                    <p>Kiểm tra sản phẩm khi nhận hàng. Nếu giao nhầm, thiếu hàng hoặc sản phẩm có dấu hiệu lỗi, vui lòng giữ nguyên tem và bao bì rồi liên hệ cửa hàng để được hỗ trợ.</p>
                 </div>
             </div>
         </div>

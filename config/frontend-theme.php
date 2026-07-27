@@ -9,6 +9,16 @@ return [
     'active' => 'emerald_champagne',
 
     'palettes' => [
+        'wine_champagne' => [
+            // Wine rose & champagne: ấm, tin cậy và tiết chế cho RHEA Skinlab.
+            'primary' => '#8E3154',
+            'secondary' => '#C6A56E',
+            'ink' => '#292326',
+            'muted' => '#756B70',
+            'surface' => '#FFFFFF',
+            'canvas' => '#F8F4EF',
+            'line' => '#E8DDD9',
+        ],
         'emerald_champagne' => [
             // Xanh ngọc lục bảo & vàng champagne: bảng màu đang sử dụng.
             'primary' => '#0B7A5A',

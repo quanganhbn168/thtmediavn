@@ -30,6 +30,8 @@ class TestimonialService
     {
         $testimonial = Testimonial::query()->create($this->payload($data));
         $this->mediaService->syncSingle($testimonial, 'testimonial_avatar', $data['avatar'] ?? null);
+        $this->mediaService->syncSingle($testimonial, 'testimonial_before', $data['before_image'] ?? null);
+        $this->mediaService->syncSingle($testimonial, 'testimonial_after', $data['after_image'] ?? null);
 
         return $testimonial;
     }
@@ -43,11 +45,25 @@ class TestimonialService
             $data['avatar'] ?? null,
             (bool) ($data['avatar_remove'] ?? false),
         );
+        $this->mediaService->syncSingle(
+            $testimonial,
+            'testimonial_before',
+            $data['before_image'] ?? null,
+            (bool) ($data['before_image_remove'] ?? false),
+        );
+        $this->mediaService->syncSingle(
+            $testimonial,
+            'testimonial_after',
+            $data['after_image'] ?? null,
+            (bool) ($data['after_image_remove'] ?? false),
+        );
     }
 
     public function delete(Testimonial $testimonial): void
     {
         $testimonial->clearMediaCollection('testimonial_avatar');
+        $testimonial->clearMediaCollection('testimonial_before');
+        $testimonial->clearMediaCollection('testimonial_after');
         $testimonial->delete();
     }
 

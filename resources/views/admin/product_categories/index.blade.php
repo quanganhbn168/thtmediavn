@@ -67,7 +67,6 @@
                     <th data-select-column class="text-center" style="width:48px"><input type="checkbox" class="form-check-input" data-check-all aria-label="Chọn tất cả"></th>
                     <th>Tên</th>
                     <th>Danh mục cha</th>
-                    <th>Thứ tự</th>
                     <th class="text-center" style="width:110px">Kích hoạt</th>
                     <th class="text-center" style="width:110px">Nổi bật</th>
                     <th class="text-center" style="width:110px">Trang chủ</th>
@@ -83,7 +82,6 @@
                                 <small class="d-block text-muted">/{{ $category->slug }}</small>
                             </td>
                             <td>{{ $category->parent?->name ?: '—' }}</td>
-                            <td>{{ $category->sort_order }}</td>
                             <td class="text-center">
                                 <x-toggle
                                     model="ProductCategory"
@@ -129,7 +127,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <div class="admin-empty">
                                     <span><i class="bi bi-grid-3x3-gap"></i></span>
                                     <h5>Chưa có danh mục</h5>

@@ -35,10 +35,20 @@ Route::post('/gio-hang/ma-giam-gia', [Frontend\CartController::class, 'coupon'])
 Route::delete('/gio-hang/ma-giam-gia', [Frontend\CartController::class, 'removeCoupon'])->name('cart.coupon.destroy');
 Route::get('/thanh-toan', [Frontend\CheckoutController::class, 'create'])->name('checkout');
 Route::post('/thanh-toan', [Frontend\CheckoutController::class, 'store'])->name('checkout.store');
+Route::get('/thanh-toan/{publicToken}', [Frontend\CheckoutController::class, 'payment'])
+    ->where('publicToken', '[A-Za-z0-9]{64}')
+    ->name('checkout.payment');
+Route::get('/thanh-toan/{publicToken}/trang-thai', [Frontend\CheckoutController::class, 'paymentStatus'])
+    ->where('publicToken', '[A-Za-z0-9]{64}')
+    ->middleware('throttle:30,1')
+    ->name('checkout.payment.status');
 Route::get('/dat-hang-thanh-cong/{code}', [Frontend\CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/tin-tuc', [Frontend\PostController::class, 'index'])->name('news.index');
 Route::get('/tin-tuc/{slug}', [Frontend\SlugController::class, 'show'])->name('news.show');
 Route::view('/lien-he', 'frontend.contact')->name('contact');
+Route::view('/chinh-sach-mua-hang', 'frontend.policies.purchase')->name('policies.purchase');
+Route::view('/chinh-sach-bao-mat', 'frontend.policies.privacy')->name('policies.privacy');
+Route::view('/chinh-sach-doi-tra', 'frontend.policies.returns')->name('policies.returns');
 Route::post('/lien-he', [Frontend\ContactController::class, 'submit'])->middleware('throttle:frontend-forms')->name('contact.submit');
 Route::post('/dang-ky-nhan-tin', [Frontend\NewsletterController::class, 'store'])->middleware('throttle:frontend-forms')->name('newsletter.store');
 
@@ -81,6 +91,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin', 'admin'])->gro
     // Quản lý Đơn hàng
     Route::resource('/orders', OrderController::class)->only(['index', 'edit', 'update', 'destroy']);
     Route::resource('/payments', Admin\PaymentController::class)->except(['show']);
+    Route::get('/payment-transactions', [Admin\PaymentTransactionController::class, 'index'])->name('payment-transactions.index');
+    Route::get('/payment-transactions/{paymentTransaction}', [Admin\PaymentTransactionController::class, 'show'])->name('payment-transactions.show');
+    Route::post('/payment-transactions/{paymentTransaction}/attach', [Admin\PaymentTransactionController::class, 'attach'])->name('payment-transactions.attach');
 
     // Mini e-commerce
     Route::resource('/products', Admin\ProductController::class)->except(['show']);
@@ -172,6 +185,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin', 'admin'])->gro
         Route::post('/about', [SettingController::class, 'updateAbout'])->name('about.update');
         Route::get('/media', [SettingController::class, 'media'])->name('media');
         Route::post('/media', [SettingController::class, 'updateMedia'])->name('media.update');
+        Route::get('/payment', [Admin\SePaySettingController::class, 'index'])->name('payment');
+        Route::post('/payment/test-connection', [Admin\SePaySettingController::class, 'testConnection'])->name('payment.test-connection');
+        Route::post('/payment/reconcile', [Admin\SePaySettingController::class, 'reconcile'])->name('payment.reconcile');
         Route::resource('/contact-channels', Admin\ContactChannelController::class)->except(['show']);
     });
 

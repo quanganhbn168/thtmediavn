@@ -414,6 +414,51 @@
 </section>
 @endif
 
+@if($homepageSections->contains('testimonials') && $beforeAfterTestimonials->isNotEmpty())
+<section class="section-space pt-0 home-feedback-section" aria-labelledby="home-feedback-title">
+    <div class="container">
+        <div class="home-feedback-heading">
+            <span class="home-feedback-kicker"><i class="bi bi-chat-heart-fill"></i> Khách hàng chia sẻ</span>
+            <h2 id="home-feedback-title">Feedback thực tế, xem rõ từng thay đổi</h2>
+            <p>Kéo thanh so sánh để xem hai ảnh trong cùng một khung. Nội dung dưới đây là trải nghiệm cá nhân của khách hàng.</p>
+        </div>
+
+        <div class="home-feedback-grid">
+            @foreach($beforeAfterTestimonials as $testimonial)
+                @php
+                    $beforeImage = $testimonial->getFirstMediaUrl('testimonial_before');
+                    $afterImage = $testimonial->getFirstMediaUrl('testimonial_after');
+                @endphp
+                <article class="home-feedback-card">
+                    <div class="before-after" data-before-after>
+                        <img class="before-after__image" src="{{ $afterImage }}" alt="Ảnh sau của {{ $testimonial->name }}" loading="lazy" width="1200" height="1500">
+                        <img class="before-after__image before-after__image--before" src="{{ $beforeImage }}" alt="Ảnh trước của {{ $testimonial->name }}" loading="lazy" width="1200" height="1500" data-before-after-before>
+                        <span class="before-after__tag before-after__tag--before">Trước</span>
+                        <span class="before-after__tag before-after__tag--after">Sau</span>
+                        <span class="before-after__divider" aria-hidden="true" data-before-after-divider></span>
+                        <input class="before-after__range" type="range" min="0" max="100" value="50" step="1" aria-label="Kéo để so sánh ảnh trước và sau của {{ $testimonial->name }}" data-before-after-range>
+                    </div>
+
+                    <div class="home-feedback-card__body">
+                        <div class="home-feedback-card__meta">
+                            <span class="home-testimonial-stars" aria-label="{{ $testimonial->rating }} trên 5 sao">{{ str_repeat('★', $testimonial->rating) }}<span>{{ str_repeat('☆', 5 - $testimonial->rating) }}</span></span>
+                            @if($testimonial->label)<span>{{ $testimonial->label }}</span>@endif
+                        </div>
+                        <blockquote>“{{ $testimonial->content }}”</blockquote>
+                        <footer class="home-feedback-card__author">
+                            @if($avatar = $testimonial->getFirstMediaUrl('testimonial_avatar'))<img src="{{ $avatar }}" alt="{{ $testimonial->name }}" loading="lazy">@else<span>{{ Str::upper(Str::substr($testimonial->name, 0, 1)) }}</span>@endif
+                            <strong>{{ $testimonial->name }}</strong>
+                        </footer>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+
+        <p class="home-feedback-note"><i class="bi bi-info-circle"></i> Ảnh do khách hàng chia sẻ. Hiệu quả có thể khác nhau tùy cơ địa, tình trạng da và cách sử dụng sản phẩm.</p>
+    </div>
+</section>
+@endif
+
 @if($homepageSections->contains('posts') && $homeAdviceLead)
 <section class="section-space bg-soft home-advice-section">
     <div class="container">

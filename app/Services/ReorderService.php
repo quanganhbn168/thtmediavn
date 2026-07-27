@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Brand;
 use App\Models\Page;
 use App\Models\PostCategory;
-use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\Brand;
-use App\Models\ProductOption;
 use App\Models\ProductAttribute;
+use App\Models\ProductCategory;
+use App\Models\ProductOption;
 use App\Models\Testimonial;
 use Illuminate\Support\Facades\DB;
 

@@ -73,7 +73,7 @@
                             />
                         </div>
                         <div class="col-12">
-                            <x-textarea name="note" label="Ghi chú" :value="$payment->note" rows="4" />
+                            <x-textarea name="note" label="Ghi chú / căn cứ ghi nhận" :value="$payment->note" rows="4" required />
                         </div>
                     </div>
                 </x-card>

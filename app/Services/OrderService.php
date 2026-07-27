@@ -5,16 +5,18 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
     public const STATUSES = [
+        'pending_payment' => 'Chờ thanh toán',
         'pending' => 'Chờ xác nhận',
         'processing' => 'Đang xử lý',
         'shipping' => 'Đang giao hàng',
         'completed' => 'Hoàn thành',
         'cancelled' => 'Đã hủy',
+        'payment_expired' => 'Thanh toán hết hạn',
     ];
 
     public const PAYMENT_STATUSES = [
@@ -23,6 +25,8 @@ class OrderService
         'paid' => 'Đã thanh toán',
         'refunded' => 'Đã hoàn tiền',
     ];
+
+    public function __construct(private readonly OrderInventoryService $inventory) {}
 
     public function paginate(array $filters): LengthAwarePaginator
     {
@@ -53,7 +57,7 @@ class OrderService
     public function getFormContext(Order $order): array
     {
         return [
-            'order' => $order->load(['items', 'payments', 'statusHistories.user']),
+            'order' => $order->load(['items', 'payments.transaction', 'paymentTransactions', 'statusHistories.user']),
             'statuses' => self::STATUSES,
             'paymentStatuses' => self::PAYMENT_STATUSES,
             'users' => User::query()
@@ -67,23 +71,35 @@ class OrderService
 
     public function update(Order $order, array $data): void
     {
-        $oldStatus = $order->status;
+        DB::transaction(function () use ($order, $data): void {
+            $order = Order::query()->lockForUpdate()->findOrFail($order->id);
+            $oldStatus = $order->status;
 
-        $order->update([
-            'status' => $data['status'],
-            'payment_status' => $data['payment_status'],
-            'assigned_to' => $this->toNullableInt($data['assigned_to'] ?? null),
-            'admin_note' => $data['admin_note'] ?? null,
-        ]);
-
-        if ($oldStatus !== $order->status) {
-            $order->statusHistories()->create([
-                'to_status' => $order->status,
-                'from_status' => $oldStatus,
-                'user_id' => auth()->id(),
-                'note' => $data['admin_note'] ?? null,
+            $order->update([
+                'status' => $data['status'],
+                'assigned_to' => $this->toNullableInt($data['assigned_to'] ?? null),
+                'admin_note' => $data['admin_note'] ?? null,
             ]);
-        }
+
+            if ($oldStatus !== $order->status) {
+                $order->statusHistories()->create([
+                    'to_status' => $order->status,
+                    'from_status' => $oldStatus,
+                    'user_id' => auth()->id(),
+                    'note' => $data['admin_note'] ?? null,
+                ]);
+
+                if ($order->payment_method === 'cod'
+                    && $oldStatus === 'pending'
+                    && in_array($order->status, ['processing', 'shipping', 'completed'], true)) {
+                    $this->inventory->recordSold($order);
+                }
+
+                if ($order->status === 'cancelled' && $order->payment_status !== 'paid') {
+                    $this->inventory->release($order);
+                }
+            }
+        });
     }
 
     public function delete(Order $order): void

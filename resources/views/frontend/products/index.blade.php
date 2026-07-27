@@ -22,6 +22,17 @@
 
 <section class="section-space">
     <div class="container">
+        @if($quickFilters->isNotEmpty())
+            <div class="catalog-quick-filters mb-4" aria-label="Lọc nhanh theo nhu cầu da">
+                <span class="catalog-quick-filters__label">Làn da của bạn:</span>
+                @foreach($quickFilters as $filter)
+                    <a href="{{ $filter['url'] }}" @class(['catalog-quick-chip', 'is-active' => $filter['active']])>
+                        {{ $filter['label'] }}
+                        @if($filter['count'] !== null)<small>{{ $filter['count'] }}</small>@endif
+                    </a>
+                @endforeach
+            </div>
+        @endif
         <div class="d-lg-none mb-3">
             <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
                 <i class="bi bi-funnel me-2"></i>Bộ lọc sản phẩm
@@ -32,6 +43,15 @@
                 @include('partials.catalog-filters', ['filterSuffix' => '-desktop'])
             </aside>
             <div class="col-lg-9">
+                @if($activeFilterChips->isNotEmpty())
+                    <div class="catalog-active-filters mb-3">
+                        <span class="small fw-bold">Đang lọc:</span>
+                        @foreach($activeFilterChips as $chip)
+                            <a href="{{ $chip['url'] }}" class="catalog-active-chip">{{ $chip['label'] }} <i class="bi bi-x"></i></a>
+                        @endforeach
+                        <a href="{{ route('catalog') }}" class="catalog-clear-link">Xóa tất cả</a>
+                    </div>
+                @endif
                 <div class="catalog-toolbar d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-3">
                     <div>
                         <strong>{{ $products->total() }}</strong> sản phẩm
@@ -59,6 +79,7 @@
                             <option value="price-asc" {{ $sort === 'price-asc' ? 'selected' : '' }}>Giá tăng dần</option>
                             <option value="price-desc" {{ $sort === 'price-desc' ? 'selected' : '' }}>Giá giảm dần</option>
                             <option value="name-asc" {{ $sort === 'name-asc' ? 'selected' : '' }}>Tên A–Z</option>
+                            <option value="newest" {{ $sort === 'newest' ? 'selected' : '' }}>Mới nhất</option>
                         </select>
                     </form>
                 </div>
@@ -88,7 +109,7 @@
         <h2 class="offcanvas-title h5" id="filterOffcanvasLabel">Bộ lọc sản phẩm</h2>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
     </div>
-    <div class="offcanvas-body">
+    <div class="offcanvas-body catalog-filter-offcanvas-body">
         @include('partials.catalog-filters', ['filterSuffix' => '-mobile'])
     </div>
 </div>

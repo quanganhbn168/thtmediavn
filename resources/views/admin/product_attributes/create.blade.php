@@ -27,6 +27,10 @@
                     <x-textarea name="values_text" label="Mỗi dòng một giá trị" :value="old('values_text')" rows="10" placeholder="Tự nhiên&#10;Dày&#10;Dài&#10;Cong" />
                     <p class="text-muted small mb-0">Sau khi tạo, tick các giá trị này ở từng sản phẩm. Chúng sẽ xuất hiện tự động ở bộ lọc khi đã có sản phẩm sử dụng.</p>
                 </x-card>
+                <x-card type="secondary" :outline="true" title="Áp dụng cho danh mục" :collapsible="true" class="mt-4">
+                    <p class="text-muted small">Sản phẩm trong danh mục con sẽ kế thừa bộ lọc của danh mục cha.</p>
+                    <div class="row g-2">@foreach($categories as $categoryId => $categoryName)<div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="category_ids[]" value="{{ $categoryId }}" id="attribute_category_{{ $categoryId }}" @checked(in_array($categoryId, old('category_ids', [])))><label class="form-check-label" for="attribute_category_{{ $categoryId }}">{{ $categoryName }}</label></div></div>@endforeach</div>
+                </x-card>
             </div>
             <div class="col-lg-4">
                 <x-card type="info" :outline="true" title="Hiển thị" :collapsible="true">

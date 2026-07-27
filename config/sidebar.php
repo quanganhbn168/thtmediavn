@@ -26,19 +26,23 @@ return [
         // Quản lý đơn hàng
         [
             'type' => 'header',
-            'label' => 'QUẢN LÝ ĐƠN HÀNG',
+            'label' => 'BÁN HÀNG',
         ],
         [
             'type' => 'link',
-            'label' => 'Quản lý đơn hàng',
+            'label' => 'Đơn hàng',
             'route' => 'admin.orders.index',
             'icon' => 'bi bi-cart3',
         ],
         [
             'type' => 'link',
-            'label' => 'Giao dịch thanh toán',
-            'route' => 'admin.payments.index',
+            'label' => 'Thanh toán',
             'icon' => 'bi bi-wallet2',
+            'children' => [
+                ['label' => 'Phiếu thanh toán', 'route' => 'admin.payments.index', 'icon' => 'bi bi-circle'],
+                ['label' => 'Giao dịch ngân hàng', 'route' => 'admin.payment-transactions.index', 'icon' => 'bi bi-circle'],
+                ['label' => 'Cấu hình SePay', 'route' => 'admin.settings.payment', 'icon' => 'bi bi-circle'],
+            ],
         ],
         [
             'type' => 'header',
@@ -53,8 +57,8 @@ return [
                 ['label' => 'Thêm sản phẩm', 'route' => 'admin.products.create', 'icon' => 'bi bi-circle'],
                 ['label' => 'Danh mục sản phẩm', 'route' => 'admin.product-categories.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Thương hiệu', 'route' => 'admin.brands.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Thuộc tính & giá trị', 'route' => 'admin.product-options.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Thuộc tính lọc', 'route' => 'admin.product-attributes.index', 'icon' => 'bi bi-circle'],
+                ['label' => 'Biến thể bán hàng', 'route' => 'admin.product-options.index', 'icon' => 'bi bi-circle'],
+                ['label' => 'Bộ lọc sản phẩm', 'route' => 'admin.product-attributes.index', 'icon' => 'bi bi-circle'],
             ],
         ],
         [
@@ -100,7 +104,7 @@ return [
                     'route' => 'admin.post-categories.index',
                     'icon' => 'bi bi-circle',
                 ],
-            ]
+            ],
         ],
         [
             'type' => 'link',
@@ -174,5 +178,5 @@ return [
             'route' => 'admin.settings.general',
             'icon' => 'bi bi-gear',
         ],
-    ]
+    ],
 ];

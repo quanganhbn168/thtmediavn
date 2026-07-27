@@ -25,6 +25,7 @@ abstract class FrontendController extends Controller
 
         $gift = trim((string) ($product->getAttribute('gift') ?? $product->getAttribute('gift_text') ?? ''));
         $variants = $product->relationLoaded('variants') ? $product->variants : $product->variants()->get();
+        $activeVariants = $variants->where('is_active', true)->values();
         $currentVariant = $variant
             ?: $variants->firstWhere(fn ($item) => (bool) $item->is_active && (bool) $item->is_default)
             ?: $variants->firstWhere('is_active', true)
@@ -38,6 +39,9 @@ abstract class FrontendController extends Controller
         $availability = $inStock
             ? 'in_stock'
             : ($product->allow_preorder ? 'preorder' : 'out_of_stock');
+        $activeVariantCount = $activeVariants->count();
+        $summary = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $product->summary)) ?? '');
+        preg_match('/\b\d+(?:[\.,]\d+)?\s?(?:ml|g|gr|kg|viên|miếng|sheet|pcs?)\b/iu', (string) $product->name, $sizeMatch);
 
         return [
             'id' => $product->id,
@@ -45,6 +49,8 @@ abstract class FrontendController extends Controller
             'name' => $product->name,
             'brand' => $product->brand?->name ?? 'Không thương hiệu',
             'brand_slug' => $product->brand?->slug,
+            'benefit' => $summary !== '' ? Str::limit($summary, 105) : null,
+            'size' => $sizeMatch[0] ?? null,
             'price' => $price,
             'old_price' => $oldPrice > $price ? $oldPrice : null,
             'image' => $product->image_url,
@@ -54,6 +60,9 @@ abstract class FrontendController extends Controller
                 $availability === 'preorder' ? 'Đặt trước' : null,
             ])),
             'variant_id' => $currentVariant?->id,
+            'active_variant_count' => $activeVariantCount,
+            'requires_variant_selection' => $activeVariantCount > 1,
+            'can_quick_add' => $activeVariantCount === 1 && $availability !== 'out_of_stock',
             'sold' => min(100, max(10, $product->sold_count)),
             'sold_text' => 'Đã bán '.number_format($product->sold_count).' sản phẩm',
             'gift' => $gift !== '' ? $gift : null,
@@ -68,6 +77,7 @@ abstract class FrontendController extends Controller
             ->where('is_active', true)
             ->when($homeOnly, fn ($query) => $query->where('is_home', true))
             ->whereHas('products', fn ($query) => $query->where('is_active', true)->visibleOnSite())
+            ->withCount(['products' => fn ($query) => $query->where('is_active', true)->visibleOnSite()])
             ->orderBy('sort_order')
             ->get()
             ->map(fn (ProductCategory $category) => [
@@ -75,6 +85,7 @@ abstract class FrontendController extends Controller
                 'name' => $category->name,
                 'slug' => $category->slug,
                 'image' => $this->categoryImageUrl($category->image),
+                'products_count' => (int) $category->products_count,
             ]);
     }
 

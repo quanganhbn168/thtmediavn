@@ -13,8 +13,7 @@
         @if($cart->items->isEmpty())
             <div class="content-card text-center py-5"><i class="bi bi-bag display-3 text-primary"></i><h2 class="h4 mt-3">Giỏ hàng đang trống</h2><p class="text-muted">Hãy chọn sản phẩm phù hợp để bắt đầu đơn hàng.</p><a class="btn btn-primary" href="{{ route('catalog') }}">Mua sắm ngay</a></div>
         @else
-            @php($freeShipRemain = max(0, 1000000 - $summary['subtotal']))
-            <div class="mb-4"><div class="d-flex justify-content-between gap-3 small mb-2"><span>{{ $freeShipRemain > 0 ? 'Mua thêm '.number_format($freeShipRemain,0,',','.').'₫ để được miễn phí vận chuyển' : 'Đơn hàng đã được miễn phí vận chuyển' }}</span><span>{{ min(100, round($summary['subtotal'] / 1000000 * 100)) }}%</span></div><div class="shipping-progress"><div class="shipping-progress-bar" style="width: {{ min(100, $summary['subtotal'] / 1000000 * 100) }}%"></div></div></div>
+            <div class="mb-4"><div class="d-flex justify-content-between gap-3 small mb-2"><span>{{ $summary['freeShippingRemain'] > 0 ? 'Mua thêm '.number_format($summary['freeShippingRemain'],0,',','.').'₫ để được miễn phí vận chuyển' : 'Đơn hàng đã được miễn phí vận chuyển' }}</span><span>{{ $summary['freeShippingPercent'] }}%</span></div><div class="shipping-progress"><div class="shipping-progress-bar" style="width: {{ $summary['freeShippingPercent'] }}%"></div></div></div>
             <div class="row g-4 align-items-start">
                 <div class="col-lg-8">
                     <div class="cart-table-wrap"><table class="table cart-table align-middle mb-0"><thead><tr><th class="p-3">Thông tin sản phẩm</th><th class="p-3 text-end">Đơn giá</th><th class="p-3 text-center">Số lượng</th><th class="p-3 text-end">Thành tiền</th></tr></thead><tbody>

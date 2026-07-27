@@ -3,54 +3,91 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-use App\Models\Coupon;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use App\Services\SePayExpirationService;
+use App\Services\SePayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CheckoutController extends Controller
 {
-    public function __construct(private readonly CartService $carts) {}
+    public function __construct(
+        private readonly CartService $carts,
+        private readonly SePayService $sePay,
+        private readonly SePayExpirationService $expiration,
+    ) {}
 
     public function create(): View|RedirectResponse
     {
         $cart = $this->carts->current();
-        if ($cart->items->isEmpty()) return redirect()->route('cart')->withErrors(['cart' => 'Giỏ hàng đang trống.']);
-        return view('frontend.checkout', ['cart' => $cart, 'summary' => $this->carts->summary($cart), 'addresses' => auth()->user()?->addresses ?? collect()]);
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('cart')->withErrors(['cart' => 'Giỏ hàng đang trống.']);
+        }
+        $sePayEnabled = $this->sePay->isEnabled();
+        $checkoutToken = (string) Str::uuid();
+        session(['checkout_token' => $checkoutToken]);
+
+        return view('frontend.checkout', [
+            'cart' => $cart,
+            'summary' => $this->carts->summary($cart),
+            'addresses' => auth()->user()?->addresses ?? collect(),
+            'sePayEnabled' => $sePayEnabled,
+            'checkoutToken' => $checkoutToken,
+            'provinces' => config('commerce.provinces', []),
+        ]);
     }
 
     public function store(Request $request): JsonResponse|RedirectResponse
     {
+        $sePayEnabled = $this->sePay->isEnabled();
+        $paymentMethods = $sePayEnabled ? ['cod', 'sepay_qr'] : ['cod'];
+
         $data = $request->validate([
+            'checkout_token' => ['required', 'string', 'max:100'],
             'customer_name' => ['required', 'string', 'max:150'],
-            'customer_phone' => ['required', 'string', 'max:30'],
+            'customer_phone' => ['required', 'string', 'max:30', 'regex:/^(?:\+?84|0)(?:[\s.\-]?\d){9,10}$/'],
             'customer_email' => ['nullable', 'email', 'max:150'],
-            'shipping_province' => ['required', 'string', 'max:100'],
+            'shipping_province' => ['required', 'string', Rule::in(array_values(config('commerce.provinces', [])))],
             'shipping_district' => ['nullable', 'string', 'max:100'],
-            'shipping_ward' => ['nullable', 'string', 'max:100'],
+            'shipping_ward' => ['required', 'string', 'max:100'],
             'shipping_address' => ['required', 'string', 'max:255'],
-            'payment_method' => ['required', 'in:cod,bank_transfer'],
+            'payment_method' => ['required', Rule::in($paymentMethods)],
             'note' => ['nullable', 'string', 'max:1000'],
             'requires_invoice' => ['nullable', 'boolean'],
             'invoice_company' => ['nullable', 'required_if:requires_invoice,1', 'string', 'max:255'],
-            'invoice_tax_code' => ['nullable', 'required_if:requires_invoice,1', 'string', 'max:50'],
+            'invoice_tax_code' => ['nullable', 'required_if:requires_invoice,1', 'string', 'max:50', 'regex:/^\d{10}(?:-\d{3})?$/'],
         ]);
 
+        $sessionToken = (string) session('checkout_token', '');
+        if ($sessionToken === '' || ! hash_equals($sessionToken, (string) $data['checkout_token'])) {
+            throw ValidationException::withMessages(['cart' => 'Phiên thanh toán đã hết hạn. Vui lòng tải lại trang thanh toán.']);
+        }
+        unset($data['checkout_token']);
+
         $cart = $this->carts->current();
-        if ($cart->items->isEmpty()) throw ValidationException::withMessages(['cart' => 'Giỏ hàng đang trống.']);
+        if ($cart->items->isEmpty()) {
+            throw ValidationException::withMessages(['cart' => 'Giỏ hàng đang trống.']);
+        }
         if ($cart->items->contains(fn ($item) => ! $item->product?->isVisibleOnSite())) {
             throw ValidationException::withMessages(['cart' => 'Giỏ hàng có sản phẩm không còn khả dụng. Vui lòng gỡ sản phẩm đó trước khi thanh toán.']);
         }
 
         $order = DB::transaction(function () use ($cart, $data) {
+            DB::table('carts')->where('id', $cart->id)->lockForUpdate()->first();
+            $cart->refresh();
             $cart->load(['items.product.media', 'items.variant', 'items.product.variants']);
+            if ($cart->items->isEmpty()) {
+                throw ValidationException::withMessages(['cart' => 'Đơn hàng này đã được ghi nhận hoặc giỏ hàng đang trống.']);
+            }
+            $lockedVariants = [];
             foreach ($cart->items as $item) {
                 $variant = $item->variant ?: $item->product->activeVariants()->where('is_active', true)->first();
                 if (! $variant) {
@@ -58,6 +95,7 @@ class CheckoutController extends Controller
                 }
 
                 $stockModel = ProductVariant::query()->lockForUpdate()->findOrFail($variant->id);
+                $lockedVariants[$variant->id] = $stockModel;
                 if ($item->product->track_inventory && ! $item->product->allow_preorder && $stockModel->stock < $item->quantity) {
                     throw ValidationException::withMessages(['cart' => "Sản phẩm {$item->product->name} không còn đủ số lượng."]);
                 }
@@ -65,17 +103,27 @@ class CheckoutController extends Controller
 
             $summary = $this->carts->summary($cart);
             $coupon = $summary['coupon'];
+            $isSePay = $data['payment_method'] === 'sepay_qr';
             $order = Order::create($data + [
                 'order_code' => $this->nextOrderCode(),
                 'order_type' => 'website',
                 'user_id' => auth()->id(),
                 'coupon_id' => $coupon?->id,
-                'status' => 'pending',
+                'status' => $isSePay ? 'pending_payment' : 'pending',
                 'payment_status' => 'unpaid',
+                'payment_provider' => $isSePay ? 'sepay' : null,
+                'payment_code' => $isSePay ? $this->sePay->paymentCode() : null,
+                'payment_public_token' => $isSePay ? $this->sePay->publicToken() : null,
+                'payment_expires_at' => $isSePay
+                    ? now()->addMinutes((int) config('commerce.sepay.payment_timeout_minutes', 20))
+                    : null,
+                'stock_reserved_at' => now(),
                 'subtotal_amount' => $summary['subtotal'],
                 'discount_amount' => $summary['discount'],
                 'shipping_amount' => $summary['shipping'],
                 'total_amount' => $summary['total'],
+                'paid_amount' => 0,
+                'remaining_amount' => $summary['total'],
                 'currency' => 'VND',
                 'requires_invoice' => (bool) ($data['requires_invoice'] ?? false),
             ]);
@@ -86,6 +134,7 @@ class CheckoutController extends Controller
                     throw ValidationException::withMessages(['cart' => "Sản phẩm {$item->product->name} chưa có biến thể khả dụng."]);
                 }
 
+                $stockReserved = $item->product->track_inventory && ! $item->product->allow_preorder;
                 $order->items()->create([
                     'item_type' => 'product',
                     'item_id' => $item->product_id,
@@ -97,17 +146,22 @@ class CheckoutController extends Controller
                     'sku' => $variant?->sku,
                     'image' => $variant?->image ?? $item->product->image_url,
                     'quantity' => $item->quantity,
+                    'stock_reserved' => $stockReserved,
                     'unit_price' => $item->unit_price,
                     'discount_amount' => 0,
                     'total_price' => $item->unit_price * $item->quantity,
                 ]);
-                if ($item->product->track_inventory && ! $item->product->allow_preorder) {
-                    $variant->decrement('stock', $item->quantity);
+                if ($stockReserved) {
+                    $lockedVariants[$variant->id]->decrement('stock', $item->quantity);
                 }
-                $item->product->increment('sold_count', $item->quantity);
             }
 
-            $order->statusHistories()->create(['to_status' => 'pending', 'note' => 'Khách hàng tạo đơn hàng.']);
+            $order->statusHistories()->create([
+                'to_status' => $order->status,
+                'note' => $order->payment_method === 'sepay_qr'
+                    ? 'Khách hàng tạo đơn; tồn kho đã được giữ trong khi chờ thanh toán SePay.'
+                    : 'Khách hàng tạo đơn, đang chờ cửa hàng xác nhận.',
+            ]);
             if ($coupon) {
                 $coupon->increment('used_count');
                 DB::table('coupon_usages')->insert(['coupon_id' => $coupon->id, 'order_id' => $order->id, 'user_id' => auth()->id(), 'discount_amount' => $summary['discount'], 'created_at' => now(), 'updated_at' => now()]);
@@ -118,26 +172,88 @@ class CheckoutController extends Controller
             return $order;
         });
 
+        session()->forget('checkout_token');
         session(['recent_order_id' => $order->id]);
+        $redirect = $order->payment_method === 'sepay_qr'
+            ? route('checkout.payment', $order->payment_public_token)
+            : route('checkout.success', $order->order_code);
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Đặt hàng thành công.',
+                'message' => $order->payment_method === 'sepay_qr'
+                    ? 'Đã tạo đơn. Vui lòng quét QR để thanh toán.'
+                    : 'Đặt hàng thành công.',
                 'order_code' => $order->order_code,
-                'redirect' => route('checkout.success', $order->order_code),
+                'redirect' => $redirect,
             ], 201);
         }
-        return redirect()->route('checkout.success', $order->order_code);
+
+        return redirect()->to($redirect);
     }
 
-    public function success(string $code): View
+    public function payment(string $publicToken): View
+    {
+        $order = Order::query()
+            ->where('payment_public_token', $publicToken)
+            ->where('payment_provider', 'sepay')
+            ->with('items')
+            ->firstOrFail();
+        $this->expiration->expire($order);
+        $order->refresh();
+
+        return view('frontend.checkout.payment', [
+            'order' => $order,
+            'sePay' => config('commerce.sepay', []),
+            'qrUrl' => $this->sePay->qrUrl($order),
+        ]);
+    }
+
+    public function paymentStatus(string $publicToken): JsonResponse
+    {
+        $order = Order::query()
+            ->where('payment_public_token', $publicToken)
+            ->where('payment_provider', 'sepay')
+            ->firstOrFail();
+        $this->expiration->expire($order);
+        $order->refresh();
+
+        $state = match (true) {
+            $order->payment_status === 'paid' => 'paid',
+            $order->status === 'payment_expired' => 'expired',
+            default => 'waiting',
+        };
+
+        return response()->json([
+            'status' => $state,
+            'payment_status' => $order->payment_status,
+            'paid_at' => $order->paid_at?->toIso8601String(),
+            'expires_at' => $order->payment_expires_at?->toIso8601String(),
+            'redirect' => $state === 'paid'
+                ? route('checkout.success', ['code' => $order->order_code, 'token' => $order->payment_public_token])
+                : null,
+        ]);
+    }
+
+    public function success(Request $request, string $code): View
     {
         $order = Order::query()->where('order_code', $code)->with('items')->firstOrFail();
-        abort_unless(session('recent_order_id') === $order->id || (auth()->check() && $order->user_id === auth()->id()), 403);
-        return view('frontend.checkout.success', compact('order'));
+        $publicToken = (string) $request->query('token', '');
+        $hasPublicToken = $publicToken !== ''
+            && filled($order->payment_public_token)
+            && hash_equals((string) $order->payment_public_token, $publicToken);
+        abort_unless(
+            session('recent_order_id') === $order->id
+                || (auth()->check() && $order->user_id === auth()->id())
+                || $hasPublicToken,
+            403,
+        );
+
+        return view('frontend.checkout.success', [
+            'order' => $order,
+        ]);
     }
 
     private function nextOrderCode(): string
     {
-        return 'DH-'.now()->format('ymd').'-'.str_pad((string) (Order::withTrashed()->whereDate('created_at', today())->count() + 1), 4, '0', STR_PAD_LEFT);
+        return 'RHEA-'.now()->format('ymd').'-'.Str::upper(substr((string) Str::ulid(), -6));
     }
 }

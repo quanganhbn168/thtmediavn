@@ -32,6 +32,16 @@
                     <div class="alert alert-light border mb-0 small">
                         <i class="bi bi-aspect-ratio me-1 text-primary"></i><strong>Chuẩn slider chính trang chủ: 1920 × 720 px</strong> (tỷ lệ 8:3). Nội dung chữ được website đặt ở bên trái, nên để sản phẩm/người mẫu vào khoảng 45% bên phải của ảnh và không chèn chữ trực tiếp vào ảnh.
                     </div>
+                    <hr class="my-4">
+                    <x-image-upload
+                        name="mobile_image"
+                        label="Ảnh riêng cho điện thoại (khuyến nghị)"
+                        placeholder="Chọn ảnh dọc cho màn hình nhỏ"
+                        :width="750"
+                    />
+                    <div class="alert alert-light border mb-0 small">
+                        <i class="bi bi-phone me-1 text-primary"></i><strong>Kích thước đề xuất: 750 × 950 px.</strong> Nếu để trống, website sẽ dùng ảnh desktop và tự căn lại.
+                    </div>
                 </div>
             </div>
         </div>

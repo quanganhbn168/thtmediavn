@@ -15,6 +15,10 @@
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div><h2 class="h4 mb-1">{{ $order->order_code }}</h2><span class="text-muted">{{ $order->created_at->format('d/m/Y H:i') }}</span></div>
+    <div class="d-flex gap-2"><span class="badge text-bg-primary fs-6">{{ $statuses[$order->status] ?? $order->status }}</span><span class="badge text-bg-{{ $order->payment_status === 'paid' ? 'success' : ($order->payment_status === 'partial' ? 'warning' : 'secondary') }} fs-6">{{ $paymentStatuses[$order->payment_status] ?? $order->payment_status }}</span></div>
+</div>
 <div class="row g-3">
     <div class="col-lg-8">
         <x-card type="primary" :outline="true" title="Thông tin đơn hàng" :collapsible="true">
@@ -75,12 +79,27 @@
     </div>
 
     <div class="col-lg-4">
+        <x-card type="success" :outline="true" title="Thanh toán" :collapsible="true" class="mb-3">
+            @php($methodLabel = \App\Services\PaymentService::METHODS[$order->payment_method] ?? $order->payment_method)
+            <dl class="mb-0">
+                <div class="d-flex justify-content-between gap-3 py-1"><dt>Phương thức</dt><dd class="text-end mb-0">{{ $methodLabel }}</dd></div>
+                <div class="d-flex justify-content-between gap-3 py-1"><dt>Trạng thái</dt><dd class="mb-0 fw-bold">{{ $paymentStatuses[$order->payment_status] ?? $order->payment_status }}</dd></div>
+                @if($order->payment_code)<div class="d-flex justify-content-between gap-3 py-1"><dt>Mã thanh toán</dt><dd class="mb-0"><code>{{ $order->payment_code }}</code></dd></div>@endif
+                <div class="d-flex justify-content-between gap-3 py-1"><dt>Cần thu</dt><dd class="mb-0">{{ number_format((float)$order->total_amount,0,',','.') }}₫</dd></div>
+                <div class="d-flex justify-content-between gap-3 py-1"><dt>Đã nhận</dt><dd class="mb-0 text-success fw-bold">{{ number_format((float)$order->paid_amount,0,',','.') }}₫</dd></div>
+                @if($order->paid_at)<div class="d-flex justify-content-between gap-3 py-1"><dt>Thời gian</dt><dd class="mb-0">{{ $order->paid_at->format('d/m/Y H:i:s') }}</dd></div>@endif
+            </dl>
+            @foreach($order->paymentTransactions as $transaction)
+                <a class="btn btn-sm btn-outline-primary mt-3" href="{{ route('admin.payment-transactions.show', $transaction) }}"><i class="bi bi-receipt me-1"></i>Xem giao dịch SePay</a>
+            @endforeach
+            <p class="small text-muted mt-3 mb-0">Trạng thái thanh toán được tính từ các phiếu thu hoàn tất, không chỉnh trực tiếp trên đơn hàng.</p>
+        </x-card>
+
         <x-card type="info" :outline="true" title="Xử lý đơn hàng" :collapsible="true">
             <form action="{{ route('admin.orders.update', $order) }}" method="post">
                 @csrf
                 @method('PUT')
                 <x-select name="status" label="Trạng thái đơn" :options="$statuses" :selected="$order->status" />
-                <x-select name="payment_status" label="Thanh toán" :options="$paymentStatuses" :selected="$order->payment_status" />
                 <x-select name="assigned_to" label="Nhân viên phụ trách" :options="$users" :selected="$order->assigned_to" />
                 <x-textarea name="admin_note" label="Ghi chú nội bộ" :value="$order->admin_note" rows="5" />
                 <button class="btn btn-primary mt-2">Cập nhật đơn hàng</button>

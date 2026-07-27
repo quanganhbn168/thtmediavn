@@ -17,8 +17,6 @@
     icon="bi-wallet2"
     :create-url="route('admin.payments.create')"
     create-label="Thêm giao dịch"
-    resource="payment"
-    bulk-delete-warning="Xóa giao dịch sẽ làm thay đổi công nợ đơn hàng liên quan."
 >
     <x-slot:filters>
         <form action="{{ route('admin.payments.index') }}" method="GET" class="row g-2 align-items-end">
@@ -62,7 +60,6 @@
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
-                    <th data-select-column class="text-center" style="width:48px"><input type="checkbox" class="form-check-input" data-check-all aria-label="Chọn tất cả"></th>
                     <th>Mã giao dịch</th>
                     <th>Đơn hàng</th>
                     <th>Số tiền</th>
@@ -75,10 +72,10 @@
             <tbody>
                 @forelse($payments as $payment)
                     <tr data-record-id="{{ $payment->id }}">
-                        <td data-select-column class="text-center"><input form="admin-bulk-payment-form" type="checkbox" name="ids[]" value="{{ $payment->id }}" class="form-check-input" data-check-item aria-label="Chọn giao dịch {{ $payment->payment_code }}"></td>
                         <td>
-                            <a href="{{ route('admin.payments.edit', $payment) }}" class="fw-semibold text-decoration-none">{{ $payment->payment_code }}</a>
+                            @if($payment->is_automatic && $payment->transaction)<a href="{{ route('admin.payment-transactions.show', $payment->transaction) }}" class="fw-semibold text-decoration-none">{{ $payment->payment_code }}</a>@else<a href="{{ route('admin.payments.edit', $payment) }}" class="fw-semibold text-decoration-none">{{ $payment->payment_code }}</a>@endif
                             <small class="d-block text-body-secondary">{{ $payment->transaction_id ?? '—' }}</small>
+                            @if($payment->is_automatic)<span class="badge text-bg-info">Tự động · chỉ đọc</span>@endif
                         </td>
                         <td>{{ $payment->order?->order_code ?? '—' }}</td>
                         <td><strong>{{ number_format((float)$payment->amount, 0, ',', '.') }} ₫</strong></td>
@@ -89,14 +86,18 @@
                         <td>{{ $payment->payment_date ? $payment->payment_date->format('d/m/Y H:i') : '—' }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('admin.payments.edit', $payment) }}" class="btn btn-default" title="Chỉnh sửa"><i class="bi bi-pencil-square"></i></a>
-                                <button type="submit" form="delete-payment-{{ $payment->id }}" class="btn btn-default text-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                @if($payment->is_automatic && $payment->transaction)
+                                    <a href="{{ route('admin.payment-transactions.show', $payment->transaction) }}" class="btn btn-default" title="Xem audit"><i class="bi bi-eye"></i></a>
+                                @else
+                                    <a href="{{ route('admin.payments.edit', $payment) }}" class="btn btn-default" title="Chỉnh sửa"><i class="bi bi-pencil-square"></i></a>
+                                    <button type="submit" form="delete-payment-{{ $payment->id }}" class="btn btn-default text-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                @endif
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-5">
+                        <td colspan="7" class="text-center py-5">
                             <div class="admin-empty">
                                 <span><i class="bi bi-wallet2"></i></span>
                                 <h5>Chưa có giao dịch.</h5>
@@ -109,7 +110,7 @@
         </table>
     </div>
 
-    @foreach($payments as $payment)
+    @foreach($payments->where('is_automatic', false) as $payment)
         <form id="delete-payment-{{ $payment->id }}" action="{{ route('admin.payments.destroy', $payment) }}" method="POST" class="d-none" data-admin-delete-form data-delete-title="Xóa giao dịch này?" data-delete-warning="Công nợ đơn hàng liên quan sẽ được đồng bộ lại.">
             @csrf
             @method('DELETE')

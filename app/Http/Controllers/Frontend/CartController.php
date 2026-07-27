@@ -29,6 +29,7 @@ class CartController extends Controller
             'product_id' => ['nullable', 'exists:products,id'],
             'variant_id' => ['nullable', 'exists:product_variants,id'],
             'quantity' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'action' => ['nullable', 'in:add_to_cart,buy_now'],
         ]);
 
         if (empty($data['product_id']) && empty($data['variant_id'])) {
@@ -74,7 +75,21 @@ class CartController extends Controller
 
         $cart = $this->carts->add($product, $variant, (int) ($data['quantity'] ?? 1));
         $summary = $this->carts->summary($cart);
-        if ($request->expectsJson()) return response()->json(['message' => 'Đã thêm sản phẩm vào giỏ hàng.', 'count' => $cart->items->sum('quantity'), 'total' => $summary['total']]);
+        $buyNow = ($data['action'] ?? null) === 'buy_now';
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Đã thêm sản phẩm vào giỏ hàng.',
+                'product_name' => $product->name,
+                'count' => $cart->items->sum('quantity'),
+                'summary' => $summary,
+                'cart_url' => route('cart'),
+                'checkout_url' => route('checkout'),
+                'redirect' => $buyNow ? route('checkout') : null,
+            ]);
+        }
+        if ($buyNow) {
+            return redirect()->route('checkout');
+        }
         return back()->with('success', 'Đã thêm sản phẩm vào giỏ hàng.');
     }
 

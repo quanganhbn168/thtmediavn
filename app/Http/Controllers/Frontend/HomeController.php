@@ -48,6 +48,14 @@ class HomeController extends FrontendController
             ->get()
             ->map(fn (Product $product) => $this->presentProduct($product));
 
+        $testimonials = Testimonial::query()
+            ->where('is_active', true)
+            ->with('media')
+            ->orderBy('sort_order')
+            ->latest('id')
+            ->take(12)
+            ->get();
+
         return view('frontend.home', [
             'heroSlider' => Slider::activeFor(SliderType::HomepageHero),
             'homeCta' => $homePromotionSlider?->items
@@ -77,13 +85,11 @@ class HomeController extends FrontendController
                 ->take(2)
                 ->get(),
             'homePosts' => $this->homeNews(),
-            'testimonials' => Testimonial::query()
-                ->where('is_active', true)
-                ->with('media')
-                ->orderBy('sort_order')
-                ->latest('id')
-                ->take(6)
-                ->get(),
+            'testimonials' => $testimonials->take(6),
+            'beforeAfterTestimonials' => $testimonials
+                ->filter(fn (Testimonial $testimonial): bool => filled($testimonial->getFirstMediaUrl('testimonial_before')) && filled($testimonial->getFirstMediaUrl('testimonial_after')))
+                ->take(3)
+                ->values(),
         ]);
     }
 

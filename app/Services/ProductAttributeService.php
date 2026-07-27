@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ProductAttribute;
+use App\Models\ProductCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,7 +27,13 @@ class ProductAttributeService
 
     public function formContext(ProductAttribute $attribute): array
     {
-        return ['attribute' => $attribute->loadMissing(['values' => fn ($query) => $query->orderBy('sort_order')])];
+        return [
+            'attribute' => $attribute->loadMissing([
+                'values' => fn ($query) => $query->orderBy('sort_order'),
+                'categories',
+            ]),
+            'categories' => ProductCategory::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'),
+        ];
     }
 
     public function create(array $data): ProductAttribute
@@ -34,6 +41,7 @@ class ProductAttributeService
         return DB::transaction(function () use ($data): ProductAttribute {
             $attribute = ProductAttribute::create($this->payload($data));
             $this->syncValues($attribute, (string) ($data['values_text'] ?? ''));
+            $attribute->categories()->sync($this->categoryIds($data));
 
             return $attribute;
         });
@@ -44,6 +52,7 @@ class ProductAttributeService
         DB::transaction(function () use ($attribute, $data): void {
             $attribute->update($this->payload($data));
             $this->syncValues($attribute, (string) ($data['values_text'] ?? ''));
+            $attribute->categories()->sync($this->categoryIds($data));
         });
     }
 
@@ -97,5 +106,15 @@ class ProductAttributeService
 
         $obsoleteValues = $attribute->values()->whereNotIn('slug', array_keys($slugs));
         $obsoleteValues->whereDoesntHave('products')->delete();
+    }
+
+    private function categoryIds(array $data): array
+    {
+        return collect($data['category_ids'] ?? [])
+            ->map(fn ($id): int => (int) $id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

@@ -59,6 +59,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('frontend-forms', fn (Request $request) => Limit::perMinute(5)->by($request->ip().'|'.$request->route()?->getName()));
         RateLimiter::for('admin-login', fn (Request $request) => Limit::perMinute(5)
             ->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
+        RateLimiter::for('sepay-webhook', fn (Request $request) => Limit::perMinute(120)
+            ->by($request->ip()));
 
         View::composer('*', function ($view): void {
             $view->with('website', app(WebsiteSettingsService::class)->all());

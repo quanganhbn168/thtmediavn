@@ -1,11 +1,16 @@
 <?php
+
 namespace App\Http\Requests\Admin\Order;
+
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateOrderRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -16,8 +21,7 @@ class UpdateOrderRequest extends FormRequest
             'customer_email' => ['nullable', 'email', 'max:100'],
             'customer_address' => ['nullable', 'string', 'max:255'],
             'order_type' => ['required', 'string', 'max:50'],
-            'status' => ['required', Rule::in(['pending', 'processing', 'confirmed', 'completed', 'cancelled'])],
-            'payment_status' => ['required', Rule::in(['unpaid', 'partial', 'paid', 'refunded'])],
+            'status' => ['required', Rule::in(['pending_payment', 'pending', 'processing', 'shipping', 'completed', 'cancelled', 'payment_expired'])],
             'subtotal_amount' => ['required', 'numeric', 'min:0'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'total_amount' => ['required', 'numeric', 'min:0'],

@@ -23,7 +23,7 @@
             <div class="col-md-3"><x-select name="method" label="Phương thức" :options="$methods" :selected="old('method')" :required="true" /></div>
             <div class="col-md-3"><x-select name="status" label="Trạng thái" :options="$statuses" :selected="old('status')" :required="true" /></div>
             <div class="col-md-3"><x-input name="payment_date" type="datetime-local" label="Thời gian" /></div>
-            <div class="col-12"><x-textarea name="note" label="Ghi chú" rows="4" /></div>
+            <div class="col-12"><x-textarea name="note" label="Ghi chú / căn cứ ghi nhận" rows="4" required /></div>
         </div>
     </x-card>
 

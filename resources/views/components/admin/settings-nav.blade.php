@@ -3,6 +3,7 @@
         'admin.settings.general' => ['icon' => 'bi-sliders', 'label' => 'Cài đặt chung'],
         'admin.settings.contact' => ['icon' => 'bi-telephone', 'label' => 'Liên hệ'],
         'admin.settings.contact-channels.index' => ['icon' => 'bi-person-lines-fill', 'label' => 'Danh bạ'],
+        'admin.settings.payment' => ['icon' => 'bi-qr-code', 'label' => 'Thanh toán'],
         'admin.settings.seo' => ['icon' => 'bi-search', 'label' => 'SEO'],
         'admin.settings.homepage' => ['icon' => 'bi-house', 'label' => 'Trang chủ'],
         'admin.settings.menu' => ['icon' => 'bi-menu-button-wide', 'label' => 'Menu'],

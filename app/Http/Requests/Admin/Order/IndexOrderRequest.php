@@ -16,10 +16,9 @@ class IndexOrderRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:120'],
-            'status' => ['nullable', Rule::in(['pending', 'processing', 'shipping', 'completed', 'cancelled'])],
+            'status' => ['nullable', Rule::in(['pending_payment', 'pending', 'processing', 'shipping', 'completed', 'cancelled', 'payment_expired'])],
             'payment_status' => ['nullable', Rule::in(['unpaid', 'paid', 'partial', 'refunded'])],
             'per_page' => ['nullable', 'integer', 'in:10,20,25,50'],
         ];
     }
 }
-

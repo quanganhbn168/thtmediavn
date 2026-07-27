@@ -8,12 +8,11 @@ use App\Models\Coupon;
 use App\Models\FlashSale;
 use App\Models\Order;
 use App\Models\Page;
-use App\Models\Payment;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\ProductAttribute;
+use App\Models\ProductCategory;
 use App\Models\ProductOption;
 use App\Models\Slider;
 use App\Models\Subscriber;
@@ -53,7 +52,6 @@ class BulkActionService
         'testimonial' => ['model' => Testimonial::class, 'table' => 'testimonials', 'label' => 'cảm nhận khách hàng', 'actions' => ['activate', 'deactivate', 'delete']],
         'coupon' => ['model' => Coupon::class, 'table' => 'coupons', 'label' => 'mã giảm giá', 'actions' => ['activate', 'deactivate', 'delete']],
         'flash_sale' => ['model' => FlashSale::class, 'table' => 'flash_sales', 'label' => 'flash sale', 'actions' => ['delete']],
-        'payment' => ['model' => Payment::class, 'table' => 'payments', 'label' => 'giao dịch', 'actions' => ['delete']],
         'page' => ['model' => Page::class, 'table' => 'pages', 'label' => 'trang', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
         'contact' => ['model' => Contact::class, 'table' => 'contacts', 'label' => 'tin nhắn', 'actions' => ['duplicate', 'delete']],
         'subscriber' => ['model' => Subscriber::class, 'table' => 'subscribers', 'label' => 'người đăng ký', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],

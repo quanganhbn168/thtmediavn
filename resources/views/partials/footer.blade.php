@@ -37,13 +37,18 @@
                     </div>
                 @endif
                 <div class="col-lg-4 col-md-6">
-                    <h2 class="footer-heading">Nhận ưu đãi mới</h2>
-                    <p class="footer-text">Đăng ký email để nhận thông tin sản phẩm mới và chương trình khuyến mãi.</p>
+                    <h2 class="footer-heading">Nhận ưu đãi qua Zalo</h2>
+                    <p class="footer-text">Nhập số điện thoại để nhận thông tin sản phẩm mới và chương trình khuyến mãi qua Zalo.</p>
+                    @if(session('newsletter_success'))
+                        <p class="small text-white mb-0"><i class="bi bi-check-circle-fill me-1"></i>{{ session('newsletter_success') }}</p>
+                    @endif
                     <form class="newsletter-form mt-3" action="{{ route('newsletter.store') }}" method="post">@csrf
-                        <label class="visually-hidden" for="footer-email">Email</label>
-                        <input class="form-control" id="footer-email" name="email" type="email" placeholder="Nhập email của bạn" required>
-                        <button class="btn btn-primary" type="submit">Đăng ký</button>
+                        <input class="d-none" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+                        <label class="visually-hidden" for="footer-phone">Số điện thoại Zalo</label>
+                        <input class="form-control @error('phone') is-invalid @enderror" id="footer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="{{ old('phone') }}" placeholder="Nhập số điện thoại Zalo" required>
+                        <button class="btn btn-primary" type="submit">Nhận ưu đãi</button>
                     </form>
+                    @error('phone')<div class="small text-warning mt-2">{{ $message }}</div>@enderror
                     <div class="mt-4">
                         <div class="footer-heading mb-2">Liên kết xã hội</div>
                         <div class="social-links">
@@ -61,7 +66,7 @@
                     </div>
                     <div class="mt-4 d-flex flex-wrap gap-2" aria-label="Phương thức thanh toán">
                         <span class="payment-badge">COD</span>
-                        <span class="payment-badge">Chuyển khoản</span>
+                        <span class="payment-badge">VietQR · SePay</span>
                     </div>
                 </div>
             </div>

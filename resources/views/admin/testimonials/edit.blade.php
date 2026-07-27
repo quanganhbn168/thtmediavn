@@ -24,7 +24,12 @@
                     <x-input name="sort_order" type="number" label="Thứ tự" :value="$testimonial->sort_order" min="0" step="1" />
                     <div class="border-top pt-3"><input type="hidden" name="is_active" value="0"><div class="form-check form-switch"><input class="form-check-input cursor-pointer" type="checkbox" role="switch" name="is_active" id="testimonial_is_active" value="1" @checked((bool) old('is_active', $testimonial->is_active))><label class="form-check-label cursor-pointer fw-semibold" for="testimonial_is_active">Hiển thị trên trang chủ</label></div></div>
                 </x-card>
-                <x-card type="secondary" :outline="true" title="Ảnh đại diện" :collapsible="true"><x-image-upload name="avatar" label="Ảnh khách hàng" :existing-url="$testimonial->getFirstMediaUrl('testimonial_avatar') ?: null" placeholder="Tải ảnh đại diện (không bắt buộc)" :width="400" :height="400" /><p class="text-muted small mb-0">Không có ảnh thì website dùng chữ cái đầu của tên.</p></x-card>
+                <x-card type="secondary" :outline="true" title="Ảnh đại diện" :collapsible="true" class="mb-4"><x-image-upload name="avatar" label="Ảnh khách hàng" :existing-url="$testimonial->getFirstMediaUrl('testimonial_avatar') ?: null" placeholder="Tải ảnh đại diện (không bắt buộc)" :width="400" :height="400" /><p class="text-muted small mb-0">Không có ảnh thì website dùng chữ cái đầu của tên.</p></x-card>
+                <x-card type="secondary" :outline="true" title="Feedback trước / sau" :collapsible="true">
+                    <x-image-upload name="before_image" label="Ảnh trước" :existing-url="$testimonial->getFirstMediaUrl('testimonial_before') ?: null" placeholder="Tải ảnh trước khi sử dụng (không bắt buộc)" :width="1200" :height="1500" />
+                    <x-image-upload name="after_image" label="Ảnh sau" :existing-url="$testimonial->getFirstMediaUrl('testimonial_after') ?: null" placeholder="Tải ảnh sau khi sử dụng (không bắt buộc)" :width="1200" :height="1500" />
+                    <p class="text-muted small mb-0">Chỉ tải khi khách đã đồng ý chia sẻ. Nên chụp cùng góc, ánh sáng và khung hình; không dùng lời hứa điều trị hoặc kết quả đảm bảo. Có đủ cả hai ảnh thì trang chủ tự hiện layout kéo so sánh.</p>
+                </x-card>
             </div>
         </div>
         <div class="d-flex flex-wrap justify-content-end gap-2 mt-4 mb-5"><a class="btn btn-default" href="{{ route('admin.testimonials.index') }}"><i class="bi bi-arrow-left me-1"></i>Quay lại</a><button class="btn btn-primary" type="submit"><i class="bi bi-check-lg me-1"></i>Lưu thay đổi</button></div>

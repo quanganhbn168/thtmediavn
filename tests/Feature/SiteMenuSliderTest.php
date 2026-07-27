@@ -89,7 +89,6 @@ class SiteMenuSliderTest extends TestCase
         ]);
         $item->addMedia(UploadedFile::fake()->image('hero.jpg', 1920, 720))
             ->toMediaCollection('slide_image', 'public_media');
-
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('data-home-hero-swiper', false)

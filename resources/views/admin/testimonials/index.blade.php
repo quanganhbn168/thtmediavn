@@ -43,7 +43,7 @@
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     @if($avatar = $testimonial->getFirstMediaUrl('testimonial_avatar'))<img src="{{ $avatar }}" class="rounded-circle object-fit-cover" width="42" height="42" alt="">@else<span class="rounded-circle bg-light text-secondary" style="width:42px;height:42px;display:inline-grid;place-items:center"><i class="bi bi-person"></i></span>@endif
-                                    <span><a class="fw-semibold text-decoration-none" href="{{ route('admin.testimonials.edit', $testimonial) }}">{{ $testimonial->name }}</a><small class="d-block text-muted">{{ $testimonial->label ?: 'Không có nhãn phụ' }} · Thứ tự {{ $testimonial->sort_order }}</small></span>
+                                    <span><a class="fw-semibold text-decoration-none" href="{{ route('admin.testimonials.edit', $testimonial) }}">{{ $testimonial->name }}</a><small class="d-block text-muted">{{ $testimonial->label ?: 'Không có nhãn phụ' }} · Thứ tự {{ $testimonial->sort_order }} @if($testimonial->getFirstMediaUrl('testimonial_before') && $testimonial->getFirstMediaUrl('testimonial_after')) · <span class="text-primary fw-semibold">Có ảnh trước / sau</span>@endif</small></span>
                                 </div>
                             </td>
                             <td><span class="text-body-secondary">{{ Str::limit($testimonial->content, 110) }}</span></td>

@@ -23,6 +23,7 @@ class StoreSliderItemRequest extends FormRequest
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['required', 'boolean'],
             'image' => ['required', 'string', 'max:500'],
+            'mobile_image' => ['nullable', 'string', 'max:500'],
         ];
 
         return $this->applyTranslatableRules($rules, [

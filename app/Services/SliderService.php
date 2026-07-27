@@ -76,6 +76,7 @@ class SliderService
 
         foreach ($slider->items as $item) {
             $item->clearMediaCollection('slide_image');
+            $item->clearMediaCollection('slide_image_mobile');
         }
 
         $slider->delete();

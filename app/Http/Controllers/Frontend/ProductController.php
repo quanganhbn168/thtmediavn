@@ -12,6 +12,7 @@ use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class ProductController extends FrontendController
@@ -38,6 +39,9 @@ class ProductController extends FrontendController
         $search = trim((string) ($data['q'] ?? ''));
         $categoryIds = $category ? $this->resolveCategoryScopeIds($category, false) : [];
         $templateCategoryIds = $category ? $this->resolveCategoryScopeIds($category, true) : [];
+        if ($category !== '' && empty($categoryIds)) {
+            abort(404);
+        }
 
         $query = Product::query()
             ->where('is_active', true)
@@ -115,16 +119,22 @@ class ProductController extends FrontendController
 
         $facetProductIds = $facetQuery->pluck('id');
 
+        $categories = $this->categoriesForView();
+        $brands = Brand::query()
+            ->where('is_active', true)
+            ->whereHas('products', fn (Builder $query) => $query->where('is_active', true)->visibleOnSite())
+            ->withCount(['products' => fn (Builder $query) => $query->whereIn('products.id', $facetProductIds)])
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+        $optionGroups = $this->scopeOptionGroups($facetProductIds, $templateCategoryIds);
+        $attributeGroups = $this->scopeAttributeGroups($facetProductIds, $templateCategoryIds);
+
         return view('frontend.products.index', [
             'products' => $products,
-            'categories' => $this->categoriesForView(),
-            'brands' => Brand::query()
-                ->where('is_active', true)
-                ->whereHas('products', fn (Builder $query) => $query->where('is_active', true)->visibleOnSite())
-                ->orderBy('name')
-                ->get(['name', 'slug']),
-            'optionGroups' => $this->scopeOptionGroups($facetProductIds, $templateCategoryIds),
-            'attributeGroups' => $this->scopeAttributeGroups($facetProductIds, $templateCategoryIds),
+            'categories' => $categories,
+            'brands' => $brands,
+            'optionGroups' => $optionGroups,
+            'attributeGroups' => $attributeGroups,
             'activeCategory' => $category,
             'searchTerm' => $search,
             'activeBrand' => $brand,
@@ -133,6 +143,15 @@ class ProductController extends FrontendController
             'activeOptionValues' => $selectedOptionValues,
             'activeAttributeValues' => $selectedAttributeValues,
             'sort' => $data['sort'] ?? 'featured',
+            'quickFilters' => $this->quickFilters($attributeGroups, $selectedAttributeValues, $request),
+            'activeFilterChips' => $this->activeFilterChips(
+                $request,
+                $categories,
+                $brands,
+                $optionGroups,
+                $attributeGroups,
+                $data,
+            ),
         ]);
     }
 
@@ -223,7 +242,7 @@ class ProductController extends FrontendController
     {
         $result = [];
 
-        foreach ($raw as $ids) {
+        foreach ($raw as $groupId => $ids) {
             if (! is_array($ids)) {
                 continue;
             }
@@ -238,7 +257,7 @@ class ProductController extends FrontendController
             );
 
             if ($normalized) {
-                $result[] = $normalized;
+                $result[(int) $groupId] = $normalized;
             }
         }
 
@@ -333,10 +352,12 @@ class ProductController extends FrontendController
             ->with(['values' => function ($q) use ($hasFacetProducts, $facetProductIds) {
                 if ($hasFacetProducts) {
                     $q->whereHas('variants', fn (Builder $variantQuery) => $variantQuery->whereHas('product', fn (Builder $productQuery) => $productQuery->whereIn('products.id', $facetProductIds)))
-                        ->orderBy('sort_order');
-                } else {
-                    $q->orderBy('sort_order');
+                        ->withCount(['variants as products_count' => fn (Builder $variantQuery) => $variantQuery
+                            ->whereHas('product', fn (Builder $productQuery) => $productQuery->whereIn('products.id', $facetProductIds))]);
                 }
+
+                $q->when(! $hasFacetProducts, fn ($valueQuery) => $valueQuery->withCount(['variants as products_count']))
+                    ->orderBy('sort_order');
             }])
             ->orderBy('sort_order')
             ->get();
@@ -367,12 +388,159 @@ class ProductController extends FrontendController
             ->with(['values' => function ($q) use ($facetProductIds, $hasFacetProducts) {
                 if ($hasFacetProducts) {
                     $q->whereHas('products', fn (Builder $productQuery) => $productQuery->whereIn('products.id', $facetProductIds))
-                        ->orderBy('sort_order');
-                } else {
-                    $q->orderBy('sort_order');
+                        ->withCount(['products' => fn (Builder $productQuery) => $productQuery->whereIn('products.id', $facetProductIds)]);
                 }
+
+
+                $q->when(! $hasFacetProducts, fn ($valueQuery) => $valueQuery->withCount('products'))
+                    ->orderBy('sort_order');
             }])
             ->orderBy('name')
             ->get();
+    }
+
+    private function quickFilters(Collection $attributeGroups, array $selectedAttributeValues, Request $request): Collection
+    {
+        $definitions = [
+            ['label' => 'Da dầu', 'attribute' => 'loai-da', 'slugs' => ['da-dau'], 'keyword' => 'da dầu'],
+            ['label' => 'Da khô', 'attribute' => 'loai-da', 'slugs' => ['da-kho'], 'keyword' => 'da khô'],
+            ['label' => 'Da nhạy cảm', 'attribute' => 'loai-da', 'slugs' => ['da-nhay-cam'], 'keyword' => 'da nhạy cảm'],
+            ['label' => 'Da mụn', 'attribute' => 'van-de', 'slugs' => ['mun'], 'keyword' => 'mụn'],
+            ['label' => 'Xỉn màu', 'attribute' => 'van-de', 'slugs' => ['xin-mau', 'sang-da'], 'keyword' => 'xỉn màu'],
+            ['label' => 'Phục hồi', 'attribute' => 'van-de', 'slugs' => ['phuc-hoi', 'hang-rao-da-suy-yeu'], 'keyword' => 'phục hồi'],
+            ['label' => 'Chống lão hóa', 'attribute' => 'van-de', 'slugs' => ['lao-hoa'], 'keyword' => 'lão hóa'],
+        ];
+
+        return collect($definitions)->map(function (array $definition) use ($attributeGroups, $selectedAttributeValues, $request): array {
+            $attribute = $attributeGroups->firstWhere('slug', $definition['attribute']);
+            $value = $attribute?->values?->first(fn ($item) => in_array($item->slug, $definition['slugs'], true));
+
+            if ($attribute && $value) {
+                $active = in_array((int) $value->id, $selectedAttributeValues[(int) $attribute->id] ?? [], true);
+
+                return [
+                    'label' => $definition['label'],
+                    'count' => (int) ($value->products_count ?? 0),
+                    'active' => $active,
+                    'url' => $active
+                        ? $this->catalogUrlWithout($request, 'attribute_values', (int) $attribute->id, (int) $value->id)
+                        : $this->catalogUrlWithAttribute($request, (int) $attribute->id, (int) $value->id),
+                ];
+            }
+
+            $query = $request->query();
+            unset($query['page'], $query['attribute_values']);
+            $query['q'] = $definition['keyword'];
+
+            return [
+                'label' => $definition['label'],
+                'count' => null,
+                'active' => trim((string) $request->query('q')) === $definition['keyword'],
+                'url' => route('catalog', $query),
+            ];
+        });
+    }
+
+    private function activeFilterChips(
+        Request $request,
+        Collection $categories,
+        Collection $brands,
+        Collection $optionGroups,
+        Collection $attributeGroups,
+        array $data,
+    ): Collection {
+        $chips = collect();
+        $category = trim((string) ($data['category'] ?? ''));
+        $brand = trim((string) ($data['brand'] ?? ''));
+
+        if ($category !== '') {
+            $label = data_get($categories->firstWhere('slug', $category), 'title', $category);
+            $chips->push(['label' => 'Loại: '.$label, 'url' => $this->catalogUrlWithout($request, 'category')]);
+        }
+        if ($brand !== '') {
+            $label = $brands->firstWhere('slug', $brand)?->name ?? $brand;
+            $chips->push(['label' => 'Thương hiệu: '.$label, 'url' => $this->catalogUrlWithout($request, 'brand')]);
+        }
+        if (filled($data['q'] ?? null)) {
+            $chips->push(['label' => 'Từ khóa: '.$data['q'], 'url' => $this->catalogUrlWithout($request, 'q')]);
+        }
+
+        $priceLabels = [
+            'under-100' => 'Dưới 100.000₫',
+            '100-300' => '100.000₫–300.000₫',
+            '300-500' => '300.000₫–500.000₫',
+            'over-500' => 'Trên 500.000₫',
+        ];
+        if (filled($data['price'] ?? null)) {
+            $chips->push(['label' => $priceLabels[$data['price']] ?? $data['price'], 'url' => $this->catalogUrlWithout($request, 'price')]);
+        }
+        if (filled($data['stock'] ?? null)) {
+            $chips->push([
+                'label' => $data['stock'] === 'preorder' ? 'Nhận đặt trước' : 'Còn hàng',
+                'url' => $this->catalogUrlWithout($request, 'stock'),
+            ]);
+        }
+
+        foreach ($optionGroups as $group) {
+            foreach ($data['option_values'][$group->id] ?? [] as $valueId) {
+                $value = $group->values->firstWhere('id', (int) $valueId);
+                if ($value) {
+                    $chips->push([
+                        'label' => $group->name.': '.$value->value,
+                        'url' => $this->catalogUrlWithout($request, 'option_values', (int) $group->id, (int) $value->id),
+                    ]);
+                }
+            }
+        }
+
+        foreach ($attributeGroups as $group) {
+            foreach ($data['attribute_values'][$group->id] ?? [] as $valueId) {
+                $value = $group->values->firstWhere('id', (int) $valueId);
+                if ($value) {
+                    $chips->push([
+                        'label' => $group->name.': '.$value->value,
+                        'url' => $this->catalogUrlWithout($request, 'attribute_values', (int) $group->id, (int) $value->id),
+                    ]);
+                }
+            }
+        }
+
+        return $chips;
+    }
+
+    private function catalogUrlWithAttribute(Request $request, int $attributeId, int $valueId): string
+    {
+        $query = $request->query();
+        unset($query['page']);
+        $values = array_map('intval', (array) data_get($query, "attribute_values.{$attributeId}", []));
+        $query['attribute_values'][$attributeId] = array_values(array_unique([...$values, $valueId]));
+
+        return route('catalog', $query);
+    }
+
+    private function catalogUrlWithout(Request $request, string $key, ?int $groupId = null, ?int $valueId = null): string
+    {
+        $query = $request->query();
+        unset($query['page']);
+
+        if ($groupId === null) {
+            unset($query[$key]);
+            return route('catalog', $query);
+        }
+
+        $values = array_values(array_filter(
+            array_map('intval', (array) data_get($query, "{$key}.{$groupId}", [])),
+            fn (int $id): bool => $id !== $valueId,
+        ));
+        if ($values) {
+            $query[$key][$groupId] = $values;
+        } else {
+            unset($query[$key][$groupId]);
+            if (empty($query[$key])) {
+                unset($query[$key]);
+            }
+        }
+
+        return route('catalog', $query);
     }
 }

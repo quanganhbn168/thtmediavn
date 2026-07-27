@@ -23,6 +23,8 @@ class UpdateSliderItemRequest extends FormRequest
             'is_active' => ['required', 'boolean'],
             'image' => ['nullable', 'string', 'max:500'],
             'image_remove' => ['nullable', 'boolean'],
+            'mobile_image' => ['nullable', 'string', 'max:500'],
+            'mobile_image_remove' => ['nullable', 'boolean'],
         ];
 
         return $this->applyTranslatableRules($rules, [

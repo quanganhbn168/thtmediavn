@@ -29,9 +29,10 @@
                         <span class="product-price fs-4" data-quick-price></span>
                         <span class="product-old-price" data-quick-old-price></span>
                     </div>
-                    <p class="text-muted small">Sản phẩm mẫu trong bộ giao diện. Kết nối dữ liệu thực tế từ model Product của dự án.</p>
+                    <p class="text-muted small">Xem nhanh thông tin và thêm sản phẩm vào giỏ. Chi tiết thành phần, cách dùng và lưu ý có tại trang sản phẩm.</p>
                     <div class="d-flex gap-2 mt-2">
                         <button class="btn btn-primary flex-grow-1" type="button" data-add-cart data-product-id="" data-variant-id="" data-product-name="Sản phẩm"><i class="bi bi-bag-plus me-2"></i>Thêm vào giỏ</button>
+                        <a class="btn btn-primary flex-grow-1 d-none" href="{{ route('catalog') }}" data-quick-select-variant><i class="bi bi-sliders me-2"></i>Chọn phân loại</a>
                         <button class="btn btn-outline-primary btn-icon" type="button" data-wishlist="" aria-label="Yêu thích"><i class="bi bi-heart"></i></button>
                     </div>
                 </div>
@@ -39,3 +40,16 @@
         </div>
     </div>
 </div>
+
+<aside class="cart-confirmation" data-cart-confirmation aria-live="polite" aria-hidden="true">
+    <button class="cart-confirmation__close" type="button" data-cart-confirmation-close aria-label="Đóng"><i class="bi bi-x-lg"></i></button>
+    <div class="cart-confirmation__icon"><i class="bi bi-check2"></i></div>
+    <div>
+        <strong>Đã thêm vào giỏ</strong>
+        <p data-cart-confirmation-name>Sản phẩm</p>
+        <div class="cart-confirmation__actions">
+            <a href="{{ route('cart') }}">Xem giỏ hàng</a>
+            <a href="{{ route('checkout') }}">Thanh toán ngay</a>
+        </div>
+    </div>
+</aside>

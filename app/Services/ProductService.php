@@ -3,15 +3,15 @@
 namespace App\Services;
 
 use App\Models\Brand;
-use App\Models\ProductAttribute;
 use App\Models\Product;
+use App\Models\ProductAttribute;
 use App\Models\ProductCategory;
 use App\Models\ProductOption;
 use App\Models\ProductOptionValue;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ProductService
 {
@@ -54,13 +54,16 @@ class ProductService
 
     public function formContext(Product $product): array
     {
+        $categoryModels = ProductCategory::query()->where('is_active', true)->orderBy('name')->get(['id', 'parent_id', 'name']);
+
         return [
             'product' => $product->loadMissing('attributeValues'),
-            'categories' => ProductCategory::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'),
+            'categories' => $categoryModels->pluck('name', 'id'),
+            'categoryFilterScopes' => $this->categoryFilterScopes($categoryModels),
             'brands' => Brand::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'),
             'options' => ProductOption::query()->with('values')->where('is_active', true)->orderBy('sort_order')->get(),
             'filterAttributes' => ProductAttribute::query()
-                ->with(['values' => fn ($query) => $query->orderBy('sort_order')])
+                ->with(['values' => fn ($query) => $query->orderBy('sort_order'), 'categories:id'])
                 ->where('is_active', true)
                 ->whereHas('values')
                 ->orderBy('sort_order')
@@ -68,11 +71,28 @@ class ProductService
         ];
     }
 
+    private function categoryFilterScopes(Collection $categories): array
+    {
+        $byId = $categories->keyBy('id');
+
+        return $categories->mapWithKeys(function (ProductCategory $category) use ($byId): array {
+            $ids = [(int) $category->id];
+            $parentId = $category->parent_id;
+            while ($parentId && $byId->has($parentId)) {
+                $ids[] = (int) $parentId;
+                $parentId = $byId->get($parentId)->parent_id;
+            }
+
+            return [(int) $category->id => $ids];
+        })->all();
+    }
+
     public function create(array $data): Product
     {
         return DB::transaction(function () use ($data): Product {
             $product = Product::create($this->toPayload($data));
             $this->syncDetails($product, $data);
+
             return $product;
         });
     }
@@ -165,8 +185,7 @@ class ProductService
         bool $removeExisting = false,
         mixed $orderInput = null,
         mixed $removedIdsInput = null,
-    ): void
-    {
+    ): void {
         if ($removeExisting) {
             $product->clearMediaCollection('product_images');
         } else {
@@ -212,14 +231,14 @@ class ProductService
                 continue;
             }
 
-            if ($id > 0 && $media->has($id) && !in_array($id, $orderedIds, true)) {
+            if ($id > 0 && $media->has($id) && ! in_array($id, $orderedIds, true)) {
                 $orderedIds[] = $id;
             }
         }
 
         foreach ($media->keys() as $id) {
             $id = (int) $id;
-            if (!in_array($id, $orderedIds, true)) {
+            if (! in_array($id, $orderedIds, true)) {
                 $orderedIds[] = $id;
             }
         }
@@ -237,11 +256,12 @@ class ProductService
             return $value;
         }
 
-        if (!is_string($value) || trim($value) === '') {
+        if (! is_string($value) || trim($value) === '') {
             return [];
         }
 
         $decoded = json_decode($value, true);
+
         return is_array($decoded) ? $decoded : [];
     }
 
@@ -259,8 +279,9 @@ class ProductService
 
         $items = array_values(array_filter(array_map(static function ($value): ?string {
             $value = trim((string) $value);
+
             return $value === '' ? null : $value;
-        }, $items), static fn (?string $value): bool => !blank($value)));
+        }, $items), static fn (?string $value): bool => ! blank($value)));
 
         return array_values(array_unique($items));
     }
@@ -268,6 +289,7 @@ class ProductService
     private function filterOptionIds(array $optionIds): array
     {
         $ids = array_map('intval', $optionIds);
+
         return array_values(array_filter(array_unique($ids), static fn (int $id): bool => $id > 0));
     }
 
@@ -283,6 +305,7 @@ class ProductService
             }
             $manual[] = $row;
         }
+
         return $manual;
     }
 
@@ -301,6 +324,7 @@ class ProductService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -410,6 +434,7 @@ class ProductService
         if ($optionIds === []) {
             return [];
         }
+
         return ProductOptionValue::query()
             ->whereIn('product_option_id', $optionIds)
             ->pluck('value', 'id')
@@ -423,6 +448,7 @@ class ProductService
         foreach ($product->variants as $variant) {
             $existing[$this->variantSignature($variant->values->pluck('id')->all())] = $variant;
         }
+
         return $existing;
     }
 
@@ -442,6 +468,7 @@ class ProductService
             }
             $result = $next;
         }
+
         return $result;
     }
 
@@ -453,6 +480,7 @@ class ProductService
                 $labels[] = $valueLabelById[$valueId];
             }
         }
+
         return $labels === [] ? 'Mặc định' : implode(' / ', $labels);
     }
 
@@ -498,6 +526,7 @@ class ProductService
         $valueIds = array_map('intval', $valueIds);
         sort($valueIds, SORT_NUMERIC);
         $valueIds = array_values(array_unique($valueIds));
+
         return implode('-', $valueIds);
     }
 
@@ -506,18 +535,20 @@ class ProductService
         $base = trim((string) ($seedSku ?: $product->slug ?: $product->name));
         $base = Str::upper(Str::substr(Str::slug($base, '-'), 0, 36));
         if ($base === '') {
-            $base = 'SP-' . $product->id;
+            $base = 'SP-'.$product->id;
         }
+
         return $base;
     }
 
     private function buildAutoVariantSku(string $baseSku, array $valueIds, int $index): string
     {
         $suffix = $valueIds === [] ? "DEFAULT-{$index}" : implode('-', array_map('strval', $valueIds));
-        $sku = $baseSku . '-' . $suffix;
+        $sku = $baseSku.'-'.$suffix;
         if (strlen($sku) > 100) {
-            return $baseSku . '-' . strtoupper(Str::substr(sha1($sku), 0, 8));
+            return $baseSku.'-'.strtoupper(Str::substr(sha1($sku), 0, 8));
         }
+
         return $sku;
     }
 
@@ -544,12 +575,14 @@ class ProductService
     private function extractValueIds(array $raw): array
     {
         $ids = array_map('intval', $raw);
+
         return array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
     }
 
     private function nullIfBlank(?string $value): ?string
     {
         $value = trim((string) $value);
+
         return $value === '' ? null : $value;
     }
 
@@ -558,6 +591,7 @@ class ProductService
         if ($value === null || $value === '') {
             return null;
         }
+
         return (int) $value;
     }
 
@@ -569,6 +603,7 @@ class ProductService
         if (! is_numeric((string) $value)) {
             return null;
         }
+
         return (float) $value;
     }
 }

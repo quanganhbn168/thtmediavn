@@ -45,5 +45,9 @@ class SliderItem extends Model implements HasMedia
         $this->addMediaCollection('slide_image')
             ->singleFile()
             ->useDisk('public_media');
+
+        $this->addMediaCollection('slide_image_mobile')
+            ->singleFile()
+            ->useDisk('public_media');
     }
 }

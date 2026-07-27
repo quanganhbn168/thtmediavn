@@ -28,7 +28,7 @@ class Product extends Model implements HasMedia
 
     public function isVisibleOnSite(): bool
     {
-        return $this->is_active;
+        return $this->is_active && ! $this->trashed();
     }
 
     public function category(): BelongsTo

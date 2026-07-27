@@ -47,7 +47,7 @@
                     <h2 class="h4 mt-4">3. Duy trì chống nắng hằng ngày</h2>
                     <p>Chống nắng là bước nền tảng để bảo vệ kết quả của toàn bộ quy trình. Nên thoa đủ lượng, chọn chỉ số phù hợp và thoa lại khi hoạt động ngoài trời hoặc tiếp xúc ánh sáng kéo dài.</p>
                     <div class="alert alert-light border mt-4 mb-0">
-                        Nội dung này là dữ liệu mẫu cho giao diện. Khi triển khai, thay bằng bài viết do đội nội dung biên soạn và kiểm duyệt.
+                        Nội dung bài viết đang được cập nhật.
                     </div>
                 </div>
             </div>

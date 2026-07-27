@@ -73,7 +73,7 @@
                         <p class="text-muted mb-3">Các lựa chọn này dùng cho bộ lọc và có thể xuất hiện trong mega menu sản phẩm; không tạo thêm biến thể hay SKU.</p>
                         <div class="row g-3">
                             @foreach($filterAttributes as $attribute)
-                                <div class="col-md-6">
+                                <div class="col-md-6" data-product-filter-attribute data-category-ids='@json($attribute->categories->pluck("id")->values())'>
                                     <div class="border rounded p-3 h-100">
                                         <h3 class="h6 fw-semibold mb-2">{{ $attribute->name }}</h3>
                                         <div class="d-flex flex-wrap gap-2">
@@ -108,7 +108,7 @@
                 <x-card type="primary" :outline="true" title="Cấu hình sản phẩm" :collapsible="true" class="mb-0 product-editor-config">
                     <div class="row g-3">
                         <div class="col-12">
-                            <x-select name="product_category_id" label="Danh mục" :options="$categories" :selected="old('product_category_id')" required />
+                            <x-select id="product_category_id" name="product_category_id" label="Danh mục" :options="$categories" :selected="old('product_category_id')" required />
                         </div>
                         <div class="col-12">
                             <x-select name="brand_id" label="Thương hiệu" :options="$brands" :selected="old('brand_id')" />
@@ -169,4 +169,5 @@
             <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
         </div>
     </form>
+    @include('admin.products._filter-attribute-script')
 @endsection

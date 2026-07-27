@@ -7,7 +7,10 @@ use Illuminate\Validation\Rule;
 
 class StoreProductAttributeRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -18,6 +21,8 @@ class StoreProductAttributeRequest extends FormRequest
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
             'show_in_product_menu' => ['nullable', 'boolean'],
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'exists:product_categories,id'],
         ];
     }
 }

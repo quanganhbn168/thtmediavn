@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subscriber extends Model
 {
-    protected $fillable = ['email', 'is_active'];
+    protected $fillable = ['email', 'phone', 'is_active'];
 
     protected $casts = ['is_active' => 'boolean'];
 }

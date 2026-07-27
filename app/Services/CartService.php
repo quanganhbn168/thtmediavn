@@ -122,9 +122,25 @@ class CartService
         }
         $eligibleSubtotal = $coupon ? $this->eligibleSubtotal($cart, $coupon) : $subtotal;
         $discount = $coupon?->discountFor($eligibleSubtotal) ?? 0;
-        $shipping = $subtotal <= 0 || $subtotal >= 1000000 || $coupon?->type === 'free_shipping' ? 0 : 30000;
+        $shippingFlatFee = max(0, (int) config('commerce.shipping.flat_fee', 30000));
+        $freeShippingThreshold = max(1, (int) config('commerce.shipping.free_threshold', 1000000));
+        $shipping = $subtotal <= 0 || $subtotal >= $freeShippingThreshold || $coupon?->type === 'free_shipping'
+            ? 0
+            : $shippingFlatFee;
+        $freeShippingRemain = max(0, $freeShippingThreshold - $subtotal);
+        $freeShippingPercent = min(100, (int) round($subtotal / $freeShippingThreshold * 100));
 
-        return compact('subtotal', 'discount', 'shipping', 'coupon', 'unavailableItems') + ['total' => max(0, $subtotal - $discount + $shipping)];
+        return compact(
+            'subtotal',
+            'discount',
+            'shipping',
+            'coupon',
+            'unavailableItems',
+            'shippingFlatFee',
+            'freeShippingThreshold',
+            'freeShippingRemain',
+            'freeShippingPercent',
+        ) + ['total' => max(0, $subtotal - $discount + $shipping)];
     }
 
     private function eligibleSubtotal(Cart $cart, Coupon $coupon): float

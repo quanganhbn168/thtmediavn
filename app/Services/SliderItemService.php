@@ -15,6 +15,7 @@ class SliderItemService
     {
         $item = SliderItem::create($this->payload($data, true));
         $this->mediaService->syncSingle($item, 'slide_image', $data['image'] ?? null);
+        $this->mediaService->syncSingle($item, 'slide_image_mobile', $data['mobile_image'] ?? null);
 
         return $item;
     }
@@ -31,6 +32,12 @@ class SliderItemService
             $data['image'] ?? null,
             (bool) ($data['image_remove'] ?? false),
         );
+        $this->mediaService->syncSingle(
+            $item,
+            'slide_image_mobile',
+            $data['mobile_image'] ?? null,
+            (bool) ($data['mobile_image_remove'] ?? false),
+        );
     }
 
     /**
@@ -39,6 +46,7 @@ class SliderItemService
     public function delete(SliderItem $item): void
     {
         $item->clearMediaCollection('slide_image');
+        $item->clearMediaCollection('slide_image_mobile');
         $item->delete();
     }
 

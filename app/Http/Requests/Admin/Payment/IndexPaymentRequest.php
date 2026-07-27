@@ -16,10 +16,9 @@ class IndexPaymentRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:120'],
-            'method' => ['nullable', Rule::in(['cash', 'bank_transfer', 'vnpay', 'momo', 'zalopay'])],
+            'method' => ['nullable', Rule::in(['cash', 'sepay_qr', 'manual_bank_transfer'])],
             'status' => ['nullable', Rule::in(['pending', 'completed', 'failed', 'refunded'])],
             'per_page' => ['nullable', 'integer', 'in:10,25,50'],
         ];
     }
 }
-

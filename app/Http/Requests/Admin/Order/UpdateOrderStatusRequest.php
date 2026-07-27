@@ -15,11 +15,9 @@ class UpdateOrderStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in(['pending', 'processing', 'shipping', 'completed', 'cancelled'])],
-            'payment_status' => ['required', Rule::in(['unpaid', 'partial', 'paid', 'refunded'])],
+            'status' => ['required', Rule::in(['pending_payment', 'pending', 'processing', 'shipping', 'completed', 'cancelled', 'payment_expired'])],
             'assigned_to' => ['nullable', 'exists:users,id'],
             'admin_note' => ['nullable', 'string', 'max:2000'],
         ];
     }
 }
-

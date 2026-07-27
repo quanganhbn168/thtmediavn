@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductAttributeValue;
 use App\Models\ProductCategory;
 use App\Models\Brand;
 use App\Models\Slider;
@@ -71,6 +72,66 @@ class EcommerceSiteTest extends TestCase
         $product = Product::with('brand')->firstOrFail();
         $this->get(route('catalog', ['brand' => $product->brand->slug]))->assertOk()->assertSee($product->name);
         $this->get(route('catalog', ['q' => $product->sku]))->assertOk()->assertSee($product->name);
+    }
+
+    public function test_catalog_keeps_filter_group_keys_and_rejects_an_unknown_category(): void
+    {
+        $value = ProductAttributeValue::query()->whereHas('products')->with('attribute')->firstOrFail();
+
+        $response = $this->get(route('catalog', [
+            'attribute_values' => [$value->product_attribute_id => [$value->id]],
+            'sort' => 'newest',
+        ]))->assertOk()
+            ->assertSee('Đang lọc:')
+            ->assertSee('Mới nhất');
+
+        $html = $response->getContent();
+        $this->assertStringContainsString('name="attribute_values['.$value->product_attribute_id.'][]"', $html);
+        $this->assertMatchesRegularExpression('/name="attribute_values\['.$value->product_attribute_id.'\]\[\]" value="'.$value->id.'"[^>]*checked/', $html);
+
+        $this->get(route('catalog', ['category' => 'danh-muc-khong-ton-tai']))->assertNotFound();
+    }
+
+    public function test_product_cards_require_variant_selection_and_hide_quick_add_when_unavailable(): void
+    {
+        $product = Product::query()->where('is_active', true)->with('variants')->firstOrFail();
+        $baseVariant = $product->variants->firstOrFail();
+        $product->variants()->create([
+            'name' => 'Phân loại kiểm thử',
+            'sku' => 'TEST-VARIANT-'.$product->id,
+            'price' => $baseVariant->price,
+            'stock' => 5,
+            'is_default' => false,
+            'is_active' => true,
+        ]);
+
+        $response = $this->get(route('catalog', ['q' => $product->name]))
+            ->assertOk()
+            ->assertSee('Chọn phân loại');
+        $presented = collect($response->viewData('products')->items())->firstWhere('id', $product->id);
+        $this->assertTrue($presented['requires_variant_selection']);
+        $this->assertFalse($presented['can_quick_add']);
+
+        $product->variants()->where('id', '!=', $baseVariant->id)->update(['is_active' => false]);
+        $product->update(['track_inventory' => true, 'allow_preorder' => false]);
+        $baseVariant->update(['stock' => 0, 'is_active' => true]);
+        $response = $this->get(route('catalog', ['q' => $product->name]))->assertOk()->assertSee('Tạm hết hàng');
+        $this->assertStringNotContainsString('data-add-cart data-product-id="'.$product->id.'"', $response->getContent());
+    }
+
+    public function test_product_detail_has_real_purchase_actions_sticky_bar_and_approved_review_scope(): void
+    {
+        $product = Product::query()->where('is_active', true)->firstOrFail();
+
+        $this->get(route('product.show', $product->slug))
+            ->assertOk()
+            ->assertSee('name="action" value="buy_now"', false)
+            ->assertSee('data-buy-now', false)
+            ->assertSee('product-mobile-buybar', false)
+            ->assertSee('Sản phẩm này dành cho ai?')
+            ->assertSee('Đánh giá được kiểm duyệt')
+            ->assertDontSee('Vui lòng đăng nhập để đánh giá sản phẩm.')
+            ->assertDontSee('nên được đồng bộ với chính sách vận hành thực tế');
     }
 
     public function test_login_and_register_use_the_configured_site_logo(): void
@@ -167,6 +228,39 @@ class EcommerceSiteTest extends TestCase
             'email' => 'tu-van@example.test',
             'subject' => 'Tư vấn chọn sản phẩm',
         ]);
+    }
+
+    public function test_homepage_renders_a_before_after_feedback_card_when_a_customer_has_shared_both_images(): void
+    {
+        Storage::fake('public_media');
+        $homepageSettings = app(HomepageSettings::class);
+        $homepageSettings->homepage_sections = array_values(array_unique([
+            ...$homepageSettings->homepage_sections,
+            'testimonials',
+        ]));
+        $homepageSettings->save();
+
+        $testimonial = Testimonial::query()->create([
+            'name' => 'Minh Anh',
+            'label' => 'Chia sẻ sau 6 tuần',
+            'rating' => 5,
+            'content' => 'Da trông đều màu hơn và cảm giác chăm sóc cũng dễ duy trì hơn.',
+            'sort_order' => 0,
+            'is_active' => true,
+        ]);
+        $before = $testimonial->addMedia(UploadedFile::fake()->image('before.jpg', 1200, 1500))
+            ->toMediaCollection('testimonial_before', 'public_media');
+        $after = $testimonial->addMedia(UploadedFile::fake()->image('after.jpg', 1200, 1500))
+            ->toMediaCollection('testimonial_after', 'public_media');
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Feedback thực tế, xem rõ từng thay đổi')
+            ->assertSee('data-before-after', false)
+            ->assertSee('Kéo thanh so sánh', false)
+            ->assertSee($before->getUrl(), false)
+            ->assertSee($after->getUrl(), false)
+            ->assertSee('Ảnh do khách hàng chia sẻ');
     }
 
     public function test_homepage_advice_section_only_uses_home_post_categories_and_has_a_side_slider(): void

@@ -285,7 +285,7 @@
             <div class="modal-body pt-0">
                 <div class="p-3 rounded-3 bg-soft">
                     <div><strong>Mã khuyến mãi:</strong> FREESHIP</div>
-                    <div class="mt-2"><strong>Điều kiện:</strong> Áp dụng theo cấu hình vận chuyển của cửa hàng. Thay nội dung này bằng chính sách thực tế.</div>
+                    <div class="mt-2"><strong>Điều kiện:</strong> Giá trị đơn hàng và ưu đãi được tính trực tiếp trong giỏ hàng.</div>
                 </div>
             </div>
         </div>
