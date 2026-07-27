@@ -115,7 +115,7 @@ class HomeController extends FrontendController
             ->groupBy('product_category_id');
 
         return $tabCategories
-            ->map(function (ProductCategory $tabCategory) use ($productsByCategory, $limit): ?array {
+            ->map(function (ProductCategory $tabCategory) use ($category, $productsByCategory, $limit): ?array {
                 $products = collect($productsByCategory->get($tabCategory->id, []))
                     ->take($limit)
                     ->map(fn (Product $product) => $this->presentProduct($product))
@@ -127,7 +127,7 @@ class HomeController extends FrontendController
 
                 return [
                     'id' => 'home-category-'.$tabCategory->id,
-                    'name' => $tabCategory->name,
+                    'name' => $tabCategory->is($category) ? 'Tất cả' : $tabCategory->name,
                     'slug' => $tabCategory->slug,
                     'products' => $products,
                 ];
