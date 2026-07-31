@@ -2,9 +2,12 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\ProductCategory;
+use App\Models\ProductOptionValue;
+use App\Rules\LeafCategory;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
 {
@@ -16,7 +19,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_category_id' => ['required', 'exists:product_categories,id'],
+            'product_category_id' => ['required', 'integer', 'exists:product_categories,id', new LeafCategory(ProductCategory::class, 'Danh mục sản phẩm')],
             'brand_id' => ['nullable', 'exists:brands,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => [
@@ -30,6 +33,7 @@ class StoreProductRequest extends FormRequest
             'description' => ['required', 'string'],
             'ingredients' => ['nullable', 'string'],
             'usage' => ['nullable', 'string'],
+            'product_notes' => ['nullable', 'string'],
             'status' => ['required', 'in:active,draft,archived'],
             'variant_selection_mode' => ['required', 'in:combination,options'],
             'track_inventory' => ['nullable', 'boolean'],
@@ -85,6 +89,7 @@ class StoreProductRequest extends FormRequest
                 $hasSalePrice = $salePrice !== null && $salePrice !== '';
                 $variant['price'] = $hasSalePrice ? $salePrice : $listPrice;
                 $variant['compare_price'] = $hasSalePrice ? $listPrice : null;
+
                 return $variant;
             })
             ->values()
@@ -96,10 +101,12 @@ class StoreProductRequest extends FormRequest
     public function after(): array
     {
         return [function ($validator): void {
-            if (!$this->boolean('has_variants')) return;
+            if (! $this->boolean('has_variants')) {
+                return;
+            }
 
             $selectedOptions = collect((array) $this->input('option_ids'))->map(fn ($id) => (int) $id)->filter()->unique();
-            $valueOptions = \App\Models\ProductOptionValue::query()
+            $valueOptions = ProductOptionValue::query()
                 ->whereIn('id', collect((array) $this->input('variants'))->flatMap(fn ($row) => $row['value_ids'] ?? [])->unique())
                 ->pluck('product_option_id', 'id');
             $signatures = [];

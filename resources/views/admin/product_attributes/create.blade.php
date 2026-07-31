@@ -29,7 +29,15 @@
                 </x-card>
                 <x-card type="secondary" :outline="true" title="Áp dụng cho danh mục" :collapsible="true" class="mt-4">
                     <p class="text-muted small">Sản phẩm trong danh mục con sẽ kế thừa bộ lọc của danh mục cha.</p>
-                    <div class="row g-2">@foreach($categories as $categoryId => $categoryName)<div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" name="category_ids[]" value="{{ $categoryId }}" id="attribute_category_{{ $categoryId }}" @checked(in_array($categoryId, old('category_ids', [])))><label class="form-check-label" for="attribute_category_{{ $categoryId }}">{{ $categoryName }}</label></div></div>@endforeach</div>
+                    <x-admin.category-tree-select
+                        id="product_attribute_category_ids"
+                        name="category_ids"
+                        label="Danh mục áp dụng"
+                        :categories="$categories"
+                        :selected="old('category_ids', [])"
+                        :multiple="true"
+                        :active-only="true"
+                    />
                 </x-card>
             </div>
             <div class="col-lg-4">

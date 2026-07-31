@@ -24,8 +24,100 @@
     }
 @endphp
 
-@section('title', $displayName . ' — ' . $website['name'])
-@section('meta_description', $product['name'] . ' chính hãng tại ' . $website['name'])
+@php
+    $schemaProductUrl = route('product.show', ['slug' => $product['slug']]);
+    $schemaImages = $gallery
+        ->filter()
+        ->map(fn (string $image): string => preg_match('/^https?:\/\//i', $image) === 1 ? $image : url($image))
+        ->values()
+        ->all();
+    $schemaVariant = $productModel->variants->firstWhere('id', (int) ($product['variant_id'] ?? 0))
+        ?? $productModel->default_variant;
+    $schemaDescription = trim((string) preg_replace(
+        '/\s+/u',
+        ' ',
+        strip_tags($productModel->seo_description ?: ($productModel->summary ?: $productModel->description))
+    ));
+    $schemaAvailability = match ($product['availability']) {
+        'in_stock' => 'https://schema.org/InStock',
+        'preorder' => 'https://schema.org/PreOrder',
+        default => 'https://schema.org/OutOfStock',
+    };
+    $schemaReviews = $productModel->reviews;
+    $schemaReviewCount = $schemaReviews->count();
+    $schemaAverageRating = $schemaReviewCount > 0 ? (float) $schemaReviews->avg('rating') : null;
+    $productSchema = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        '@id' => $schemaProductUrl.'#product',
+        'name' => $product['name'],
+        'url' => $schemaProductUrl,
+        'image' => $schemaImages ?: null,
+        'description' => $schemaDescription ?: null,
+        'sku' => filled($schemaVariant?->sku) ? $schemaVariant->sku : null,
+        'brand' => $product['brand'] !== 'Không thương hiệu' ? [
+            '@type' => 'Brand',
+            'name' => $product['brand'],
+        ] : null,
+        'offers' => (float) $product['price'] > 0 ? [
+            '@type' => 'Offer',
+            'url' => $schemaProductUrl,
+            'priceCurrency' => 'VND',
+            'price' => round((float) $product['price'], 2),
+            'availability' => $schemaAvailability,
+            'itemCondition' => 'https://schema.org/NewCondition',
+            'seller' => ['@id' => rtrim(url('/'), '/').'#organization'],
+        ] : null,
+        'aggregateRating' => $schemaReviewCount > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => round($schemaAverageRating, 1),
+            'reviewCount' => $schemaReviewCount,
+            'bestRating' => 5,
+            'worstRating' => 1,
+        ] : null,
+    ], static fn (mixed $value): bool => $value !== null && $value !== '');
+    $productBreadcrumbSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => array_values(array_filter([
+            [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => 'Trang chủ',
+                'item' => url('/'),
+            ],
+            [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'Sản phẩm',
+                'item' => route('catalog'),
+            ],
+            filled($product['category']) ? [
+                '@type' => 'ListItem',
+                'position' => 3,
+                'name' => $productModel->category?->name ?: $product['category'],
+                'item' => route('products.by-category', ['category' => $product['category']]),
+            ] : null,
+            [
+                '@type' => 'ListItem',
+                'position' => filled($product['category']) ? 4 : 3,
+                'name' => $displayName,
+                'item' => $schemaProductUrl,
+            ],
+        ])),
+    ];
+@endphp
+
+@section('title', $productModel->seo_title ?: $displayName . ' — ' . $website['name'])
+@section('meta_description', $productModel->seo_description ?: $product['name'] . ' chính hãng tại ' . $website['name'])
+@section('canonical', $schemaProductUrl)
+@section('seo_image', $schemaImages[0] ?? '')
+@section('og_type', 'product')
+
+@push('schemas')
+    <script type="application/ld+json">{!! json_encode($productSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    <script type="application/ld+json">{!! json_encode($productBreadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+@endpush
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('vendor/swiper/swiper-bundle.min.css') }}">
@@ -273,6 +365,9 @@
                 <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#product-information" type="button">Thông tin sản phẩm</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#ingredients" type="button">Thành phần cấu tạo</button></li>
                 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#usage" type="button">Hướng dẫn sử dụng</button></li>
+                @if(filled($productModel->product_notes))
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#product-notes" type="button">Lưu ý về sản phẩm</button></li>
+                @endif
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="product-information">
@@ -311,6 +406,12 @@
                     <h2 class="h4">Hướng dẫn sử dụng</h2>
                     {!! $productModel->usage ?: '<p>Hướng dẫn sử dụng đang được cập nhật.</p>' !!}
                 </div>
+                @if(filled($productModel->product_notes))
+                    <div class="tab-pane fade" id="product-notes">
+                        <h2 class="h4">Lưu ý về sản phẩm</h2>
+                        {!! $productModel->product_notes !!}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

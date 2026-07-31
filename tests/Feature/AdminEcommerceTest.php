@@ -564,6 +564,7 @@ class AdminEcommerceTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Thông tin bán hàng')
+            ->assertSee('Lưu ý về sản phẩm')
             ->assertSee('Sản phẩm có biến thể')
             ->assertSee('Hiển thị ở các khối danh mục trang chủ')
             ->assertSee('Lưu &amp; tạo mới', false)
@@ -580,7 +581,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_can_save_and_continue_creating_a_new_product(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $category = ProductCategory::query()->firstOrFail();
+        $category = ProductCategory::query()->doesntHave('children')->firstOrFail();
         $name = 'Sản phẩm lưu và tạo mới '.Str::uuid();
         $filename = 'product-save-and-create-'.Str::uuid().'.png';
         $temporaryPath = 'uploads/tmp/'.$filename;
@@ -592,6 +593,7 @@ class AdminEcommerceTest extends TestCase
             'product_category_id' => $category->id,
             'name' => $name,
             'description' => '<p>Thông tin sản phẩm.</p>',
+            'product_notes' => '<p>Không dùng khi da đang kích ứng nặng.</p>',
             'status' => 'active',
             'variant_selection_mode' => 'combination',
             'image' => $temporaryPath,
@@ -609,7 +611,10 @@ class AdminEcommerceTest extends TestCase
         $response
             ->assertRedirect(route('admin.products.create'))
             ->assertSessionHasNoErrors();
-        $this->assertDatabaseHas('products', ['name' => $name]);
+        $this->assertDatabaseHas('products', [
+            'name' => $name,
+            'product_notes' => '<p>Không dùng khi da đang kích ứng nặng.</p>',
+        ]);
     }
 
     public function test_product_edit_form_renders_existing_product_cleanly(): void
@@ -620,6 +625,7 @@ class AdminEcommerceTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Thông tin bán hàng')
+            ->assertSee('Lưu ý về sản phẩm')
             ->assertSee('Xem trên website')
             ->assertSee(route('product.show', $product->slug), false)
             ->assertSee('Phân loại để lọc')
@@ -636,7 +642,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_validation_rejects_invalid_sale_price(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $category = ProductCategory::query()->firstOrFail();
+        $category = ProductCategory::query()->doesntHave('children')->firstOrFail();
 
         $this->actingAs($admin, 'admin')->post(route('admin.products.store'), [
             'product_category_id' => $category->id,
@@ -659,7 +665,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_validation_limits_options_and_rejects_duplicate_combinations(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $category = ProductCategory::query()->firstOrFail();
+        $category = ProductCategory::query()->doesntHave('children')->firstOrFail();
         $options = ProductOption::query()->with('values')->get();
 
         while ($options->count() < 4) {

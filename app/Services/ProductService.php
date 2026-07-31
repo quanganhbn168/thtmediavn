@@ -54,12 +54,17 @@ class ProductService
 
     public function formContext(Product $product): array
     {
-        $categoryModels = ProductCategory::query()->where('is_active', true)->orderBy('name')->get(['id', 'parent_id', 'name']);
+        $categoryModels = ProductCategory::query()
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get(['id', 'parent_id', 'name', 'is_active', 'sort_order']);
+        $activeCategoryModels = $categoryModels->where('is_active', true)->values();
 
         return [
             'product' => $product->loadMissing('attributeValues'),
-            'categories' => $categoryModels->pluck('name', 'id'),
-            'categoryFilterScopes' => $this->categoryFilterScopes($categoryModels),
+            'categories' => $categoryModels,
+            'categoryFilterScopes' => $this->categoryFilterScopes($activeCategoryModels),
             'brands' => Brand::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'),
             'options' => ProductOption::query()->with('values')->where('is_active', true)->orderBy('sort_order')->get(),
             'filterAttributes' => ProductAttribute::query()
@@ -124,6 +129,7 @@ class ProductService
             'description' => $data['description'] ?? null,
             'ingredients' => $data['ingredients'] ?? null,
             'usage' => $data['usage'] ?? null,
+            'product_notes' => $data['product_notes'] ?? null,
             'status' => $data['status'] ?? 'active',
             'variant_selection_mode' => $data['variant_selection_mode'] ?? 'combination',
             'track_inventory' => (bool) ($data['track_inventory'] ?? false),

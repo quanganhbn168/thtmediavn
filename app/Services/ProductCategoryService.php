@@ -10,7 +10,10 @@ use Illuminate\Validation\ValidationException;
 
 class ProductCategoryService
 {
-    public function __construct(private readonly ImageService $imageService) {}
+    public function __construct(
+        private readonly ImageService $imageService,
+        private readonly CategoryHierarchyService $categoryHierarchy,
+    ) {}
 
     public function paginate(array $filters): LengthAwarePaginator
     {
@@ -31,12 +34,16 @@ class ProductCategoryService
 
     public function formContext(ProductCategory $category): array
     {
+        $categories = ProductCategory::query()
+            ->withCount('products')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         return [
             'category' => $category,
-            'parents' => ProductCategory::query()
-                ->whereKeyNot($category->id)
-                ->orderBy('name')
-                ->pluck('name', 'id'),
+            'categories' => $categories,
+            'excludedParentIds' => $this->categoryHierarchy->descendantIds($categories, $category->exists ? $category->id : null),
         ];
     }
 

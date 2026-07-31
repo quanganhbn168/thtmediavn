@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Language;
+use App\Models\PostCategory;
+use App\Rules\LeafCategory;
 use App\Traits\HasTranslatableValidation;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -18,7 +20,7 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'post_category_id' => 'required|exists:post_categories,id',
+            'post_category_id' => ['required', 'integer', 'exists:post_categories,id', new LeafCategory(PostCategory::class, 'Danh mục bài viết')],
             'is_featured' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
             'published_at' => 'nullable|date_format:Y-m-d\TH:i',

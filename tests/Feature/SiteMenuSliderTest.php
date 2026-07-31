@@ -10,6 +10,7 @@ use App\Models\ProductCategory;
 use App\Models\Slider;
 use App\Models\SliderItem;
 use App\Models\User;
+use App\Settings\MenuSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -29,9 +30,28 @@ class SiteMenuSliderTest extends TestCase
     {
         $header = $this->menu('Điều hướng chính', 'header', [
             ['Trang chủ mới', '/'],
+            ['Dịch vụ', '/dich-vu', [['Tư vấn', '/tu-van']]],
+        ]);
+        $headerChild = $header->allItems()->whereNotNull('parent_id')->firstOrFail();
+        MenuItem::create([
+            'menu_id' => $header->id,
+            'parent_id' => $headerChild->id,
+            'title' => ['vi' => 'Tư vấn chuyên sâu'],
+            'url' => '/tu-van/chuyen-sau',
+            'sort_order' => 1,
+            'is_active' => true,
         ]);
         $mega = $this->menu('Danh mục mega', 'header', [
             ['Chăm sóc da', '/danh-muc/cham-soc-da', [['Sữa rửa mặt', '/danh-muc/sua-rua-mat']]],
+        ]);
+        $megaChild = $mega->allItems()->whereNotNull('parent_id')->firstOrFail();
+        MenuItem::create([
+            'menu_id' => $mega->id,
+            'parent_id' => $megaChild->id,
+            'title' => ['vi' => 'Sữa rửa mặt dịu nhẹ'],
+            'url' => '/danh-muc/sua-rua-mat-diu-nhe',
+            'sort_order' => 1,
+            'is_active' => true,
         ]);
         $footerOne = $this->menu('Chính sách mua hàng', 'footer', [
             ['Chính sách đổi trả', '/chinh-sach-doi-tra'],
@@ -58,9 +78,13 @@ class SiteMenuSliderTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('Trang chủ mới')
+            ->assertSee('Dịch vụ')
+            ->assertSee('Tư vấn chuyên sâu')
+            ->assertSee('dropdown-submenu-menu', false)
             ->assertSee('data-mega-menu', false)
             ->assertSee('Chăm sóc da')
             ->assertSee('Sữa rửa mặt')
+            ->assertSee('Sữa rửa mặt dịu nhẹ')
             ->assertSee('Chính sách mua hàng')
             ->assertSee('Chính sách đổi trả')
             ->assertSee('Hỗ trợ khách hàng')
@@ -149,6 +173,86 @@ class SiteMenuSliderTest extends TestCase
             'menu_id' => $menu->id,
             'url' => route('content.show', ['domain' => 'danh-muc', 'slug' => $category->slug]),
         ]);
+    }
+
+    public function test_menu_builder_rejects_foreign_items_and_a_fourth_level(): void
+    {
+        $menu = $this->menu('Header kiểm thử', 'header', [
+            ['Cấp 1', '/cap-1'],
+        ]);
+        $root = $menu->allItems()->firstOrFail();
+        $levelTwo = MenuItem::create([
+            'menu_id' => $menu->id,
+            'parent_id' => $root->id,
+            'title' => ['vi' => 'Cấp 2'],
+            'url' => '/cap-2',
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+        $levelThree = MenuItem::create([
+            'menu_id' => $menu->id,
+            'parent_id' => $levelTwo->id,
+            'title' => ['vi' => 'Cấp 3'],
+            'url' => '/cap-3',
+            'sort_order' => 3,
+            'is_active' => true,
+        ]);
+        $levelFour = MenuItem::create([
+            'menu_id' => $menu->id,
+            'parent_id' => $levelThree->id,
+            'title' => ['vi' => 'Cấp 4'],
+            'url' => '/cap-4',
+            'sort_order' => 4,
+            'is_active' => true,
+        ]);
+        $foreignItem = $this->menu('Header khác', 'header', [['Ngoài menu', '/ngoai-menu']])->allItems()->firstOrFail();
+        $admin = User::role('admin')->firstOrFail();
+
+        $this->actingAs($admin, 'admin')->postJson(route('admin.menus.items.order', $menu), [
+            'structure' => [[
+                'id' => $root->id,
+                'children' => [[
+                    'id' => $levelTwo->id,
+                    'children' => [[
+                        'id' => $levelThree->id,
+                        'children' => [['id' => $levelFour->id]],
+                    ]],
+                ]],
+            ]],
+        ])->assertUnprocessable()
+            ->assertJsonPath('message', 'Menu chỉ hỗ trợ tối đa 3 cấp.');
+
+        $this->actingAs($admin, 'admin')->postJson(route('admin.menus.items.order', $menu), [
+            'structure' => [['id' => $foreignItem->id]],
+        ])->assertUnprocessable()
+            ->assertJsonPath('message', 'Phát hiện liên kết không thuộc menu này. Vui lòng tải lại trang.');
+    }
+
+    public function test_menu_settings_require_separate_header_and_mega_menus(): void
+    {
+        $menu = $this->menu('Menu Header duy nhất', 'header', [['Trang chủ', '/']]);
+        $admin = User::role('admin')->firstOrFail();
+
+        $this->actingAs($admin, 'admin')->post(route('admin.settings.menu.update'), [
+            'header_menu_id' => $menu->id,
+            'mega_menu_id' => $menu->id,
+        ])->assertSessionHasErrors('mega_menu_id');
+    }
+
+    public function test_unassigned_menus_are_not_chosen_automatically(): void
+    {
+        $this->menu('Header chưa gán', 'header', [['Chỉ hiện khi được gán', '/chi-hien-khi-duoc-gan']]);
+
+        $settings = app(MenuSettings::class);
+        $settings->header_menu_id = null;
+        $settings->mega_menu_id = null;
+        $settings->footer_menu_1_id = null;
+        $settings->footer_menu_2_id = null;
+        $settings->save();
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertDontSee('Chỉ hiện khi được gán');
     }
 
     private function menu(string $name, string $location, array $items): Menu

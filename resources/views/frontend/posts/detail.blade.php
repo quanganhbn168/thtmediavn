@@ -1,7 +1,69 @@
 @extends('layouts.master')
 
-@section('title', $article['title'] . ' — ' . $website['name'])
-@section('meta_description', $article['excerpt'])
+@php
+    $articleUrl = route('news.show', ['slug' => $article['slug']]);
+    $articleImage = preg_match('/^https?:\/\//i', $article['image']) === 1 ? $article['image'] : url($article['image']);
+    $articleSchema = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        '@id' => $articleUrl.'#article',
+        'mainEntityOfPage' => ['@id' => $articleUrl.'#webpage'],
+        'headline' => $article['title'],
+        'description' => $article['seo_description'] ?: $article['excerpt'],
+        'image' => $articleImage ?: null,
+        'datePublished' => $article['published_at'] ?: null,
+        'dateModified' => $article['modified_at'] ?: $article['published_at'] ?: null,
+        'articleSection' => $article['category_name'] ?: null,
+        'inLanguage' => str_replace('_', '-', app()->getLocale()),
+        'author' => ['@id' => rtrim(url('/'), '/').'#organization'],
+        'publisher' => ['@id' => rtrim(url('/'), '/').'#organization'],
+    ], static fn (mixed $value): bool => $value !== null && $value !== '');
+    $articleBreadcrumbSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => array_values(array_filter([
+            [
+                '@type' => 'ListItem',
+                'position' => 1,
+                'name' => 'Trang chủ',
+                'item' => url('/'),
+            ],
+            [
+                '@type' => 'ListItem',
+                'position' => 2,
+                'name' => 'Tin tức',
+                'item' => route('news.index'),
+            ],
+            $article['category_name'] ? [
+                '@type' => 'ListItem',
+                'position' => 3,
+                'name' => $article['category_name'],
+                'item' => route('content.show', ['domain' => 'tin-tuc', 'slug' => $article['category_slug']]),
+            ] : null,
+            [
+                '@type' => 'ListItem',
+                'position' => $article['category_name'] ? 4 : 3,
+                'name' => $article['title'],
+                'item' => $articleUrl,
+            ],
+        ])),
+    ];
+@endphp
+
+@section('title', $article['seo_title'] ?: $article['title'] . ' — ' . $website['name'])
+@section('meta_description', $article['seo_description'] ?: $article['excerpt'])
+@section('meta_keywords', $article['seo_keywords'])
+@section('canonical', $articleUrl)
+@section('seo_image', $articleImage)
+@section('og_type', 'article')
+@section('seo_published_time', $article['published_at'])
+@section('seo_modified_time', $article['modified_at'])
+@section('article_section', $article['category_name'])
+
+@push('schemas')
+    <script type="application/ld+json">{!! json_encode($articleSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    <script type="application/ld+json">{!! json_encode($articleBreadcrumbSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+@endpush
 
 @section('content')
 <div class="breadcrumb-wrap">

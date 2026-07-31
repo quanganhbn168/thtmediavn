@@ -50,20 +50,16 @@
                 <!-- Phân loại & Trạng thái -->
                 <x-card type="info" :outline="true" title="Cấu hình xuất bản" :collapsible="true" class="mb-4">
                     <!-- Danh mục bài viết -->
-                    <div class="mb-3">
-                        <label for="post_category_id" class="form-label font-weight-bold">Danh mục bài viết <span class="text-danger">*</span></label>
-                        <select name="post_category_id" id="post_category_id" class="form-select @error('post_category_id') is-invalid @enderror" required>
-                            <option value="">--- Chọn danh mục ---</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}" {{ old('post_category_id') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->getTranslation('name', 'vi') }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('post_category_id')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <x-admin.category-tree-select
+                        id="post_category_id"
+                        name="post_category_id"
+                        label="Danh mục bài viết"
+                        :categories="$categories"
+                        :selected="old('post_category_id')"
+                        :leaf-only="true"
+                        :active-only="true"
+                        required
+                    />
 
                     <!-- Thời gian xuất bản -->
                     <div class="mb-3">

@@ -126,14 +126,15 @@ class SettingController extends Controller
         $menus = Menu::query()
             ->where('is_active', true)
             ->whereIn('location', ['header', 'footer'])
+            ->withCount('allItems')
             ->orderBy('name')
             ->get();
 
         $headerMenus = $menus->where('location', 'header')
-            ->mapWithKeys(fn (Menu $menu) => [$menu->id => $menu->getTranslation('name', 'vi')])
+            ->mapWithKeys(fn (Menu $menu) => [$menu->id => sprintf('%s · %d liên kết', $menu->getTranslation('name', 'vi'), $menu->all_items_count)])
             ->all();
         $footerMenus = $menus->where('location', 'footer')
-            ->mapWithKeys(fn (Menu $menu) => [$menu->id => $menu->getTranslation('name', 'vi')])
+            ->mapWithKeys(fn (Menu $menu) => [$menu->id => sprintf('%s · %d liên kết', $menu->getTranslation('name', 'vi'), $menu->all_items_count)])
             ->all();
 
         return view('admin.settings.menu', compact('settings', 'headerMenus', 'footerMenus'));

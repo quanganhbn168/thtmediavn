@@ -43,21 +43,16 @@
             <div class="col-md-4 mb-4">
                 <!-- Cấu hình hiển thị -->
                 <x-card type="info" :outline="true" title="Cấu hình hiển thị" :collapsible="true" class="mb-4">
-                    <!-- Danh mục cha -->
-                    <div class="mb-3">
-                        <label for="parent_id" class="form-label font-weight-bold">Danh mục cha</label>
-                        <select name="parent_id" id="parent_id" class="form-select">
-                            <option value="">--- Không có danh mục cha ---</option>
-                            @foreach($parentCategories as $parent)
-                                <option value="{{ $parent->id }}" {{ old('parent_id', $postCategory->parent_id) == $parent->id ? 'selected' : '' }}>
-                                    {{ $parent->getTranslation('name', 'vi') }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('parent_id')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                        @enderror
-                    </div>
+                    <x-admin.category-tree-select
+                        id="parent_id"
+                        name="parent_id"
+                        label="Danh mục cha"
+                        :categories="$categories"
+                        :selected="old('parent_id', $postCategory->parent_id)"
+                        :exclude-ids="$excludedParentIds"
+                        :parent-mode="true"
+                        placeholder="Không có danh mục cha"
+                    />
 
                     <!-- Thứ tự sắp xếp -->
                     <x-input 

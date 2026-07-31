@@ -126,6 +126,7 @@ class EcommerceSiteTest extends TestCase
             'description' => '<p>Thông tin sản phẩm kiểm thử.</p>',
             'ingredients' => '<p>Niacinamide và Panthenol.</p>',
             'usage' => '<p>Dùng sau bước làm sạch.</p>',
+            'product_notes' => '<p>Ngưng sử dụng nếu có dấu hiệu kích ứng.</p>',
         ]);
 
         $this->get(route('product.show', $product->slug))
@@ -136,8 +137,10 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('Thông tin sản phẩm')
             ->assertSee('Thành phần cấu tạo')
             ->assertSee('Hướng dẫn sử dụng')
+            ->assertSee('Lưu ý về sản phẩm')
             ->assertSee('Niacinamide và Panthenol.')
             ->assertSee('Dùng sau bước làm sạch.')
+            ->assertSee('Ngưng sử dụng nếu có dấu hiệu kích ứng.')
             ->assertSee('Đánh giá được kiểm duyệt')
             ->assertDontSee('Vui lòng đăng nhập để đánh giá sản phẩm.')
             ->assertDontSee('description-product-callout', false)

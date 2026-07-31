@@ -5,11 +5,14 @@ namespace App\Services;
 use App\Settings\ContactSettings;
 use App\Settings\GeneralSettings;
 use App\Settings\SeoSettings;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 class WebsiteSettingsService
 {
+    public const CACHE_KEY = 'site:website-settings:v1';
+
     private ?array $data = null;
 
     public function all(): array
@@ -30,6 +33,7 @@ class WebsiteSettingsService
             'welcome' => 'Chào mừng bạn đến với '.$name.'!',
             'seo_title' => $name,
             'seo_description' => '',
+            'seo_keywords' => '',
             'copyright' => '',
             'social' => [
                 'facebook' => null,
@@ -47,34 +51,37 @@ class WebsiteSettingsService
         }
 
         try {
-            $general = app(GeneralSettings::class);
-            $contact = app(ContactSettings::class);
-            $seo = app(SeoSettings::class);
-            $name = (string) ($general->site_name['vi'] ?? $fallback['name']);
-            $description = (string) ($general->site_description['vi'] ?? '');
+            return $this->data = Cache::remember(self::CACHE_KEY, now()->addDay(), function () use ($fallback): array {
+                $general = app(GeneralSettings::class);
+                $contact = app(ContactSettings::class);
+                $seo = app(SeoSettings::class);
+                $name = (string) ($general->site_name['vi'] ?? $fallback['name']);
+                $description = (string) ($general->site_description['vi'] ?? '');
 
-            return $this->data = [
-                'name' => $name,
-                'company' => $contact->company_name,
-                'tagline' => $description,
-                'phone' => $contact->phone,
-                'email' => $contact->email,
-                'address' => $contact->address,
-                'business_license' => $contact->tax_code,
-                'welcome' => 'Chào mừng bạn đến với '.$name.'!',
-                'seo_title' => (string) ($seo->seo_title['vi'] ?? $name),
-                'seo_description' => (string) ($seo->seo_description['vi'] ?? $description),
-                'copyright' => (string) ($general->copyright['vi'] ?? ''),
-                'social' => [
-                    'facebook' => $contact->facebook,
-                    'instagram' => $contact->instagram,
-                    'youtube' => $contact->youtube,
-                    'tiktok' => $contact->tiktok,
-                    'zalo' => $contact->zalo,
-                ],
-                'timezone' => $general->timezone,
-                'site_status' => $general->site_status,
-            ];
+                return [
+                    'name' => $name,
+                    'company' => $contact->company_name,
+                    'tagline' => $description,
+                    'phone' => $contact->phone,
+                    'email' => $contact->email,
+                    'address' => $contact->address,
+                    'business_license' => $contact->tax_code,
+                    'welcome' => 'Chào mừng bạn đến với '.$name.'!',
+                    'seo_title' => (string) ($seo->seo_title['vi'] ?? $name),
+                    'seo_description' => (string) ($seo->seo_description['vi'] ?? $description),
+                    'seo_keywords' => (string) ($seo->seo_keywords['vi'] ?? ''),
+                    'copyright' => (string) ($general->copyright['vi'] ?? ''),
+                    'social' => [
+                        'facebook' => $contact->facebook,
+                        'instagram' => $contact->instagram,
+                        'youtube' => $contact->youtube,
+                        'tiktok' => $contact->tiktok,
+                        'zalo' => $contact->zalo,
+                    ],
+                    'timezone' => $general->timezone,
+                    'site_status' => $general->site_status,
+                ];
+            });
         } catch (Throwable) {
             return $this->data = $fallback;
         }
@@ -83,5 +90,6 @@ class WebsiteSettingsService
     public function refresh(): void
     {
         $this->data = null;
+        Cache::forget(self::CACHE_KEY);
     }
 }

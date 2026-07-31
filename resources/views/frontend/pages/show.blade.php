@@ -2,6 +2,7 @@
 
 @section('title', $page->getTranslation('seo_title', 'vi') ?: $page->getTranslation('name', 'vi'))
 @section('meta_description', $page->getTranslation('seo_description', 'vi') ?: $page->getTranslation('sub_title', 'vi'))
+@section('meta_keywords', $page->getTranslation('seo_keywords', 'vi'))
 
 @section('content')
     <div class="breadcrumb-wrap">

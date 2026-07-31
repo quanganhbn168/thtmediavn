@@ -62,6 +62,15 @@ class MenuItem extends Model
         return $this->children()->where('is_active', true)->with('childrenRecursive');
     }
 
+    /**
+     * Cây item dành cho Builder: giữ cả liên kết đang ẩn để quản trị viên
+     * vẫn có thể kéo thả, sửa hoặc xóa chúng.
+     */
+    public function childrenTree(): HasMany
+    {
+        return $this->children()->with('childrenTree');
+    }
+
     public function getHrefAttribute(): string
     {
         if ($this->url) {

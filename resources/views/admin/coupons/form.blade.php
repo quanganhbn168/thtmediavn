@@ -46,10 +46,16 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-semibold" for="coupon-categories">Danh mục</label>
-                        <select class="form-select" id="coupon-categories" name="category_ids[]" multiple size="10">
-                            @foreach($categories as $id => $name)<option value="{{ $id }}" @selected(in_array((string) $id, $selectedCategories, true))>{{ $name }}</option>@endforeach
-                        </select>
+                        <x-admin.category-tree-select
+                            id="coupon-categories"
+                            name="category_ids"
+                            label="Danh mục"
+                            :categories="$categories"
+                            :selected="$selectedCategories"
+                            :multiple="true"
+                            :leaf-only="true"
+                            :active-only="true"
+                        />
                     </div>
                 </div>
                 <div class="form-text mt-2">Không chọn sản phẩm hoặc danh mục để áp dụng cho toàn bộ catalog khả dụng.</div>

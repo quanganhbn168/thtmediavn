@@ -16,6 +16,7 @@ class SettingService
     public function __construct(
         private readonly MediaService $mediaService,
         private readonly WebsiteSettingsService $websiteSettings,
+        private readonly SiteChromeCache $siteChromeCache,
     ) {}
 
     /**
@@ -35,6 +36,7 @@ class SettingService
         config(['app.name' => $settings->site_name['vi'] ?? config('app.name')]);
         date_default_timezone_set($settings->timezone);
         $this->syncMedia($data, ['logo', 'logo_footer', 'favicon']);
+        $this->siteChromeCache->forget();
     }
 
     /**
@@ -58,6 +60,7 @@ class SettingService
 
         $settings->save();
         $this->websiteSettings->refresh();
+        $this->siteChromeCache->forget();
     }
 
     /**
@@ -73,6 +76,7 @@ class SettingService
         $settings->save();
         $this->websiteSettings->refresh();
         $this->syncMedia($data, ['seo_image']);
+        $this->siteChromeCache->forget();
     }
 
     /**
@@ -114,6 +118,7 @@ class SettingService
 
         $settings->save();
         $this->syncMedia($data, ['default_product_banner', 'default_promotion_banner', 'default_post_banner']);
+        $this->siteChromeCache->forget();
     }
 
     /** Cập nhật các menu được gán cho từng vị trí ngoài website. */
@@ -124,6 +129,7 @@ class SettingService
         }
 
         $settings->save();
+        $this->siteChromeCache->forget();
     }
 
     /** Đồng bộ các ảnh cấu hình vào collection single-file của Spatie Media Library. */

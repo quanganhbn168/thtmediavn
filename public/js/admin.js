@@ -168,12 +168,15 @@ const initTomSelect = () => {
     document.querySelectorAll('select[data-tom-select="1"]').forEach((select) => {
         if (select.tomselect) return;
         const allowCreate = select.getAttribute('data-tom-select-create') === '1';
+        const treeOrder = select.getAttribute('data-tom-select-sort') === 'tree';
 
         new TomSelect(select, {
             placeholder: select.getAttribute('data-placeholder') || null,
             allowEmptyOption: true,
             create: allowCreate,
-            sortField: { field: 'text', direction: 'asc' },
+            sortField: treeOrder
+                ? [{ field: '$order', direction: 'asc' }]
+                : { field: 'text', direction: 'asc' },
         });
     });
 };

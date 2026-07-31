@@ -5,16 +5,19 @@ namespace App\Providers;
 use App\Models\Brand;
 use App\Models\ContactChannel;
 use App\Models\Menu;
+use App\Models\MenuItem;
+use App\Models\Product;
 use App\Models\ProductAttribute;
+use App\Models\ProductAttributeValue;
 use App\Models\ProductCategory;
 use App\Models\SiteAsset;
 use App\Services\CartService;
+use App\Services\SiteChromeCache;
 use App\Services\WebsiteSettingsService;
 use App\Settings\AboutSettings;
 use App\Settings\ContactSettings;
 use App\Settings\GeneralSettings;
 use App\Settings\HomepageSettings;
-use App\Settings\MenuSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -32,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(WebsiteSettingsService::class);
+        $this->app->singleton(SiteChromeCache::class);
     }
 
     /**
@@ -69,16 +73,8 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.master', function ($view) {
             $cartCount = 0;
             $wishlistCount = 0;
-            $siteNavigation = collect();
-            $siteBrands = collect();
-            $attributeMenuGroups = collect();
-            $contactChannels = collect();
-            $siteAssets = null;
             $aboutSettings = null;
             $homepageSettings = null;
-            $headerMenu = null;
-            $megaMenu = null;
-            $footerMenus = collect();
             if (Schema::hasTable('carts')) {
                 $cartCount = app(CartService::class)->current()?->items->sum('quantity') ?? 0;
             }
@@ -89,77 +85,21 @@ class AppServiceProvider extends ServiceProvider
                     ->where('products.is_active', true);
                 $wishlistCount = $wishlistQuery->count();
             }
-            $visibleProducts = fn ($query) => $query->where('is_active', true)->visibleOnSite();
-            if (Schema::hasTable('product_categories')) {
-                $siteNavigation = ProductCategory::query()
-                    ->whereNull('parent_id')
-                    ->where('is_active', true)
-                    ->where(fn ($query) => $query
-                        ->whereHas('products', $visibleProducts)
-                        ->orWhereHas('children.products', $visibleProducts))
-                    ->with(['children' => fn ($query) => $query
-                        ->where('is_active', true)
-                        ->whereHas('products', $visibleProducts)])
-                    ->orderBy('sort_order')
-                    ->get();
-            }
-            if (Schema::hasTable('brands')) {
-                $siteBrands = Brand::query()
-                    ->where('is_active', true)
-                    ->where('is_featured', true)
-                    ->orderBy('sort_order')
-                    ->get(['id', 'name', 'slug']);
-            }
-            if (Schema::hasTable('product_attributes') && Schema::hasTable('product_attribute_values')) {
-                $attributeMenuGroups = ProductAttribute::query()
-                    ->where('is_active', true)
-                    ->where('show_in_product_menu', true)
-                    ->whereHas('values', fn ($query) => $query->whereHas('products', $visibleProducts))
-                    ->with(['values' => fn ($query) => $query
-                        ->whereHas('products', $visibleProducts)
-                        ->orderBy('sort_order')])
-                    ->orderBy('sort_order')
-                    ->get(['id', 'name', 'slug', 'sort_order']);
-            }
-            if (Schema::hasTable('contact_channels')) {
-                $contactChannels = ContactChannel::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->get();
-            }
-            if (Schema::hasTable('site_assets')) {
-                $siteAssets = SiteAsset::current();
-            }
+
+            $chrome = app(SiteChromeCache::class)->get();
+            $siteNavigation = $chrome['siteNavigation'];
+            $siteBrands = $chrome['siteBrands'];
+            $attributeMenuGroups = $chrome['attributeMenuGroups'];
+            $contactChannels = $chrome['contactChannels'];
+            $siteAssets = $chrome['siteAssets'];
+            $headerMenu = $chrome['headerMenu'];
+            $megaMenu = $chrome['megaMenu'];
+            $footerMenus = $chrome['footerMenus'];
+
             if (Schema::hasTable('settings')) {
                 try {
                     $aboutSettings = app(AboutSettings::class);
                     $homepageSettings = app(HomepageSettings::class);
-
-                    if (Schema::hasTable('menus') && Schema::hasTable('menu_items')) {
-                        $menuSettings = app(MenuSettings::class);
-                        $availableMenus = Menu::query()
-                            ->where('is_active', true)
-                            ->whereIn('location', ['header', 'footer'])
-                            ->with(['items' => fn ($query) => $query
-                                ->where('is_active', true)
-                                ->with('childrenRecursive')])
-                            ->orderBy('id')
-                            ->get();
-
-                        $headerMenus = $availableMenus->where('location', 'header')->values();
-                        $availableFooterMenus = $availableMenus->where('location', 'footer')->values();
-
-                        $headerMenu = $headerMenus->firstWhere('id', $menuSettings->header_menu_id)
-                            ?? $headerMenus->first();
-                        $megaMenu = $headerMenus->firstWhere('id', $menuSettings->mega_menu_id)
-                            ?? $headerMenus->get(1);
-                        $footerMenus = collect([
-                            $availableFooterMenus->firstWhere('id', $menuSettings->footer_menu_1_id)
-                                ?? $availableFooterMenus->first(),
-                            $availableFooterMenus->firstWhere('id', $menuSettings->footer_menu_2_id)
-                                ?? $availableFooterMenus->get(1),
-                        ])->filter()->values();
-                    }
                 } catch (\Throwable) {
                     // Settings migrations may not have run yet during install.
                 }
@@ -198,5 +138,19 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with(compact('aboutSettings', 'homepageSettings', 'contactSettings', 'siteAssets'));
         });
+
+        foreach ([
+            Brand::class,
+            ContactChannel::class,
+            Menu::class,
+            MenuItem::class,
+            Product::class,
+            ProductAttribute::class,
+            ProductAttributeValue::class,
+            ProductCategory::class,
+        ] as $model) {
+            $model::saved(fn () => app(SiteChromeCache::class)->forget());
+            $model::deleted(fn () => app(SiteChromeCache::class)->forget());
+        }
     }
 }

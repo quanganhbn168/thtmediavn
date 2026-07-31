@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Language;
+use App\Models\PostCategory;
+use App\Rules\ValidCategoryParent;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdatePostCategoryRequest extends FormRequest
@@ -19,7 +21,7 @@ class UpdatePostCategoryRequest extends FormRequest
         $categoryId = $this->route('post_category') ? ($this->route('post_category')->id ?? $this->route('post_category')) : '';
 
         $rules = [
-            'parent_id' => 'nullable|exists:post_categories,id|not_in:' . $categoryId,
+            'parent_id' => ['nullable', 'integer', 'exists:post_categories,id', new ValidCategoryParent(PostCategory::class, (int) $categoryId, 'posts', 'bài viết')],
             'sort_order' => 'nullable|integer',
             'is_home' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
@@ -29,7 +31,7 @@ class UpdatePostCategoryRequest extends FormRequest
             $rules["name.$code"] = ($code === $defaultLang)
                 ? 'required|string|max:255'
                 : 'nullable|string|max:255';
-            
+
             $rules["description.$code"] = 'nullable|string';
             $rules["seo_title.$code"] = 'nullable|string|max:255';
             $rules["seo_description.$code"] = 'nullable|string';
@@ -47,7 +49,6 @@ class UpdatePostCategoryRequest extends FormRequest
         return [
             "name.{$defaultCode}.required" => "Tên danh mục bài viết tiếng {$langName} không được để trống.",
             'parent_id.exists' => 'Danh mục cha không tồn tại.',
-            'parent_id.not_in' => 'Danh mục cha không được trùng với chính danh mục đang chỉnh sửa.',
         ];
     }
 }

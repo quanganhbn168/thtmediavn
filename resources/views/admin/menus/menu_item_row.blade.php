@@ -36,8 +36,8 @@
             </div>
 
             <!-- Đệ quy hiển thị các con -->
-            @if($item->children && $item->children->isNotEmpty())
-                @include('admin.menus.menu_item_row', ['items' => $item->children])
+            @if($item->childrenTree->isNotEmpty())
+                @include('admin.menus.menu_item_row', ['items' => $item->childrenTree])
             @endif
         </li>
     @endforeach

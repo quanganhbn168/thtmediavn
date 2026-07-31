@@ -28,9 +28,7 @@ class PostCategoryController extends Controller
 
     public function create()
     {
-        $parentCategories = PostCategory::whereNull('parent_id')->get();
-
-        return view('admin.post_categories.create', compact('parentCategories'));
+        return view('admin.post_categories.create', $this->categoryService->formContext(new PostCategory));
     }
 
     public function store(StorePostCategoryRequest $request)
@@ -50,11 +48,7 @@ class PostCategoryController extends Controller
 
     public function edit(PostCategory $postCategory)
     {
-        $parentCategories = PostCategory::whereNull('parent_id')
-            ->where('id', '!=', $postCategory->id)
-            ->get();
-
-        return view('admin.post_categories.edit', compact('postCategory', 'parentCategories'));
+        return view('admin.post_categories.edit', $this->categoryService->formContext($postCategory));
     }
 
     public function update(UpdatePostCategoryRequest $request, PostCategory $postCategory)

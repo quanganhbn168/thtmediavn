@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\ProductCategory;
+use App\Rules\ValidCategoryParent;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ class UpdateProductCategoryRequest extends FormRequest
         }
 
         return [
-            'parent_id' => ['nullable', 'exists:product_categories,id', Rule::notIn([$categoryId])],
+            'parent_id' => ['nullable', 'integer', 'exists:product_categories,id', new ValidCategoryParent(ProductCategory::class, $categoryId, 'products', 'sản phẩm')],
             'name' => ['required', 'string', 'max:150'],
             'slug' => ['nullable', 'string', 'max:180', Rule::unique('product_categories', 'slug')->ignore($categoryId)],
             'description' => ['nullable', 'string'],

@@ -60,12 +60,14 @@
 
             <div class="col-lg-4">
                 <x-card type="info" :outline="true" title="Cấu hình hiển thị" :collapsible="true" class="mb-4">
-                    <x-select
+                    <x-admin.category-tree-select
                         name="parent_id"
                         label="Danh mục cha"
-                        :options="$parents"
+                        :categories="$categories"
                         :selected="old('parent_id')"
-                        placeholder="Không có danh mục cha"
+                        :exclude-ids="$excludedParentIds"
+                        :parent-mode="true"
+                        placeholder="Đây là thư mục gốc"
                     />
 
                     <x-input

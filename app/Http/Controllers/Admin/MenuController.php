@@ -10,10 +10,14 @@ use App\Models\MenuItem;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\ProductCategory;
+use App\Settings\MenuSettings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller
 {
+    private const MAX_MENU_DEPTH = 3;
+
     private function getSystemMenuPages(): array
     {
         return [
@@ -63,22 +67,37 @@ class MenuController extends Controller
 
         $menuItems = [];
         if ($activeMenu) {
-            // Chỉ lấy các item gốc (parent_id = null) kèm theo mối quan hệ đệ quy
-            $menuItems = $activeMenu->items()->with('children')->orderBy('sort_order')->get();
+            // Builder cần cả item đang ẩn, và tải sẵn toàn bộ cây để tránh N+1 query.
+            $menuItems = $activeMenu->items()->with('childrenTree')->orderBy('sort_order')->get();
         }
 
         // Lấy danh sách các thực thể để add vào menu
         $pages = Page::orderBy('id', 'desc')->get();
         $posts = Post::orderBy('id', 'desc')->get();
         $productCategories = ProductCategory::query()
-            ->orderByRaw('COALESCE(parent_id, id)')
-            ->orderByRaw('parent_id is not null')
             ->orderBy('sort_order')
-            ->orderBy('name')
+            ->orderBy('id')
             ->get();
         $systemPages = collect($this->getSystemMenuPages());
 
-        return view('admin.menus.index', compact('menus', 'activeMenu', 'menuItems', 'pages', 'posts', 'productCategories', 'systemPages'));
+        $menuUsage = [];
+        try {
+            $menuSettings = app(MenuSettings::class);
+            foreach ([
+                'header_menu_id' => 'Header chính',
+                'mega_menu_id' => 'Mega menu',
+                'footer_menu_1_id' => 'Footer cột 1',
+                'footer_menu_2_id' => 'Footer cột 2',
+            ] as $field => $label) {
+                if ($menuSettings->{$field}) {
+                    $menuUsage[$menuSettings->{$field}][] = $label;
+                }
+            }
+        } catch (\Throwable) {
+            // Settings có thể chưa được khởi tạo ở môi trường cài đặt mới.
+        }
+
+        return view('admin.menus.index', compact('menus', 'activeMenu', 'menuItems', 'pages', 'posts', 'productCategories', 'systemPages', 'menuUsage'));
     }
 
     /**
@@ -235,12 +254,33 @@ class MenuController extends Controller
     {
         $structure = $request->input('structure', []);
 
-        if (empty($structure)) {
+        if (! is_array($structure) || empty($structure)) {
             return response()->json(['success' => false, 'message' => 'Cấu trúc menu trống.'], 400);
         }
 
-        $order = 1;
-        $this->saveMenuItemsOrderRecursive($structure, null, $order);
+        $menuItems = $menu->allItems()->get()->keyBy('id');
+        $orderedItems = [];
+        $validationError = $this->collectMenuTree($structure, null, 1, $menuItems, $orderedItems);
+
+        if ($validationError) {
+            return response()->json(['success' => false, 'message' => $validationError], 422);
+        }
+
+        if (count($orderedItems) !== $menuItems->count()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cấu trúc phải chứa đầy đủ mọi liên kết của menu; hãy tải lại trang và thử lại.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($orderedItems, $menuItems): void {
+            foreach ($orderedItems as $sortOrder => $item) {
+                $menuItems->get($item['id'])->update([
+                    'parent_id' => $item['parent_id'],
+                    'sort_order' => $sortOrder + 1,
+                ]);
+            }
+        });
 
         return response()->json([
             'success' => true,
@@ -249,32 +289,59 @@ class MenuController extends Controller
     }
 
     /**
-     * Lưu đệ quy thứ tự và phân cấp cho menu item
+     * Kiểm tra toàn bộ payload kéo thả trước khi ghi DB. Không chấp nhận item
+     * của menu khác, bản ghi trùng/lạc hoặc độ sâu vượt quy chuẩn 3 cấp.
+     *
+     * @param  \Illuminate\Support\Collection<int, MenuItem>  $menuItems
+     * @param  array<int, array{id: int, parent_id: ?int}>  $orderedItems
      */
-    private function saveMenuItemsOrderRecursive(array $items, ?int $parentId, &$order)
+    private function collectMenuTree(array $items, ?int $parentId, int $depth, $menuItems, array &$orderedItems): ?string
     {
+        if ($depth > self::MAX_MENU_DEPTH) {
+            return 'Menu chỉ hỗ trợ tối đa '.self::MAX_MENU_DEPTH.' cấp.';
+        }
+
         foreach ($items as $item) {
-            $itemId = $item['id'];
-            $menuItem = MenuItem::find($itemId);
+            if (! is_array($item) || ! array_key_exists('id', $item) || ! filter_var($item['id'], FILTER_VALIDATE_INT)) {
+                return 'Dữ liệu cấu trúc menu không hợp lệ.';
+            }
 
-            if ($menuItem) {
-                $menuItem->update([
-                    'parent_id' => $parentId,
-                    'sort_order' => $order++,
-                ]);
+            $itemId = (int) $item['id'];
+            if (! $menuItems->has($itemId)) {
+                return 'Phát hiện liên kết không thuộc menu này. Vui lòng tải lại trang.';
+            }
 
-                if (isset($item['children']) && is_array($item['children']) && count($item['children']) > 0) {
-                    $this->saveMenuItemsOrderRecursive($item['children'], $itemId, $order);
+            foreach ($orderedItems as $orderedItem) {
+                if ($orderedItem['id'] === $itemId) {
+                    return 'Một liên kết chỉ được xuất hiện một lần trong cấu trúc menu.';
+                }
+            }
+
+            $orderedItems[] = ['id' => $itemId, 'parent_id' => $parentId];
+            $children = $item['children'] ?? [];
+
+            if (! is_array($children)) {
+                return 'Dữ liệu menu con không hợp lệ.';
+            }
+
+            if ($children !== []) {
+                $error = $this->collectMenuTree($children, $itemId, $depth + 1, $menuItems, $orderedItems);
+                if ($error) {
+                    return $error;
                 }
             }
         }
+
+        return null;
     }
 
     /**
      * AJAX: Cập nhật thông tin chi tiết của một MenuItem đơn lẻ.
      */
-    public function updateItem(Request $request, MenuItem $item)
+    public function updateItem(Request $request, Menu $menu, MenuItem $item)
     {
+        abort_unless($item->menu_id === $menu->id, 404);
+
         $request->validate([
             'title.vi' => 'required|string|max:255',
             'title.en' => 'nullable|string|max:255',
@@ -303,8 +370,10 @@ class MenuController extends Controller
     /**
      * AJAX: Xóa một MenuItem và các con của nó.
      */
-    public function deleteItem(MenuItem $item)
+    public function deleteItem(Menu $menu, MenuItem $item)
     {
+        abort_unless($item->menu_id === $menu->id, 404);
+
         // DB level cascade sẽ tự xóa các con, ta chỉ cần gọi delete() trên item này
         $item->delete();
 

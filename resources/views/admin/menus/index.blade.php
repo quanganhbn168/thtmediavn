@@ -28,6 +28,9 @@
                         <div>
                             <i class="bi bi-list-nested me-2"></i>
                             <span class="fw-bold">{{ $m->getTranslation('name', 'vi') }}</span>
+                            @foreach($menuUsage[$m->id] ?? [] as $usage)
+                                <span class="badge bg-info-subtle text-info-emphasis ms-1 mt-1">{{ $usage }}</span>
+                            @endforeach
                         </div>
                         @if($m->location)
                             <span class="badge bg-secondary text-xs">{{ $m->location }}</span>
@@ -91,6 +94,14 @@
                         </div>
                     </div>
                 </form>
+
+                @if(!empty($menuUsage[$activeMenu->id]))
+                    <div class="alert alert-info py-2 mb-0">
+                        <i class="bi bi-broadcast-pin me-1"></i>
+                        Đang được gán cho: <strong>{{ implode(' · ', $menuUsage[$activeMenu->id]) }}</strong>.
+                        <a href="{{ route('admin.settings.menu') }}" class="alert-link">Đổi vị trí hiển thị</a>
+                    </div>
+                @endif
             </x-card>
 
             <!-- 2. Khu vực thiết kế liên kết kéo thả -->
@@ -206,16 +217,18 @@
                                         @csrf
                                         <input type="hidden" name="type" value="product_categories">
 
-                                        @forelse($productCategories as $category)
-                                            <div class="form-check mb-2 {{ $category->parent_id ? 'ms-3' : '' }}">
-                                                <input class="form-check-input" type="checkbox" name="ids[]" value="{{ $category->id }}" id="chk_product_category_{{ $category->id }}">
-                                                <label class="form-check-label cursor-pointer {{ $category->parent_id ? 'text-body-secondary' : 'fw-semibold' }}" for="chk_product_category_{{ $category->id }}">
-                                                    @if($category->parent_id)<i class="bi bi-arrow-return-right me-1"></i>@endif{{ $category->name }}
-                                                </label>
-                                            </div>
-                                        @empty
+                                        @if($productCategories->isNotEmpty())
+                                            <x-admin.category-tree-select
+                                                id="menu_product_category_ids"
+                                                name="ids"
+                                                label="Chọn danh mục"
+                                                :categories="$productCategories"
+                                                :selected="old('ids', [])"
+                                                :multiple="true"
+                                            />
+                                        @else
                                             <span class="text-muted d-block small">Chưa có danh mục sản phẩm.</span>
-                                        @endforelse
+                                        @endif
 
                                         @if($productCategories->isNotEmpty())
                                             <button type="submit" class="btn btn-sm btn-primary w-100 font-weight-bold mt-3">
@@ -272,6 +285,11 @@
                                 <i class="bi bi-save me-1"></i> Lưu cấu trúc Menu
                             </button>
                         </x-slot>
+
+                        <div class="alert alert-light border py-2 small mb-3">
+                            <i class="bi bi-diagram-3 me-1"></i>
+                            Kéo thả để sắp xếp tối đa <strong>3 cấp</strong>: cấp 1 là nhóm/menu chính, cấp 2 là menu con, cấp 3 là liên kết chi tiết. Máy chủ sẽ kiểm tra lại quy tắc này khi lưu.
+                        </div>
 
                         <div class="dd" id="nestable">
                             @if(count($menuItems) > 0)
@@ -592,7 +610,7 @@
                 btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Đang cập nhật...');
 
                 $.ajax({
-                    url: "{{ route('admin.menus.items.update', ':id') }}".replace(':id', id),
+                    url: "{{ route('admin.menus.items.update', [$activeMenu, ':id']) }}".replace(':id', id),
                     method: 'PUT',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -650,7 +668,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: "{{ route('admin.menus.items.delete', ':id') }}".replace(':id', id),
+                            url: "{{ route('admin.menus.items.delete', [$activeMenu, ':id']) }}".replace(':id', id),
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

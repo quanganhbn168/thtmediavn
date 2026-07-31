@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Models\Language;
 use App\Models\PostCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Validation\ValidationException;
 
 class PostCategoryService
 {
+    public function __construct(private readonly CategoryHierarchyService $categoryHierarchy) {}
+
     public function paginate(array $filters): LengthAwarePaginator
     {
         $query = PostCategory::query()->with('parent')->withCount('posts');
@@ -36,6 +39,21 @@ class PostCategoryService
             ->orderBy('id')
             ->paginate((int) ($filters['per_page'] ?? 10))
             ->withQueryString();
+    }
+
+    public function formContext(PostCategory $category): array
+    {
+        $categories = PostCategory::query()
+            ->withCount('posts')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        return [
+            'postCategory' => $category,
+            'categories' => $categories,
+            'excludedParentIds' => $this->categoryHierarchy->descendantIds($categories, $category->exists ? $category->id : null),
+        ];
     }
 
     /**
@@ -77,6 +95,12 @@ class PostCategoryService
      */
     public function delete(PostCategory $category): void
     {
+        if ($category->posts()->exists() || $category->children()->exists()) {
+            throw ValidationException::withMessages([
+                'ids' => 'Không thể xóa danh mục đang có bài viết hoặc danh mục con.',
+            ]);
+        }
+
         $category->delete();
     }
 }

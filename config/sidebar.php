@@ -41,7 +41,6 @@ return [
             'children' => [
                 ['label' => 'Phiếu thanh toán', 'route' => 'admin.payments.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Giao dịch ngân hàng', 'route' => 'admin.payment-transactions.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Cấu hình SePay', 'route' => 'admin.settings.payment', 'icon' => 'bi bi-circle'],
             ],
         ],
         [
@@ -54,7 +53,6 @@ return [
             'icon' => 'bi bi-box-seam',
             'children' => [
                 ['label' => 'Danh sách sản phẩm', 'route' => 'admin.products.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Thêm sản phẩm', 'route' => 'admin.products.create', 'icon' => 'bi bi-circle'],
                 ['label' => 'Danh mục sản phẩm', 'route' => 'admin.product-categories.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Thương hiệu', 'route' => 'admin.brands.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Biến thể bán hàng', 'route' => 'admin.product-options.index', 'icon' => 'bi bi-circle'],

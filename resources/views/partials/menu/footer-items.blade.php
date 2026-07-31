@@ -4,5 +4,8 @@
     </a>
     @foreach($item->childrenRecursive ?? [] as $child)
         <a class="footer-link footer-sublink" href="{{ $child->href }}" target="{{ $child->target ?: '_self' }}" @if($child->target === '_blank') rel="noopener" @endif>{{ $child->getTranslation('title', 'vi') }}</a>
+        @foreach($child->childrenRecursive ?? [] as $grandchild)
+            <a class="footer-link footer-sublink ps-4" href="{{ $grandchild->href }}" target="{{ $grandchild->target ?: '_self' }}" @if($grandchild->target === '_blank') rel="noopener" @endif>{{ $grandchild->getTranslation('title', 'vi') }}</a>
+        @endforeach
     @endforeach
 @endforeach

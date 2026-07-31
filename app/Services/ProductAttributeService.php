@@ -32,7 +32,10 @@ class ProductAttributeService
                 'values' => fn ($query) => $query->orderBy('sort_order'),
                 'categories',
             ]),
-            'categories' => ProductCategory::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'),
+            'categories' => ProductCategory::query()
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get(),
         ];
     }
 

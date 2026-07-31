@@ -30,7 +30,7 @@
                     <div class="alert alert-light border mb-4">
                         <div class="fw-semibold"><i class="bi bi-info-circle me-1"></i>Cách bố trí</div>
                         <div class="small text-body-secondary mt-1">
-                            Menu điều hướng hiển thị thành hàng liên kết ngang. Mega menu hiển thị mục cấp 1 ở cột trái; rê chuột vào từng mục sẽ mở đúng các mục con ở cột phải.
+                            Chọn rõ từng menu đang dùng: Menu điều hướng hiển thị thành hàng liên kết ngang; Mega menu hiển thị mục cấp 1 ở cột trái, cấp 2 là tiêu đề nhóm và cấp 3 là liên kết chi tiết. Không có menu nào được tự chọn theo thứ tự tạo.
                         </div>
                     </div>
 
@@ -39,7 +39,7 @@
                         label="Menu điều hướng chính"
                         :options="$headerMenus"
                         :selected="old('header_menu_id', $settings->header_menu_id)"
-                        placeholder="Tự chọn menu Header đầu tiên"
+                        placeholder="Chưa gán menu Header"
                     />
 
                     <x-select
@@ -49,7 +49,7 @@
                         :selected="old('mega_menu_id', $settings->mega_menu_id)"
                         placeholder="Dùng danh mục sản phẩm tự động"
                     />
-                    <div class="form-text mt-n2">Hãy tạo các mục cấp 1 và kéo các mục liên quan vào bên trong để tạo nhóm hover.</div>
+                    <div class="form-text mt-n2">Mega menu chỉ dùng cấu trúc tối đa 3 cấp và phải là menu riêng với Header chính. Khi chưa chọn, website dùng cây danh mục sản phẩm hiện có.</div>
                 </x-card>
             </div>
 
@@ -60,7 +60,7 @@
                         label="Cột menu Footer 1"
                         :options="$footerMenus"
                         :selected="old('footer_menu_1_id', $settings->footer_menu_1_id)"
-                        placeholder="Tự chọn menu Footer đầu tiên"
+                        placeholder="Chưa gán cột Footer 1"
                     />
 
                     <x-select
@@ -68,9 +68,9 @@
                         label="Cột menu Footer 2"
                         :options="$footerMenus"
                         :selected="old('footer_menu_2_id', $settings->footer_menu_2_id)"
-                        placeholder="Tự chọn menu Footer thứ hai"
+                        placeholder="Chưa gán cột Footer 2"
                     />
-                    <div class="form-text">Tên của menu được dùng làm tiêu đề cột; các mục bên trong được dùng làm liên kết.</div>
+                    <div class="form-text">Tên menu được dùng làm tiêu đề cột. Mỗi cột cần chọn một menu riêng; website không tự lấy menu đầu tiên/thứ hai.</div>
                 </x-card>
             </div>
         </div>

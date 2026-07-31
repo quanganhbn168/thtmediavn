@@ -46,9 +46,9 @@ class CouponService
                 ->orderBy('name')
                 ->pluck('name', 'id'),
             'categories' => ProductCategory::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->pluck('name', 'id'),
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get(),
         ];
     }
 

@@ -59,6 +59,9 @@
                         <div class="col-12">
                             <x-tinymce name="usage" label="Hướng dẫn sử dụng" :value="$product->usage" />
                         </div>
+                        <div class="col-12">
+                            <x-tinymce name="product_notes" label="Lưu ý về sản phẩm" :value="$product->product_notes" />
+                        </div>
                     </div>
                 </x-card>
 
@@ -111,7 +114,16 @@
                 <x-card type="primary" :outline="true" title="Cấu hình sản phẩm" :collapsible="true" class="mb-0 product-editor-config">
                     <div class="row g-3">
                         <div class="col-12">
-                            <x-select id="product_category_id" name="product_category_id" label="Danh mục" :options="$categories" :selected="old('product_category_id')" required />
+                            <x-admin.category-tree-select
+                                id="product_category_id"
+                                name="product_category_id"
+                                label="Danh mục"
+                                :categories="$categories"
+                                :selected="old('product_category_id')"
+                                :leaf-only="true"
+                                :active-only="true"
+                                required
+                            />
                         </div>
                         <div class="col-12">
                             <x-select name="brand_id" label="Thương hiệu" :options="$brands" :selected="old('brand_id')" />

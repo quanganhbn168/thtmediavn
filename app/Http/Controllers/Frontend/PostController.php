@@ -74,6 +74,11 @@ class PostController extends FrontendController
             'image' => $post->getFirstMediaUrl('post_image') ?: asset('images/no-image.png'),
             'excerpt' => $post->getTranslation('summary', 'vi'),
             'content' => $post->getTranslation('content', 'vi'),
+            'seo_title' => $post->getTranslation('seo_title', 'vi'),
+            'seo_description' => $post->getTranslation('seo_description', 'vi'),
+            'seo_keywords' => $post->getTranslation('seo_keywords', 'vi'),
+            'published_at' => ($post->published_at ?: $post->created_at)?->toIso8601String(),
+            'modified_at' => $post->updated_at?->toIso8601String(),
         ];
     }
 }

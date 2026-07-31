@@ -151,8 +151,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin', 'admin'])->gro
     Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])->name('menus.destroy');
     Route::post('/menus/{menu}/items', [MenuController::class, 'addItems'])->name('menus.items.add');
     Route::post('/menus/{menu}/items/order', [MenuController::class, 'updateItemsOrder'])->name('menus.items.order');
-    Route::put('/menu-items/{item}', [MenuController::class, 'updateItem'])->name('menus.items.update');
-    Route::delete('/menu-items/{item}', [MenuController::class, 'deleteItem'])->name('menus.items.delete');
+    Route::put('/menus/{menu}/items/{item}', [MenuController::class, 'updateItem'])->name('menus.items.update');
+    Route::delete('/menus/{menu}/items/{item}', [MenuController::class, 'deleteItem'])->name('menus.items.delete');
 
     // CRM: Khách hàng
     // CRM: Tin nhắn liên hệ

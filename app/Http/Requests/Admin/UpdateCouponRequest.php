@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Coupon;
+use App\Models\ProductCategory;
+use App\Rules\LeafCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -36,7 +38,7 @@ class UpdateCouponRequest extends FormRequest
             'product_ids' => ['nullable', 'array'],
             'product_ids.*' => ['integer', 'exists:products,id'],
             'category_ids' => ['nullable', 'array'],
-            'category_ids.*' => ['integer', 'exists:product_categories,id'],
+            'category_ids.*' => ['integer', 'exists:product_categories,id', new LeafCategory(ProductCategory::class, 'Danh mục áp dụng')],
         ];
     }
 

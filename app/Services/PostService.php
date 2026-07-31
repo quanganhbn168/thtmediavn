@@ -48,7 +48,10 @@ class PostService
 
     public function categories(): Collection
     {
-        return PostCategory::query()->orderBy('sort_order')->orderBy('id')->get();
+        return PostCategory::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
     }
 
     /**

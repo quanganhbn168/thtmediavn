@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -17,7 +16,7 @@ class Product extends Model implements HasMedia
 {
     use HasSlug, InteractsWithMedia, SoftDeletes;
 
-    protected $fillable = ['product_category_id', 'brand_id', 'name', 'slug', 'summary', 'description', 'ingredients', 'usage', 'sold_count', 'status', 'variant_selection_mode', 'track_inventory', 'allow_preorder', 'is_featured', 'is_home', 'is_active', 'seo_title', 'seo_description', 'published_at'];
+    protected $fillable = ['product_category_id', 'brand_id', 'name', 'slug', 'summary', 'description', 'ingredients', 'usage', 'product_notes', 'sold_count', 'status', 'variant_selection_mode', 'track_inventory', 'allow_preorder', 'is_featured', 'is_home', 'is_active', 'seo_title', 'seo_description', 'published_at'];
 
     protected $casts = ['sold_count' => 'integer', 'track_inventory' => 'boolean', 'allow_preorder' => 'boolean', 'is_featured' => 'boolean', 'is_home' => 'boolean', 'is_active' => 'boolean', 'published_at' => 'datetime'];
 
@@ -69,11 +68,6 @@ class Product extends Model implements HasMedia
     public function flashSaleItems(): HasMany
     {
         return $this->hasMany(FlashSaleProduct::class);
-    }
-
-    public function mtdSource(): HasOne
-    {
-        return $this->hasOne(MtdProductSource::class);
     }
 
     public function registerMediaCollections(): void

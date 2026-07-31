@@ -10,9 +10,7 @@
         </button>
         <div class="collapse mobile-submenu" id="{{ $collapseId }}">
             <a class="fw-semibold" href="{{ $item->href }}" target="{{ $item->target ?: '_self' }}" @if($item->target === '_blank') rel="noopener" @endif>Xem tất cả</a>
-            @foreach($children as $child)
-                <a href="{{ $child->href }}" target="{{ $child->target ?: '_self' }}" @if($child->target === '_blank') rel="noopener" @endif>{{ $child->getTranslation('title', 'vi') }}</a>
-            @endforeach
+            @include('partials.menu.mobile-items', ['items' => $children, 'idPrefix' => $collapseId])
         </div>
     @else
         <a class="nav-link" href="{{ $item->href }}" target="{{ $item->target ?: '_self' }}" @if($item->target === '_blank') rel="noopener" @endif>

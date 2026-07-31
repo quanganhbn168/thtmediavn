@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Language;
+use App\Models\PostCategory;
+use App\Rules\ValidCategoryParent;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePostCategoryRequest extends FormRequest
@@ -18,7 +20,7 @@ class StorePostCategoryRequest extends FormRequest
         $allLangs = Language::pluck('code')->toArray();
 
         $rules = [
-            'parent_id' => 'nullable|exists:post_categories,id',
+            'parent_id' => ['nullable', 'integer', 'exists:post_categories,id', new ValidCategoryParent(PostCategory::class, null, 'posts', 'bài viết')],
             'sort_order' => 'nullable|integer',
             'is_home' => 'nullable|boolean',
             'is_active' => 'nullable|boolean',
@@ -28,7 +30,7 @@ class StorePostCategoryRequest extends FormRequest
             $rules["name.$code"] = ($code === $defaultLang)
                 ? 'required|string|max:255'
                 : 'nullable|string|max:255';
-            
+
             $rules["description.$code"] = 'nullable|string';
             $rules["seo_title.$code"] = 'nullable|string|max:255';
             $rules["seo_description.$code"] = 'nullable|string';
