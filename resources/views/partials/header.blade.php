@@ -167,7 +167,12 @@
                                             </div>
                                             <div class="mega-child-grid">
                                                 @forelse($group->children as $item)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $item->slug]) }}">{{ $item->name }}</a></div>
+                                                    <div class="mega-child-group">
+                                                        <a class="mega-child-title" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $item->slug]) }}">{{ $item->name }}</a>
+                                                        @foreach($item->children as $grandchild)
+                                                            <a class="mega-link" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $grandchild->slug]) }}">{{ $grandchild->name }}</a>
+                                                        @endforeach
+                                                    </div>
                                                 @empty
                                                     <p class="text-muted mb-0">Sản phẩm trong danh mục đang được cập nhật.</p>
                                                 @endforelse

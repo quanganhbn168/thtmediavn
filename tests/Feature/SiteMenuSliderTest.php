@@ -10,6 +10,7 @@ use App\Models\ProductCategory;
 use App\Models\Slider;
 use App\Models\SliderItem;
 use App\Models\User;
+use App\Services\SiteChromeCache;
 use App\Settings\MenuSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -89,6 +90,46 @@ class SiteMenuSliderTest extends TestCase
             ->assertSee('Chính sách đổi trả')
             ->assertSee('Hỗ trợ khách hàng')
             ->assertSee('Liên hệ tư vấn');
+    }
+
+    public function test_mega_menu_auto_nests_product_category_children(): void
+    {
+        $rootCategory = ProductCategory::query()->where('slug', 'cham-soc-mat')->firstOrFail();
+        $childCategory = ProductCategory::query()->where('slug', 'sua-rua-mat')->firstOrFail();
+        $this->assertSame($rootCategory->id, $childCategory->parent_id);
+        $this->assertTrue($childCategory->products()->where('is_active', true)->exists());
+
+        $mega = $this->menu('Mega menu tự động', 'header', []);
+        $rootItem = MenuItem::create([
+            'menu_id' => $mega->id,
+            'title' => ['vi' => $rootCategory->name],
+            'url' => route('content.show', ['domain' => 'danh-muc', 'slug' => $rootCategory->slug]),
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+        $childItem = MenuItem::create([
+            'menu_id' => $mega->id,
+            'title' => ['vi' => $childCategory->name],
+            'url' => route('content.show', ['domain' => 'danh-muc', 'slug' => $childCategory->slug]),
+            'sort_order' => 2,
+            'is_active' => true,
+        ]);
+
+        $settings = app(MenuSettings::class);
+        $settings->mega_menu_id = $mega->id;
+        $settings->save();
+        app(SiteChromeCache::class)->forget();
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Chăm sóc da')
+            ->assertSee('Sữa rửa mặt')
+            ->assertDontSee('data-mega-tab="menu-'.$childItem->id.'"', false);
+
+        $this->assertDatabaseHas('menu_items', [
+            'id' => $rootItem->id,
+            'parent_id' => null,
+        ]);
     }
 
     public function test_homepage_uses_active_homepage_slider_items(): void
