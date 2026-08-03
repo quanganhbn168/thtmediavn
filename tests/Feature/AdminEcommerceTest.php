@@ -566,6 +566,8 @@ class AdminEcommerceTest extends TestCase
             ->assertSee('Thông tin bán hàng')
             ->assertSee('Lưu ý về sản phẩm')
             ->assertSee('Sản phẩm có biến thể')
+            ->assertDontSee('Cách khách chọn biến thể')
+            ->assertSee('name="variant_selection_mode"', false)
             ->assertSee('Hiển thị ở các khối danh mục trang chủ')
             ->assertSee('Lưu &amp; tạo mới', false)
             ->assertSee('value="save_and_create"', false)
@@ -631,6 +633,8 @@ class AdminEcommerceTest extends TestCase
             ->assertSee('Phân loại để lọc')
             ->assertSee('không tạo thêm biến thể')
             ->assertSee('Sản phẩm có biến thể')
+            ->assertDontSee('Cách khách chọn biến thể')
+            ->assertSee('name="variant_selection_mode"', false)
             ->assertSee('productVariantManager', false);
 
         $html = $response->getContent();

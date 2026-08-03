@@ -136,17 +136,7 @@
                                 :selected="old('status', 'active')"
                             />
                         </div>
-                        <div class="col-12">
-                            <x-select
-                                name="variant_selection_mode"
-                                label="Cách khách chọn biến thể"
-                                :options="[
-                                    'combination' => 'Chọn theo tổ hợp (Màu / Dung lượng)',
-                                    'options' => 'Chọn lần lượt từng thuộc tính',
-                                ]"
-                                :selected="old('variant_selection_mode', 'combination')"
-                            />
-                        </div>
+                        <input type="hidden" name="variant_selection_mode" value="{{ old('variant_selection_mode', 'combination') }}">
                         <div class="col-12">
                             <x-input name="published_at" type="datetime-local" label="Ngày xuất bản" :value="old('published_at')" />
                         </div>
