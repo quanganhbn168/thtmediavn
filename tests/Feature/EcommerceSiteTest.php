@@ -208,7 +208,7 @@ class EcommerceSiteTest extends TestCase
         ]);
         $cta->addMedia(UploadedFile::fake()->image('cta.jpg', 1920, 700))->toMediaCollection('slide_image', 'public_media');
 
-        Testimonial::query()->create([
+        $testimonial = Testimonial::query()->create([
             'name' => 'Khách hàng kiểm thử',
             'label' => 'Da hỗn hợp · Hà Nội',
             'rating' => 5,
@@ -216,6 +216,8 @@ class EcommerceSiteTest extends TestCase
             'sort_order' => 0,
             'is_active' => true,
         ]);
+        $video = $testimonial->addMedia(UploadedFile::fake()->create('testimonial.mp4', 100, 'video/mp4'))
+            ->toMediaCollection('testimonial_video', 'public_media');
 
         $this->get(route('home'))
             ->assertOk()
@@ -223,6 +225,8 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('Nhận tư vấn')
             ->assertSee('Khách hàng nói gì về chúng tôi')
             ->assertSee('Khách hàng kiểm thử')
+            ->assertSee('home-testimonial-video', false)
+            ->assertSee($video->getUrl(), false)
             ->assertDontSee('Feedback thực tế, xem rõ từng thay đổi')
             ->assertSee('Nhận tư vấn nhanh')
             ->assertSee('action="'.route('contact.submit').'"', false);

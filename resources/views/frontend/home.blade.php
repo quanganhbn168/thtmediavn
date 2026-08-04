@@ -326,6 +326,12 @@
             @foreach($testimonials as $testimonial)
                 <div class="col">
                     <article class="home-testimonial-card h-100">
+                        @if($video = $testimonial->getFirstMedia('testimonial_video'))
+                            <video class="home-testimonial-video mb-3" controls preload="metadata" playsinline>
+                                <source src="{{ $video->getUrl() }}" type="{{ $video->mime_type }}">
+                                Trình duyệt không hỗ trợ phát video.
+                            </video>
+                        @endif
                         <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
                             <div class="home-testimonial-stars" aria-label="{{ $testimonial->rating }} trên 5 sao">{{ str_repeat('★', $testimonial->rating) }}<span>{{ str_repeat('☆', 5 - $testimonial->rating) }}</span></div>
                             <i class="bi bi-quote home-testimonial-quote" aria-hidden="true"></i>

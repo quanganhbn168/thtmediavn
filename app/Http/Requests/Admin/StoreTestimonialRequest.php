@@ -8,6 +8,13 @@ class StoreTestimonialRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'rating' => $this->filled('rating') ? $this->input('rating') : 5,
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -19,6 +26,8 @@ class StoreTestimonialRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'avatar' => ['nullable', 'string', 'max:500'],
             'avatar_remove' => ['nullable', 'boolean'],
+            'video' => ['nullable', 'string', 'max:500'],
+            'video_remove' => ['nullable', 'boolean'],
         ];
     }
 }

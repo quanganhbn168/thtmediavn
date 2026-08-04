@@ -28,19 +28,19 @@ class MediaService
     {
         $normalized = str_replace('\\', '/', $path);
         if (! str_starts_with($normalized, 'uploads/tmp/') || basename($normalized) !== substr($normalized, strlen('uploads/tmp/'))) {
-            throw ValidationException::withMessages([$field => 'Đường dẫn ảnh tạm không hợp lệ.']);
+            throw ValidationException::withMessages([$field => 'Đường dẫn tệp tạm không hợp lệ.']);
         }
 
         $root = realpath(public_path('uploads/tmp'));
         $fullPath = realpath(public_path($normalized));
         if ($root === false || $fullPath === false || ! File::isFile($fullPath)) {
-            throw ValidationException::withMessages([$field => 'Ảnh tạm không tồn tại hoặc đã hết hạn.']);
+            throw ValidationException::withMessages([$field => 'Tệp tạm không tồn tại hoặc đã hết hạn.']);
         }
 
         $root = rtrim(str_replace('\\', '/', $root), '/').'/';
         $candidate = str_replace('\\', '/', $fullPath);
         if (! str_starts_with($candidate, $root)) {
-            throw ValidationException::withMessages([$field => 'Đường dẫn ảnh tạm không hợp lệ.']);
+            throw ValidationException::withMessages([$field => 'Đường dẫn tệp tạm không hợp lệ.']);
         }
 
         return $fullPath;

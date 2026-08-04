@@ -30,6 +30,7 @@ class TestimonialService
     {
         $testimonial = Testimonial::query()->create($this->payload($data));
         $this->mediaService->syncSingle($testimonial, 'testimonial_avatar', $data['avatar'] ?? null);
+        $this->mediaService->syncSingle($testimonial, 'testimonial_video', $data['video'] ?? null);
 
         return $testimonial;
     }
@@ -43,11 +44,18 @@ class TestimonialService
             $data['avatar'] ?? null,
             (bool) ($data['avatar_remove'] ?? false),
         );
+        $this->mediaService->syncSingle(
+            $testimonial,
+            'testimonial_video',
+            $data['video'] ?? null,
+            (bool) ($data['video_remove'] ?? false),
+        );
     }
 
     public function delete(Testimonial $testimonial): void
     {
         $testimonial->clearMediaCollection('testimonial_avatar');
+        $testimonial->clearMediaCollection('testimonial_video');
         $testimonial->delete();
     }
 

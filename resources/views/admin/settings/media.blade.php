@@ -24,7 +24,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <x-input name="media_allowed_extensions" label="Định dạng tệp cho phép tải lên" :value="old('media_allowed_extensions', $settings->media_allowed_extensions)" :required="true" placeholder="Ví dụ: jpg,png,webp,pdf..." />
-                                <div class="form-text mt-n2 mb-3">Chỉ nhận: JPG, JPEG, PNG, WEBP, GIF, AVIF, ICO, PDF, DOC, DOCX. Tệp thực thi và SVG không được phép.</div>
+                                <div class="form-text mt-n2 mb-3">Chỉ nhận: JPG, JPEG, PNG, WEBP, GIF, AVIF, ICO, PDF, DOC, DOCX, MP4, WEBM, MOV. Tệp thực thi và SVG không được phép.</div>
                             </div>
                             <div class="col-md-6">
                                 <x-input name="media_max_size" type="number" label="Dung lượng tệp tối đa cho phép (MB)" :value="old('media_max_size', $settings->media_max_size)" :required="true" />

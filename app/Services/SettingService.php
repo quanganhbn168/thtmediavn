@@ -111,7 +111,7 @@ class SettingService
      */
     public function updateMedia(array $data, MediaSettings $settings): void
     {
-        $settings->media_allowed_extensions = $data['media_allowed_extensions'] ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx';
+        $settings->media_allowed_extensions = $data['media_allowed_extensions'] ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx,mp4,webm,mov';
         $settings->media_max_size = (int) ($data['media_max_size'] ?? 10);
         $settings->media_webp_conversion = isset($data['media_webp_conversion']);
         $settings->media_quality = (int) ($data['media_quality'] ?? 100);

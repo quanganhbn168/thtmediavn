@@ -11,7 +11,7 @@ use Spatie\Image\Image;
 class ImageService
 {
     public const SAFE_EXTENSIONS = [
-        'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'ico', 'pdf', 'doc', 'docx',
+        'jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'ico', 'pdf', 'doc', 'docx', 'mp4', 'webm', 'mov',
     ];
 
     private const MIME_TYPES = [
@@ -25,6 +25,9 @@ class ImageService
         'pdf' => ['application/pdf'],
         'doc' => ['application/msword', 'application/octet-stream'],
         'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'],
+        'mp4' => ['video/mp4', 'application/mp4'],
+        'webm' => ['video/webm'],
+        'mov' => ['video/quicktime'],
     ];
 
     protected MediaSettings $mediaSettings;
@@ -45,7 +48,7 @@ class ImageService
         }
 
         // Lấy danh sách định dạng cho phép từ cấu hình
-        $allowedStr = $this->mediaSettings->media_allowed_extensions ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx';
+        $allowedStr = $this->mediaSettings->media_allowed_extensions ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx,mp4,webm,mov';
         $allowedExtensions = array_values(array_intersect(
             array_map('trim', explode(',', strtolower($allowedStr))),
             self::SAFE_EXTENSIONS,

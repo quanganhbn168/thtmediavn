@@ -46,7 +46,7 @@
                                     <span><a class="fw-semibold text-decoration-none" href="{{ route('admin.testimonials.edit', $testimonial) }}">{{ $testimonial->name }}</a><small class="d-block text-muted">{{ $testimonial->label ?: 'Không có nhãn phụ' }} · Thứ tự {{ $testimonial->sort_order }}</small></span>
                                 </div>
                             </td>
-                            <td><span class="text-body-secondary">{{ Str::limit($testimonial->content, 110) }}</span></td>
+                            <td><span class="text-body-secondary">{{ Str::limit($testimonial->content, 110) }}</span>@if($testimonial->getFirstMediaUrl('testimonial_video')) <span class="badge bg-info-subtle text-info-emphasis ms-1"><i class="bi bi-camera-video me-1"></i>Video</span>@endif</td>
                             <td class="text-center text-warning">{{ str_repeat('★', $testimonial->rating) }}</td>
                             <td class="text-center"><x-toggle model="Testimonial" :id="$testimonial->id" field="is_active" :checked="$testimonial->is_active" /></td>
                             <td class="text-end"><div class="btn-group btn-group-sm"><a href="{{ route('admin.testimonials.edit', $testimonial) }}" class="btn btn-default" title="Chỉnh sửa"><i class="bi bi-pencil-square"></i></a><button type="submit" form="delete-testimonial-{{ $testimonial->id }}" class="btn btn-default text-danger" title="Xóa"><i class="bi bi-trash"></i></button></div></td>

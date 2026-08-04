@@ -360,6 +360,7 @@ class AdminEcommerceTest extends TestCase
             ->assertOk()
             ->assertViewIs('admin.testimonials.create')
             ->assertSee('Thêm cảm nhận khách hàng')
+            ->assertSee('Video cảm nhận')
             ->assertDontSee('Feedback trước / sau');
 
         $this->actingAs($admin, 'admin')
@@ -367,7 +368,6 @@ class AdminEcommerceTest extends TestCase
                 'name' => 'Ngọc Anh',
                 'label' => 'Da nhạy cảm · Hà Nội',
                 'content' => 'Nội dung testimonial do thương hiệu biên tập.',
-                'rating' => 5,
                 'sort_order' => 4,
                 'is_active' => 1,
             ])
@@ -380,7 +380,13 @@ class AdminEcommerceTest extends TestCase
             ->get(route('admin.testimonials.edit', $testimonial))
             ->assertOk()
             ->assertViewIs('admin.testimonials.edit')
-            ->assertSee('Sửa cảm nhận khách hàng');
+            ->assertSee('Sửa cảm nhận khách hàng')
+            ->assertSee('Video cảm nhận');
+
+        $this->assertDatabaseHas('testimonials', [
+            'id' => $testimonial->id,
+            'rating' => 5,
+        ]);
 
         $this->actingAs($admin, 'admin')
             ->put(route('admin.testimonials.update', $testimonial), [

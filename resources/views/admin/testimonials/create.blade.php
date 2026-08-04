@@ -24,6 +24,7 @@
                     <div class="border-top pt-3"><input type="hidden" name="is_active" value="0"><div class="form-check form-switch"><input class="form-check-input cursor-pointer" type="checkbox" role="switch" name="is_active" id="testimonial_is_active" value="1" @checked((bool) old('is_active', true))><label class="form-check-label cursor-pointer fw-semibold" for="testimonial_is_active">Hiển thị trên trang chủ</label></div></div>
                 </x-card>
                 <x-card type="secondary" :outline="true" title="Ảnh đại diện" :collapsible="true" class="mb-4"><x-image-upload name="avatar" label="Ảnh khách hàng" placeholder="Tải ảnh đại diện (không bắt buộc)" :width="400" :height="400" /><p class="text-muted small mb-0">Không có ảnh thì website dùng chữ cái đầu của tên.</p></x-card>
+                <x-card type="secondary" :outline="true" title="Video cảm nhận" :collapsible="true"><x-video-upload name="video" label="Video khách hàng" placeholder="Tải video cảm nhận (không bắt buộc)" /><p class="text-muted small mb-0">Video sẽ hiển thị trong thẻ cảm nhận trên trang chủ.</p></x-card>
             </div>
         </div>
         <div class="d-flex flex-wrap justify-content-end gap-2 mt-4 mb-5"><a class="btn btn-default" href="{{ route('admin.testimonials.index') }}"><i class="bi bi-arrow-left me-1"></i>Quay lại</a><button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg me-1"></i>Tạo cảm nhận</button></div>
