@@ -19,10 +19,6 @@ class UpdateTestimonialRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'avatar' => ['nullable', 'string', 'max:500'],
             'avatar_remove' => ['nullable', 'boolean'],
-            'before_image' => ['nullable', 'string', 'max:500'],
-            'before_image_remove' => ['nullable', 'boolean'],
-            'after_image' => ['nullable', 'string', 'max:500'],
-            'after_image_remove' => ['nullable', 'boolean'],
         ];
     }
 }

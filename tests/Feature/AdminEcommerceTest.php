@@ -360,7 +360,7 @@ class AdminEcommerceTest extends TestCase
             ->assertOk()
             ->assertViewIs('admin.testimonials.create')
             ->assertSee('Thêm cảm nhận khách hàng')
-            ->assertSee('Feedback trước / sau');
+            ->assertDontSee('Feedback trước / sau');
 
         $this->actingAs($admin, 'admin')
             ->post(route('admin.testimonials.store'), [

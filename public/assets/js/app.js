@@ -155,24 +155,6 @@
     });
   }
 
-  function initBeforeAfterFeedback() {
-    qsa('[data-before-after]').forEach(comparison => {
-      const range = qs('[data-before-after-range]', comparison);
-      const beforeImage = qs('[data-before-after-before]', comparison);
-      const divider = qs('[data-before-after-divider]', comparison);
-      if (!range || !beforeImage || !divider) return;
-
-      const update = () => {
-        const position = Math.max(0, Math.min(100, Number(range.value) || 50));
-        beforeImage.style.clipPath = `inset(0 ${100 - position}% 0 0)`;
-        divider.style.left = `${position}%`;
-      };
-
-      range.addEventListener('input', update);
-      update();
-    });
-  }
-
   function initFlashSaleSwiper() {
     if (typeof window.Swiper === 'undefined') return;
 
@@ -876,7 +858,6 @@
     initMegaMenus();
     initHomeHeroSwiper();
     initHomeAdviceSwiper();
-    initBeforeAfterFeedback();
     initFlashSaleSwiper();
     initProductGallerySwiper();
     initBackToTop();

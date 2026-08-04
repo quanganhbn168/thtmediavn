@@ -23,13 +23,5 @@ class Testimonial extends Model implements HasMedia
         $this->addMediaCollection('testimonial_avatar')
             ->singleFile()
             ->useDisk('public_media');
-
-        $this->addMediaCollection('testimonial_before')
-            ->singleFile()
-            ->useDisk('public_media');
-
-        $this->addMediaCollection('testimonial_after')
-            ->singleFile()
-            ->useDisk('public_media');
     }
 }

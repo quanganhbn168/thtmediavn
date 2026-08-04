@@ -80,10 +80,6 @@ class HomeController extends FrontendController
                 ->get(),
             'homePosts' => $this->homeNews(),
             'testimonials' => $testimonials->take(6),
-            'beforeAfterTestimonials' => $testimonials
-                ->filter(fn (Testimonial $testimonial): bool => filled($testimonial->getFirstMediaUrl('testimonial_before')) && filled($testimonial->getFirstMediaUrl('testimonial_after')))
-                ->take(3)
-                ->values(),
         ]);
     }
 

@@ -501,98 +501,6 @@ img { max-width: 100%; }
 .home-testimonial-author small { display: block; }
 .home-testimonial-author strong { color: var(--ink); font-size: 13px; }
 .home-testimonial-author small { margin-top: 2px; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
-.home-feedback-section {
-  background:
-    radial-gradient(circle at 86% 0, rgb(var(--secondary-rgb) / .18), transparent 28rem),
-    linear-gradient(180deg, var(--canvas), #fff 75%);
-}
-.home-feedback-heading { max-width: 670px; margin: 0 auto 32px; text-align: center; }
-.home-feedback-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--primary);
-  font-size: 11px;
-  font-weight: 850;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.home-feedback-kicker i { color: var(--secondary); font-size: 14px; }
-.home-feedback-heading h2 { margin: 9px 0 0; color: var(--ink); font-size: clamp(27px, 3vw, 39px); font-weight: 900; letter-spacing: -.025em; line-height: 1.15; }
-.home-feedback-heading p { margin: 13px 0 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
-.home-feedback-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
-.home-feedback-card {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  box-shadow: 0 18px 42px rgb(var(--primary-rgb) / .09);
-}
-.before-after { position: relative; aspect-ratio: 4 / 5; overflow: hidden; isolation: isolate; background: var(--canvas); }
-.before-after__image { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
-.before-after__image--before { z-index: 2; clip-path: inset(0 50% 0 0); will-change: clip-path; }
-.before-after__tag {
-  position: absolute;
-  z-index: 4;
-  top: 15px;
-  padding: 6px 10px;
-  color: #fff;
-  background: rgb(20 54 46 / .76);
-  border: 1px solid rgb(255 255 255 / .36);
-  border-radius: 999px;
-  backdrop-filter: blur(6px);
-  font-size: 10px;
-  font-weight: 850;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-.before-after__tag--before { left: 15px; }
-.before-after__tag--after { right: 15px; }
-.before-after__divider {
-  position: absolute;
-  z-index: 5;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgb(20 54 46 / .16);
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-.before-after__divider::before {
-  content: "↔";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  color: var(--ink);
-  background: var(--secondary);
-  border: 3px solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 7px 20px rgb(20 54 46 / .2);
-  font-size: 17px;
-  font-weight: 900;
-  transform: translate(-50%, -50%);
-}
-.before-after__range { position: absolute; z-index: 6; inset: 0; width: 100%; height: 100%; margin: 0; cursor: ew-resize; opacity: 0; }
-.before-after__range:focus-visible { outline: 0; }
-.before-after:has(.before-after__range:focus-visible) { outline: 3px solid var(--secondary); outline-offset: 3px; }
-.home-feedback-card__body { flex: 1; display: flex; flex-direction: column; padding: 20px; }
-.home-feedback-card__meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
-.home-feedback-card__meta > span:last-child { overflow: hidden; color: var(--muted); font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.home-feedback-card blockquote { flex: 1; margin: 0 0 18px; color: var(--ink); font-size: 13px; font-style: italic; line-height: 1.7; }
-.home-feedback-card__author { display: flex; align-items: center; gap: 9px; padding-top: 14px; border-top: 1px solid var(--line); }
-.home-feedback-card__author img,
-.home-feedback-card__author > span { width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 34px; object-fit: cover; color: var(--primary); background: var(--primary-soft); border-radius: 50%; font-size: 12px; font-weight: 900; }
-.home-feedback-card__author strong { color: var(--ink); font-size: 12px; }
-.home-feedback-note { max-width: 760px; margin: 22px auto 0; color: var(--muted); font-size: 11px; line-height: 1.65; text-align: center; }
-.home-feedback-note i { margin-right: 5px; color: var(--primary); }
 .home-lead-card { overflow: hidden; position: relative; padding: clamp(26px, 4.5vw, 54px); color: var(--on-brand); background: linear-gradient(128deg, var(--brand-dark), var(--brand-dark-secondary) 55%, var(--primary-strong)); border-radius: 26px; box-shadow: 0 18px 44px rgb(var(--primary-rgb) / .22); }
 .home-lead-card::before { content: ""; position: absolute; top: -100px; left: -74px; width: 300px; height: 300px; background: rgba(255, 255, 255, .06); border-radius: 50%; pointer-events: none; }
 .home-lead-card > .row { position: relative; z-index: 1; }
@@ -1756,7 +1664,6 @@ img { max-width: 100%; }
   .home-advice-layout { grid-template-columns: minmax(0, 1fr); }
   .home-advice-feature { min-height: 470px; }
   .home-advice-list { min-height: 0; }
-  .home-feedback-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 5px; scrollbar-width: none; }
   .product-tabs .nav-link { white-space: nowrap; }
   .floating-actions { right: 12px; bottom: 14px; }
@@ -1788,12 +1695,6 @@ img { max-width: 100%; }
   .home-advice-item p { display: none; }
   .home-promotion-cta__content p { font-size: 13.5px; }
   .home-testimonial-card { padding: 20px; }
-  .home-feedback-heading { margin-bottom: 23px; text-align: left; }
-  .home-feedback-heading h2 { font-size: 27px; }
-  .home-feedback-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .home-feedback-card { border-radius: 17px; }
-  .home-feedback-card__body { padding: 17px; }
-  .home-feedback-note { margin-top: 17px; text-align: left; }
   .home-lead-card { padding: 25px 20px; border-radius: 18px; }
   .home-hero-prev,
   .home-hero-next { width: 38px; height: 38px; font-size: 15px; }

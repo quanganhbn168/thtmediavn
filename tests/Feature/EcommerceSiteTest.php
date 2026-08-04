@@ -223,6 +223,7 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('Nhận tư vấn')
             ->assertSee('Khách hàng nói gì về chúng tôi')
             ->assertSee('Khách hàng kiểm thử')
+            ->assertDontSee('Feedback thực tế, xem rõ từng thay đổi')
             ->assertSee('Nhận tư vấn nhanh')
             ->assertSee('action="'.route('contact.submit').'"', false);
 
@@ -242,39 +243,6 @@ class EcommerceSiteTest extends TestCase
             'email' => 'tu-van@example.test',
             'subject' => 'Tư vấn chọn sản phẩm',
         ]);
-    }
-
-    public function test_homepage_renders_a_before_after_feedback_card_when_a_customer_has_shared_both_images(): void
-    {
-        Storage::fake('public_media');
-        $homepageSettings = app(HomepageSettings::class);
-        $homepageSettings->homepage_sections = array_values(array_unique([
-            ...$homepageSettings->homepage_sections,
-            'testimonials',
-        ]));
-        $homepageSettings->save();
-
-        $testimonial = Testimonial::query()->create([
-            'name' => 'Minh Anh',
-            'label' => 'Chia sẻ sau 6 tuần',
-            'rating' => 5,
-            'content' => 'Da trông đều màu hơn và cảm giác chăm sóc cũng dễ duy trì hơn.',
-            'sort_order' => 0,
-            'is_active' => true,
-        ]);
-        $before = $testimonial->addMedia(UploadedFile::fake()->image('before.jpg', 1200, 1500))
-            ->toMediaCollection('testimonial_before', 'public_media');
-        $after = $testimonial->addMedia(UploadedFile::fake()->image('after.jpg', 1200, 1500))
-            ->toMediaCollection('testimonial_after', 'public_media');
-
-        $this->get(route('home'))
-            ->assertOk()
-            ->assertSee('Feedback thực tế, xem rõ từng thay đổi')
-            ->assertSee('data-before-after', false)
-            ->assertSee('Kéo thanh so sánh', false)
-            ->assertSee($before->getUrl(), false)
-            ->assertSee($after->getUrl(), false)
-            ->assertSee('Ảnh do khách hàng chia sẻ');
     }
 
     public function test_homepage_advice_section_only_uses_home_post_categories_and_has_a_side_slider(): void
