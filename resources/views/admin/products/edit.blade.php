@@ -177,9 +177,6 @@
                     <i class="bi bi-box-arrow-up-right me-1"></i>Xem trên website
                 </a>
             @endif
-            <button class="btn btn-info text-white" type="submit" name="submit_action" value="save_and_create">
-                <i class="bi bi-plus-circle me-1"></i>Lưu &amp; tạo mới <span class="d-none d-md-inline">(Ctrl + Shift + S)</span>
-            </button>
             <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
         </div>
     </form>

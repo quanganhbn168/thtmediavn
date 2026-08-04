@@ -50,12 +50,6 @@ class ProductController extends Controller
     {
         $this->productService->update($product, $request->validated());
 
-        if ($request->input('submit_action') === 'save_and_create') {
-            return redirect()
-                ->route('admin.products.create')
-                ->with('success', 'Đã lưu sản phẩm và sẵn sàng tạo sản phẩm mới.');
-        }
-
         return back()->with('success', 'Đã cập nhật sản phẩm.');
     }
 

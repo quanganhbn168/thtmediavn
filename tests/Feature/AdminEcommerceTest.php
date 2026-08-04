@@ -637,6 +637,9 @@ class AdminEcommerceTest extends TestCase
             ->assertSee('name="variant_selection_mode"', false)
             ->assertSee('productVariantManager', false);
 
+        $response->assertDontSee('Lưu &amp; tạo mới', false)
+            ->assertDontSee('name="submit_action" value="save_and_create"', false);
+
         $html = $response->getContent();
         $this->assertSame(1, substr_count($html, 'vendor/dropzone/dropzone.min.js'));
         $this->assertStringNotContainsString('moneyInput({ initialValue: ,', $html);
