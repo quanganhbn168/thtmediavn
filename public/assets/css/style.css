@@ -490,7 +490,10 @@ img { max-width: 100%; }
 /* Testimonials and lead form */
 .home-testimonials-section { background: linear-gradient(180deg, #fff, var(--canvas)); }
 .home-testimonial-card { display: flex; flex-direction: column; padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 12px 32px rgb(var(--primary-rgb) / .07); }
-.home-testimonial-video { width: 100%; max-height: 240px; display: block; object-fit: cover; background: #111; border-radius: 12px; }
+.home-testimonial-video-link { display: block; position: relative; overflow: hidden; border-radius: 12px; }
+.home-testimonial-video { width: 100%; max-height: 240px; display: block; object-fit: cover; background: #111; border-radius: 12px; transition: transform .25s ease; }
+.home-testimonial-video-link:hover .home-testimonial-video { transform: scale(1.02); }
+.home-testimonial-video-play { position: absolute; inset: 50% auto auto 50%; display: grid; width: 48px; height: 48px; place-items: center; color: #fff; background: rgb(0 0 0 / .58); border: 1px solid rgb(255 255 255 / .7); border-radius: 50%; font-size: 25px; transform: translate(-50%, -50%); pointer-events: none; }
 .home-testimonial-stars { color: #ec9d1d; font-size: 17px; letter-spacing: 1px; white-space: nowrap; }
 .home-testimonial-stars span { color: var(--line); }
 .home-testimonial-quote { color: var(--brand-quote); font-size: 30px; line-height: 1; }

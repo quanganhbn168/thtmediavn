@@ -176,6 +176,20 @@ class EcommerceSiteTest extends TestCase
             ->assertDontSee('Bản đồ sẽ được hiển thị khi doanh nghiệp cung cấp liên kết vị trí chính thức.');
     }
 
+    public function test_product_category_uses_its_seo_values_on_the_frontend(): void
+    {
+        $category = ProductCategory::query()->where('slug', 'tay-trang')->firstOrFail();
+        $category->update([
+            'seo_title' => 'SEO danh mục chính chủ',
+            'seo_description' => 'Mô tả SEO danh mục chính chủ',
+        ]);
+
+        $this->get(route('content.show', ['domain' => 'danh-muc', 'slug' => $category->slug]))
+            ->assertOk()
+            ->assertSee('<title>SEO danh mục chính chủ</title>', false)
+            ->assertSee('<meta name="description" content="Mô tả SEO danh mục chính chủ">', false);
+    }
+
     public function test_homepage_renders_configured_cta_curated_testimonial_and_consultation_form(): void
     {
         Storage::fake('public_media');
@@ -226,6 +240,7 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('Khách hàng nói gì về chúng tôi')
             ->assertSee('Khách hàng kiểm thử')
             ->assertSee('home-testimonial-video', false)
+            ->assertSee('glightbox home-testimonial-video-link', false)
             ->assertSee($video->getUrl(), false)
             ->assertDontSee('Feedback thực tế, xem rõ từng thay đổi')
             ->assertSee('Nhận tư vấn nhanh')

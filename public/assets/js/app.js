@@ -838,6 +838,11 @@
     qsa('[data-bs-toggle="tooltip"]').forEach(el => bootstrap.Tooltip.getOrCreateInstance(el));
   }
 
+  function initGlightbox() {
+    if (typeof window.GLightbox !== 'function' || !qs('.glightbox')) return;
+    window.GLightbox({ selector: '.glightbox' });
+  }
+
   function initCopyFields() {
     qsa('[data-copy-value]').forEach(button => {
       button.addEventListener('click', async () => {
@@ -854,6 +859,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     updateHeaderCounts();
     initBootstrapHelpers();
+    initGlightbox();
     initStickyNavigation();
     initMegaMenus();
     initHomeHeroSwiper();

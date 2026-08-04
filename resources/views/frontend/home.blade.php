@@ -327,10 +327,13 @@
                 <div class="col">
                     <article class="home-testimonial-card h-100">
                         @if($video = $testimonial->getFirstMedia('testimonial_video'))
-                            <video class="home-testimonial-video mb-3" controls preload="metadata" playsinline>
-                                <source src="{{ $video->getUrl() }}" type="{{ $video->mime_type }}">
-                                Trình duyệt không hỗ trợ phát video.
-                            </video>
+                            <a href="{{ $video->getUrl() }}" class="glightbox home-testimonial-video-link mb-3" data-gallery="testimonial-videos" data-type="video" data-source="local" data-glightbox="type: video; source: local" aria-label="Xem video cảm nhận của {{ $testimonial->name }}">
+                                <video class="home-testimonial-video" preload="metadata" muted playsinline>
+                                    <source src="{{ $video->getUrl() }}" type="{{ $video->mime_type }}">
+                                    Trình duyệt không hỗ trợ phát video.
+                                </video>
+                                <span class="home-testimonial-video-play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
+                            </a>
                         @endif
                         <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
                             <div class="home-testimonial-stars" aria-label="{{ $testimonial->rating }} trên 5 sao">{{ str_repeat('★', $testimonial->rating) }}<span>{{ str_repeat('☆', 5 - $testimonial->rating) }}</span></div>

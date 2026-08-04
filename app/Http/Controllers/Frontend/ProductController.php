@@ -43,6 +43,10 @@ class ProductController extends FrontendController
             abort(404);
         }
 
+        $activeCategoryModel = $category !== ''
+            ? ProductCategory::query()->where('slug', $category)->where('is_active', true)->first()
+            : null;
+
         $query = Product::query()
             ->where('is_active', true)
             ->visibleOnSite()
@@ -136,6 +140,7 @@ class ProductController extends FrontendController
             'optionGroups' => $optionGroups,
             'attributeGroups' => $attributeGroups,
             'activeCategory' => $category,
+            'activeCategoryModel' => $activeCategoryModel,
             'searchTerm' => $search,
             'activeBrand' => $brand,
             'activePrice' => $data['price'] ?? '',

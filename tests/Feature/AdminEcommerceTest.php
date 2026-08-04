@@ -63,8 +63,18 @@ class AdminEcommerceTest extends TestCase
     {
         $admin=User::role('admin')->firstOrFail();
         foreach(['admin.products.index','admin.product-categories.index','admin.brands.index','admin.product-options.index','admin.flash-sales.index','admin.coupons.index'] as $route)$this->actingAs($admin, 'admin')->get(route($route))->assertOk();
-        $this->actingAs($admin, 'admin')->post(route('admin.product-categories.store'),['name'=>'Danh mục kiểm thử','is_active'=>1])->assertRedirect();
-        $this->assertDatabaseHas('product_categories',['name'=>'Danh mục kiểm thử']);
+        $nextRootOrder = ((int) ProductCategory::query()->whereNull('parent_id')->max('sort_order')) + 1;
+        $this->actingAs($admin, 'admin')->post(route('admin.product-categories.store'),[
+            'name' => 'Danh mục kiểm thử',
+            'description' => 'Mô tả danh mục kiểm thử',
+            'is_active' => 1,
+        ])->assertRedirect();
+        $this->assertDatabaseHas('product_categories',[
+            'name' => 'Danh mục kiểm thử',
+            'sort_order' => $nextRootOrder,
+            'seo_title' => 'Danh mục kiểm thử',
+            'seo_description' => 'Mô tả danh mục kiểm thử',
+        ]);
     }
 
     public function test_product_category_create_and_edit_forms_render_and_update(): void
@@ -76,20 +86,29 @@ class AdminEcommerceTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->get(route('admin.product-categories.create'))
             ->assertOk()
-            ->assertSee('Thêm danh mục sản phẩm');
+            ->assertSee('Thêm danh mục sản phẩm')
+            ->assertSee('Đường dẫn')
+            ->assertSee('Để trống để tự động xếp cuối')
+            ->assertDontSee('data-lte-toggle="card-collapse"', false);
 
         $this->actingAs($admin, 'admin')
             ->get(route('admin.product-categories.edit', $category))
             ->assertOk()
             ->assertSee('Sửa danh mục sản phẩm')
             ->assertSee($category->name)
-            ->assertSee('Kéo thả ảnh mới vào đây');
+            ->assertSee('Kéo thả ảnh mới vào đây')
+            ->assertSee('Đường dẫn')
+            ->assertDontSee('data-lte-toggle="card-collapse"', false);
+
+        $category->update([
+            'seo_title' => 'SEO chính chủ danh mục',
+            'seo_description' => 'Mô tả SEO chính chủ danh mục',
+        ]);
 
         $this->actingAs($admin, 'admin')
             ->put(route('admin.product-categories.update', $category), [
                 'parent_id' => $category->parent_id,
                 'name' => $category->name,
-                'slug' => $category->slug,
                 'description' => 'Mô tả đã cập nhật',
                 'sort_order' => $category->sort_order,
                 'is_active' => 0,
@@ -103,6 +122,8 @@ class AdminEcommerceTest extends TestCase
             'id' => $category->id,
             'slug' => $category->slug,
             'description' => 'Mô tả đã cập nhật',
+            'seo_title' => 'SEO chính chủ danh mục',
+            'seo_description' => 'Mô tả SEO chính chủ danh mục',
             'image' => $originalImage,
             'is_active' => false,
             'is_featured' => true,
@@ -431,6 +452,9 @@ class AdminEcommerceTest extends TestCase
             ->assertSee('Kích hoạt')
             ->assertSee('Nổi bật')
             ->assertSee('Trang chủ')
+            ->assertSee('product-category-status', false)
+            ->assertSee('product-category-featured', false)
+            ->assertSee('product-category-home', false)
             ->assertSee('data-model="ProductCategory"', false)
             ->assertSee('data-field="is_active"', false)
             ->assertSee('data-field="is_featured"', false)
@@ -470,6 +494,31 @@ class AdminEcommerceTest extends TestCase
             'is_featured' => true,
             'is_home' => $homeValue,
         ]);
+    }
+
+    public function test_product_category_index_filters_by_status(): void
+    {
+        $admin = User::role('admin')->firstOrFail();
+        $active = ProductCategory::query()->create([
+            'name' => 'Danh mục đang hiển thị '.Str::uuid(),
+            'slug' => 'danh-muc-dang-hien-thi-'.Str::uuid(),
+            'sort_order' => 90,
+            'is_active' => true,
+        ]);
+        $inactive = ProductCategory::query()->create([
+            'name' => 'Danh mục đang ẩn '.Str::uuid(),
+            'slug' => 'danh-muc-dang-an-'.Str::uuid(),
+            'sort_order' => 91,
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.product-categories.index', ['status' => 'inactive', 'per_page' => 50]))
+            ->assertOk()
+            ->assertSee($inactive->name)
+            ->assertSee('data-record-id="'.$inactive->id.'"', false)
+            ->assertDontSee('data-record-id="'.$active->id.'"', false)
+            ->assertSee('data-reorder-enabled="0"', false);
     }
 
     public function test_product_category_bulk_actions_are_wired_to_selected_rows(): void

@@ -20,12 +20,12 @@
         resource="product_category"
         bulk-delete-warning="Danh mục đang có dữ liệu liên quan sẽ được chặn xóa."
         :reorderable="true"
-        :reorder-enabled="! request()->hasAny(['search', 'per_page'])"
+        :reorder-enabled="! request()->hasAny(['search', 'per_page', 'parent_id', 'status', 'featured', 'home'])"
         :order-start="$categories->firstItem() ?? 1"
     >
     <x-slot:filters>
         <form action="{{ route('admin.product-categories.index') }}" method="GET" class="row g-2 align-items-end">
-                <div class="col-xl-8 col-md-8">
+                <div class="col-xl-4 col-lg-6">
                     <label for="product-category-search" class="form-label">Từ khóa</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
@@ -35,11 +35,44 @@
                             class="form-control"
                             name="search"
                             value="{{ request('search') }}"
-                            placeholder="Nhập tên hoặc slug"
+                            placeholder="Nhập tên danh mục"
                         />
                     </div>
                 </div>
-                <div class="col-xl-2 col-md-2">
+                <div class="col-xl-3 col-lg-6">
+                    <x-admin.category-tree-select
+                        name="parent_id"
+                        label="Danh mục cha"
+                        :categories="$filterCategories"
+                        :selected="request('parent_id')"
+                        placeholder="Tất cả danh mục cha"
+                    />
+                </div>
+                <div class="col-xl-2 col-lg-4 col-md-6">
+                    <label for="product-category-status" class="form-label">Trạng thái</label>
+                    <select id="product-category-status" name="status" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="active" @selected(request('status') === 'active')>Đang hiển thị</option>
+                        <option value="inactive" @selected(request('status') === 'inactive')>Đang ẩn</option>
+                    </select>
+                </div>
+                <div class="col-xl-1 col-lg-4 col-md-6">
+                    <label for="product-category-featured" class="form-label">Nổi bật</label>
+                    <select id="product-category-featured" name="featured" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="yes" @selected(request('featured') === 'yes')>Có</option>
+                        <option value="no" @selected(request('featured') === 'no')>Không</option>
+                    </select>
+                </div>
+                <div class="col-xl-1 col-lg-4 col-md-6">
+                    <label for="product-category-home" class="form-label">Trang chủ</label>
+                    <select id="product-category-home" name="home" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="yes" @selected(request('home') === 'yes')>Có</option>
+                        <option value="no" @selected(request('home') === 'no')>Không</option>
+                    </select>
+                </div>
+                <div class="col-xl-1 col-lg-4 col-md-6">
                     <label for="product-category-per-page" class="form-label">Số dòng</label>
                     <select id="product-category-per-page" name="per_page" class="form-select">
                         @foreach([10, 20, 25, 50] as $size)
@@ -47,11 +80,11 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-xl-1 col-md-1 d-flex align-items-end">
+                <div class="col-xl-1 col-lg-4 col-md-6 d-flex align-items-end">
                     <button class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Lọc</button>
                 </div>
-                <div class="col-xl-1 col-md-1">
-                    @if(request()->hasAny(['search', 'per_page']))
+                <div class="col-xl-1 col-lg-4 col-md-6">
+                    @if(request()->hasAny(['search', 'per_page', 'parent_id', 'status', 'featured', 'home']))
                         <a href="{{ route('admin.product-categories.index') }}" class="btn btn-default d-block" title="Xóa bộ lọc">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </a>
@@ -79,7 +112,6 @@
                             <td data-select-column class="text-center"><input form="admin-bulk-product_category-form" type="checkbox" name="ids[]" value="{{ $category->id }}" class="form-check-input" data-check-item aria-label="Chọn {{ $category->name }}"></td>
                             <td>
                                 <strong>{{ $category->name }}</strong>
-                                <small class="d-block text-muted">/{{ $category->slug }}</small>
                             </td>
                             <td>{{ $category->parent?->name ?: '—' }}</td>
                             <td class="text-center">

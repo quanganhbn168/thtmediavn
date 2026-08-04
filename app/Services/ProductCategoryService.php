@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ProductCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -27,9 +28,39 @@ class ProductCategoryService
             });
         }
 
+        if (filled($filters['parent_id'] ?? null)) {
+            $query->where('parent_id', (int) $filters['parent_id']);
+        }
+
+        if (($filters['status'] ?? null) === 'active') {
+            $query->where('is_active', true);
+        } elseif (($filters['status'] ?? null) === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        if (($filters['featured'] ?? null) === 'yes') {
+            $query->where('is_featured', true);
+        } elseif (($filters['featured'] ?? null) === 'no') {
+            $query->where('is_featured', false);
+        }
+
+        if (($filters['home'] ?? null) === 'yes') {
+            $query->where('is_home', true);
+        } elseif (($filters['home'] ?? null) === 'no') {
+            $query->where('is_home', false);
+        }
+
         return $query->orderBy('sort_order')
             ->paginate((int) ($filters['per_page'] ?? 20))
             ->withQueryString();
+    }
+
+    public function filterCategories(): Collection
+    {
+        return ProductCategory::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'parent_id', 'name']);
     }
 
     public function formContext(ProductCategory $category): array
@@ -52,12 +83,16 @@ class ProductCategoryService
         $payload = $this->payload($data);
         $payload['image'] = $this->persistImage($data['image'] ?? null);
 
+        if (! array_key_exists('sort_order', $data) || blank($data['sort_order'])) {
+            $payload['sort_order'] = $this->nextSortOrder($payload['parent_id']);
+        }
+
         return ProductCategory::create($payload);
     }
 
     public function update(ProductCategory $category, array $data): void
     {
-        $payload = $this->payload($data);
+        $payload = $this->payload($data, $category);
         $newImage = $this->normalizeImagePath($data['image'] ?? null);
         $removeImage = (bool) ($data['image_remove'] ?? false);
 
@@ -89,23 +124,39 @@ class ProductCategoryService
         $category->delete();
     }
 
-    private function payload(array $data): array
+    private function payload(array $data, ?ProductCategory $current = null): array
     {
         $name = trim((string) ($data['name'] ?? ''));
         $slug = trim((string) ($data['slug'] ?? ''));
+        $description = trim((string) ($data['description'] ?? ''));
+        $seoTitle = trim((string) ($data['seo_title'] ?? ''));
+        $seoDescription = trim((string) ($data['seo_description'] ?? ''));
 
         return [
             'parent_id' => $this->toNullableInt($data['parent_id'] ?? null),
             'name' => $name,
-            'slug' => $slug !== '' ? $slug : Str::slug($name),
-            'description' => $data['description'] ?? null,
-            'seo_title' => $data['seo_title'] ?? null,
-            'seo_description' => $data['seo_description'] ?? null,
+            'slug' => $slug !== '' ? $slug : ($current?->slug ?: Str::slug($name)),
+            'description' => $description !== '' ? $description : null,
+            'seo_title' => $seoTitle !== '' ? $seoTitle : ($current?->seo_title ?: $name),
+            'seo_description' => $seoDescription !== '' ? $seoDescription : ($current?->seo_description ?: ($description !== '' ? $description : null)),
             'sort_order' => (int) ($data['sort_order'] ?? 0),
             'is_featured' => (bool) ($data['is_featured'] ?? false),
             'is_home' => (bool) ($data['is_home'] ?? false),
             'is_active' => (bool) ($data['is_active'] ?? true),
         ];
+    }
+
+    private function nextSortOrder(?int $parentId): int
+    {
+        $query = ProductCategory::query();
+
+        if ($parentId === null) {
+            $query->whereNull('parent_id');
+        } else {
+            $query->where('parent_id', $parentId);
+        }
+
+        return ((int) $query->max('sort_order')) + 1;
     }
 
     private function toNullableInt(mixed $value): ?int

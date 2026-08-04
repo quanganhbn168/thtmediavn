@@ -26,7 +26,7 @@
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <x-card type="primary" :outline="true" title="Thông tin danh mục" :collapsible="true" class="mb-4">
+                <x-card type="primary" :outline="true" title="Thông tin danh mục" class="mb-4">
                     <div class="row g-3">
                         <div class="col-md-7">
                             <x-input
@@ -57,7 +57,7 @@
                     </div>
                 </x-card>
 
-                <x-card type="secondary" :outline="true" title="Ảnh đại diện" :collapsible="true">
+                <x-card type="secondary" :outline="true" title="Ảnh đại diện">
                     <x-image-upload
                         name="image"
                         label="Ảnh danh mục"
@@ -72,7 +72,7 @@
             </div>
 
             <div class="col-lg-4">
-                <x-card type="info" :outline="true" title="Cấu hình hiển thị" :collapsible="true" class="mb-4">
+                <x-card type="info" :outline="true" title="Cấu hình hiển thị" class="mb-4">
                     <x-admin.category-tree-select
                         name="parent_id"
                         label="Danh mục cha"
@@ -142,7 +142,7 @@
                     </div>
                 </x-card>
 
-                <x-card type="secondary" :outline="true" title="Tối ưu SEO" :collapsible="true">
+                <x-card type="secondary" :outline="true" title="Tối ưu SEO">
                     <x-input
                         name="seo_title"
                         label="SEO title"
@@ -169,4 +169,5 @@
             </button>
         </div>
     </form>
+    @include('admin.product_categories._seo-autofill')
 @endsection

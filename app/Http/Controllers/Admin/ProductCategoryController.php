@@ -19,6 +19,7 @@ class ProductCategoryController extends Controller
     {
         return view('admin.product_categories.index', [
             'categories' => $this->productCategoryService->paginate($request->validated()),
+            'filterCategories' => $this->productCategoryService->filterCategories(),
         ]);
     }
 

@@ -1,6 +1,12 @@
 @extends('layouts.master')
 
-@section('title', 'Sản phẩm — ' . $website['name'])
+@php
+    $categoryPageTitle = $activeCategoryModel?->seo_title ?: $activeCategoryModel?->name;
+    $categoryPageDescription = $activeCategoryModel?->seo_description ?: $activeCategoryModel?->description;
+@endphp
+
+@section('title', $categoryPageTitle ?: 'Sản phẩm — ' . $website['name'])
+@section('meta_description', $categoryPageDescription ?: $website['seo_description'])
 
 @section('content')
 <div class="breadcrumb-wrap">
