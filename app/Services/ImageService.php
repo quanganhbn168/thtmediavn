@@ -115,7 +115,7 @@ class ImageService
         $convertToWebp = $options['convert_to_webp'] ?? $this->mediaSettings->media_webp_conversion;
         $width = $options['width'] ?? null;
         $height = $options['height'] ?? null;
-        $quality = $options['quality'] ?? $this->mediaSettings->media_quality ?? 85;
+        $quality = $options['quality'] ?? $this->mediaSettings->media_quality ?? 100;
 
         $originalExt = strtolower($file->getClientOriginalExtension());
         $filename = Str::random(40);
