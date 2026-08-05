@@ -90,8 +90,19 @@ class ComboService
             'seo_title' => $data['seo_title'] ?? null,
             'seo_description' => $data['seo_description'] ?? null,
             'published_at' => $data['published_at'] ?? null,
-            'sort_order' => (int) ($data['sort_order'] ?? 0),
+            'sort_order' => $this->sortOrder($data, $current),
         ];
+    }
+
+    private function sortOrder(array $data, ?Combo $current = null): int
+    {
+        if (array_key_exists('sort_order', $data) && $data['sort_order'] !== null && $data['sort_order'] !== '') {
+            return (int) $data['sort_order'];
+        }
+
+        return $current?->sort_order !== null
+            ? (int) $current->sort_order
+            : ((int) Combo::query()->max('sort_order')) + 1;
     }
 
     private function syncImage(Combo $combo, array $data): void

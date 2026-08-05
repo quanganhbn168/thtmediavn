@@ -2,10 +2,10 @@
     <div class="product-editor-main">
         <x-card type="primary" :outline="true" title="Thông tin chung" :collapsible="true" class="mb-0 product-editor-info">
             <div class="row g-3">
-                <div class="col-lg-8">
+                <div class="col-12">
                     <x-input id="combo_name" name="name" label="Tên Combo" :value="$combo->name" required />
                 </div>
-                <div class="col-lg-4">
+                <div class="col-12">
                     <x-slug name="slug" label="Đường dẫn" :value="$combo->slug" source="combo_name" />
                 </div>
                 <div class="col-12">
@@ -53,10 +53,8 @@
                     <x-select name="combo_category_id" label="Danh mục Combo" :options="$categories->pluck('name', 'id')" :selected="old('combo_category_id', $combo->combo_category_id)" />
                 </div>
                 <div class="col-12">
-                    <div class="row g-2">
-                        <div class="col-6"><x-input name="price" type="number" label="Giá bán" :value="old('price', $combo->price)" min="1" step="1" required /></div>
-                        <div class="col-6"><x-input name="compare_price" type="number" label="Giá niêm yết" :value="old('compare_price', $combo->compare_price)" min="0" step="1" /></div>
-                    </div>
+                    <x-money-input name="price" label="Giá bán" :value="$combo->price" :min="1" :required="true" />
+                    <x-money-input name="compare_price" label="Giá niêm yết" :value="$combo->compare_price" :min="0" />
                 </div>
                 <div class="col-12">
                     <x-select name="status" label="Trạng thái" :options="['active' => 'Đang bán', 'draft' => 'Bản nháp', 'archived' => 'Ngừng bán']" :selected="old('status', $combo->status ?: 'active')" />
@@ -65,10 +63,7 @@
                     <x-input name="published_at" type="datetime-local" label="Ngày xuất bản" :value="old('published_at', $combo->published_at?->format('Y-m-d\TH:i'))" />
                 </div>
                 <div class="col-12">
-                    <x-input name="sort_order" type="number" label="Thứ tự hiển thị" :value="old('sort_order', $combo->sort_order ?: 0)" min="0" step="1" />
-                </div>
-                <div class="col-12">
-                    <div class="alert alert-info mb-0 small"><i class="bi bi-info-circle me-1"></i>Tồn kho Combo được tính từ các sản phẩm thành phần, không nhập tồn kho riêng cho Combo.</div>
+                    <div class="alert alert-info mb-0 small"><i class="bi bi-info-circle me-1"></i>Tồn kho Combo được tính từ các sản phẩm thành phần. Thứ tự hiển thị được hệ thống tự tạo và có thể kéo thả ở danh sách Combo.</div>
                 </div>
                 <div class="col-12">
                     <input type="hidden" name="is_active" value="0">
@@ -90,7 +85,7 @@
             </div>
         </x-card>
 
-        <x-card type="secondary" :outline="true" title="Tối ưu SEO" :collapsible="true" class="mb-0">
+        <x-card type="secondary" :outline="true" title="SEO" :collapsible="true" class="mt-3">
             <x-input name="seo_title" label="SEO title" :value="old('seo_title', $combo->seo_title)" placeholder="Tiêu đề hiển thị trên công cụ tìm kiếm" />
             <x-textarea name="seo_description" label="SEO description" :value="old('seo_description', $combo->seo_description)" rows="4" placeholder="Mô tả ngắn cho công cụ tìm kiếm" />
         </x-card>

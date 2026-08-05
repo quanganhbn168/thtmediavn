@@ -56,11 +56,12 @@ class ComboTest extends TestCase
             ->assertSee('name="is_active"', false)
             ->assertSee('name="allow_preorder"', false)
             ->assertSee('name="is_featured"', false)
-            ->assertSee('name="sort_order"', false)
             ->assertSee('name="ingredients"', false)
             ->assertSee('name="usage"', false)
             ->assertSee('name="product_notes"', false)
-            ->assertSee('data-max-files="9"', false);
+            ->assertSee('data-max-files="9"', false)
+            ->assertSee('SEO')
+            ->assertDontSee('name="sort_order"', false);
         $this->get(route('combos.index'))->assertOk()->assertSee('Chưa có Combo phù hợp');
     }
 
@@ -84,6 +85,7 @@ class ComboTest extends TestCase
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $combo = Combo::query()->where('name', 'like', 'Combo kiểm thử riêng%')->latest('id')->firstOrFail();
+        $this->assertGreaterThan(0, (int) $combo->sort_order);
         $this->assertDatabaseHas('combos', [
             'id' => $combo->id,
             'ingredients' => '<p>Thành phần Combo kiểm thử.</p>',
