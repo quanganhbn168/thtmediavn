@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Combo;
 use App\Models\ComboCategory;
-use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,7 +14,7 @@ class ComboService
 
     public function paginate(array $filters): LengthAwarePaginator
     {
-        $query = Combo::query()->with(['category', 'media', 'items']);
+        $query = Combo::query()->with(['category', 'media'])->withCount('items');
         $search = trim((string) ($filters['search'] ?? ''));
         if ($search !== '') {
             $query->where(fn ($builder) => $builder->where('name', 'like', "%{$search}%")->orWhere('slug', 'like', "%{$search}%"));
@@ -37,17 +36,11 @@ class ComboService
         return ComboCategory::query()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->pluck('name', 'id');
     }
 
-    public function formContext(Combo $combo): array
+    public function editorContext(Combo $combo): array
     {
         return [
             'combo' => $combo->loadMissing(['items.product.variants', 'items.variant', 'media']),
             'categories' => ComboCategory::query()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(),
-            'componentProducts' => Product::query()
-                ->where('is_active', true)
-                ->where('status', 'active')
-                ->with(['activeVariants' => fn ($query) => $query->orderByDesc('is_default')->orderBy('id')])
-                ->orderBy('name')
-                ->get(['id', 'name']),
         ];
     }
 
@@ -55,7 +48,6 @@ class ComboService
     {
         return DB::transaction(function () use ($data): Combo {
             $combo = Combo::create($this->payload($data));
-            $this->syncItems($combo, $data['items'] ?? []);
             $this->syncImage($combo, $data);
 
             return $combo;
@@ -66,7 +58,6 @@ class ComboService
     {
         DB::transaction(function () use ($combo, $data): void {
             $combo->update($this->payload($data, $combo));
-            $this->syncItems($combo, $data['items'] ?? []);
             $this->syncImage($combo, $data);
         });
     }
@@ -98,19 +89,6 @@ class ComboService
             'published_at' => $data['published_at'] ?? null,
             'sort_order' => (int) ($data['sort_order'] ?? 0),
         ];
-    }
-
-    private function syncItems(Combo $combo, array $rows): void
-    {
-        $combo->items()->delete();
-        foreach (array_values($rows) as $index => $row) {
-            $combo->items()->create([
-                'product_id' => (int) $row['product_id'],
-                'product_variant_id' => $this->toNullableInt($row['product_variant_id'] ?? null),
-                'quantity' => (int) $row['quantity'],
-                'sort_order' => (int) ($row['sort_order'] ?? $index),
-            ]);
-        }
     }
 
     private function syncImage(Combo $combo, array $data): void

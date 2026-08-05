@@ -26,7 +26,7 @@ class PaymentController extends Controller
 
     public function create(): View
     {
-        return view('admin.payments.create', $this->paymentService->formContext());
+        return view('admin.payments.create', $this->paymentService->editorContext());
     }
 
     public function store(StorePaymentRequest $request): RedirectResponse
@@ -48,7 +48,7 @@ class PaymentController extends Controller
             abort(409, 'Giao dịch tự động là dữ liệu chỉ đọc.');
         }
 
-        return view('admin.payments.edit', compact('payment') + $this->paymentService->formContext());
+        return view('admin.payments.edit', compact('payment') + $this->paymentService->editorContext());
     }
 
     public function update(UpdatePaymentRequest $request, Payment $payment): RedirectResponse

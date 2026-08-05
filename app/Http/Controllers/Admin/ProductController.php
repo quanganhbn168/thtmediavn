@@ -25,7 +25,7 @@ class ProductController extends Controller
 
     public function create(): View
     {
-        return $this->form(new Product);
+        return $this->editor(new Product);
     }
 
     public function store(StoreProductRequest $request): RedirectResponse
@@ -43,7 +43,7 @@ class ProductController extends Controller
 
     public function edit(Product $product): View
     {
-        return $this->form($product->load(['variants.values', 'options', 'media']));
+        return $this->editor($product->load(['variants.values', 'options', 'media']));
     }
 
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
@@ -59,8 +59,8 @@ class ProductController extends Controller
         return back()->with('success', 'Đã đưa sản phẩm vào thùng rác.');
     }
 
-    private function form(Product $product): View
+    private function editor(Product $product): View
     {
-        return view($product->exists ? 'admin.products.edit' : 'admin.products.create', $this->productService->formContext($product));
+        return view($product->exists ? 'admin.products.edit' : 'admin.products.create', $this->productService->editorContext($product));
     }
 }

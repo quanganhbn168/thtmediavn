@@ -51,7 +51,7 @@ class ProductCategoryService
             ->get(['id', 'parent_id', 'name']);
     }
 
-    public function formContext(ProductCategory $category): array
+    public function editorContext(ProductCategory $category): array
     {
         $categories = ProductCategory::query()
             ->withCount('products')

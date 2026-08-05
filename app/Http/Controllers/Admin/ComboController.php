@@ -25,7 +25,7 @@ class ComboController extends Controller
 
     public function create(): View
     {
-        return view('admin.combos.create', $this->comboService->formContext(new Combo));
+        return view('admin.combos.create', $this->comboService->editorContext(new Combo));
     }
 
     public function store(StoreComboRequest $request): RedirectResponse
@@ -37,7 +37,7 @@ class ComboController extends Controller
 
     public function edit(Combo $combo): View
     {
-        return view('admin.combos.edit', $this->comboService->formContext($combo));
+        return view('admin.combos.edit', $this->comboService->editorContext($combo));
     }
 
     public function update(UpdateComboRequest $request, Combo $combo): RedirectResponse

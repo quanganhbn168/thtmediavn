@@ -41,7 +41,7 @@ class PostCategoryService
             ->withQueryString();
     }
 
-    public function formContext(PostCategory $category): array
+    public function editorContext(PostCategory $category): array
     {
         $categories = PostCategory::query()
             ->withCount('posts')

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Combo;
 use App\Models\ComboCategory;
+use App\Models\ComboItem;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\OrderInventoryService;
@@ -34,7 +35,7 @@ class ComboTest extends TestCase
         $this->actingAs($admin, 'admin')->get(route('admin.combo-categories.index'))->assertOk()->assertSee('Danh mục Combo');
         $this->actingAs($admin, 'admin')->postJson(route('admin.common.toggle-field'), ['model' => 'ComboCategory', 'id' => $category->id, 'field' => 'is_active'])->assertOk();
         $category->refresh()->update(['is_active' => true]);
-        $this->actingAs($admin, 'admin')->get(route('admin.combos.create'))->assertOk()->assertSee('Sản phẩm trong Combo');
+        $this->actingAs($admin, 'admin')->get(route('admin.combos.create'))->assertOk()->assertSee('Thành phần Combo');
         $this->get(route('combos.index'))->assertOk()->assertSee('Chưa có Combo phù hợp');
     }
 
@@ -52,15 +53,29 @@ class ComboTest extends TestCase
             'compare_price' => 249000,
             'status' => 'active',
             'is_active' => 1,
-            'items' => [[
-                'product_id' => $product->id,
-                'product_variant_id' => $product->default_variant->id,
-                'quantity' => 2,
-            ]],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $combo = Combo::query()->where('name', 'like', 'Combo kiểm thử riêng%')->latest('id')->firstOrFail();
+        $this->actingAs($admin, 'admin')->post(route('admin.combos.components.store', $combo), [
+            'product_id' => $product->id,
+            'product_variant_id' => $product->default_variant->id,
+            'quantity' => 2,
+            'sort_order' => 1,
+        ])->assertRedirect(route('admin.combos.components.index', $combo))->assertSessionHasNoErrors();
+
         $this->assertDatabaseHas('combo_items', ['combo_id' => $combo->id, 'product_id' => $product->id, 'quantity' => 2]);
+        $this->actingAs($admin, 'admin')->get(route('admin.combos.components.index', $combo))->assertOk()->assertSee($product->name);
+        $component = ComboItem::query()->where('combo_id', $combo->id)->firstOrFail();
+        $this->actingAs($admin, 'admin')->get(route('admin.combos.components.edit', [$combo, $component]))->assertOk()->assertSee('Số lượng trong một Combo');
+        $this->actingAs($admin, 'admin')->put(route('admin.combos.components.update', [$combo, $component]), [
+            'product_id' => $product->id,
+            'product_variant_id' => $product->default_variant->id,
+            'quantity' => 3,
+            'sort_order' => 2,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('combo_items', ['id' => $component->id, 'quantity' => 3, 'sort_order' => 2]);
+        $this->actingAs($admin, 'admin')->delete(route('admin.combos.components.destroy', [$combo, $component]))->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertDatabaseMissing('combo_items', ['id' => $component->id]);
         $this->assertSame('active', $product->fresh()->status);
     }
 

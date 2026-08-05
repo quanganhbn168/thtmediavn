@@ -27,7 +27,7 @@ class ProductOptionService
             ->withQueryString();
     }
 
-    public function formContext(ProductOption $option): array
+    public function editorContext(ProductOption $option): array
     {
         return ['option' => $option->loadMissing('values')];
     }

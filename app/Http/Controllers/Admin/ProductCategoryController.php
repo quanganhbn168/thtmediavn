@@ -25,7 +25,7 @@ class ProductCategoryController extends Controller
 
     public function create(): View
     {
-        return view('admin.product_categories.create', $this->productCategoryService->formContext(new ProductCategory));
+        return view('admin.product_categories.create', $this->productCategoryService->editorContext(new ProductCategory));
     }
 
     public function store(StoreProductCategoryRequest $request): RedirectResponse
@@ -39,7 +39,7 @@ class ProductCategoryController extends Controller
 
     public function edit(ProductCategory $productCategory): View
     {
-        return view('admin.product_categories.edit', $this->productCategoryService->formContext($productCategory));
+        return view('admin.product_categories.edit', $this->productCategoryService->editorContext($productCategory));
     }
 
     public function update(UpdateProductCategoryRequest $request, ProductCategory $productCategory): RedirectResponse

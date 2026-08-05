@@ -25,7 +25,7 @@ class ProductAttributeService
         return $query->orderBy('sort_order')->paginate((int) ($filters['per_page'] ?? 20))->withQueryString();
     }
 
-    public function formContext(ProductAttribute $attribute): array
+    public function editorContext(ProductAttribute $attribute): array
     {
         return [
             'attribute' => $attribute->loadMissing([

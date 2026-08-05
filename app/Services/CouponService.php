@@ -37,7 +37,7 @@ class CouponService
             ->withQueryString();
     }
 
-    public function formContext(Coupon $coupon): array
+    public function editorContext(Coupon $coupon): array
     {
         return [
             'coupon' => $coupon,

@@ -52,7 +52,7 @@ class ProductService
         return ProductCategory::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id');
     }
 
-    public function formContext(Product $product): array
+    public function editorContext(Product $product): array
     {
         $categoryModels = ProductCategory::query()
             ->withCount('products')

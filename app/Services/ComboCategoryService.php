@@ -48,6 +48,8 @@ class ComboCategoryService
             'name' => $name,
             'slug' => $slug !== '' ? $slug : ($current?->slug ?: Str::slug($name)),
             'description' => filled($data['description'] ?? null) ? $data['description'] : null,
+            'seo_title' => filled($data['seo_title'] ?? null) ? $data['seo_title'] : ($current?->seo_title ?: $name),
+            'seo_description' => filled($data['seo_description'] ?? null) ? $data['seo_description'] : ($current?->seo_description ?: ($data['description'] ?? null)),
             'sort_order' => (int) ($data['sort_order'] ?? 0),
             'is_active' => (bool) ($data['is_active'] ?? false),
         ];

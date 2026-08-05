@@ -142,6 +142,8 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('Dùng sau bước làm sạch.')
             ->assertSee('Ngưng sử dụng nếu có dấu hiệu kích ứng.')
             ->assertSee('Đánh giá được kiểm duyệt')
+            ->assertSee('Viết đánh giá')
+            ->assertSee(route('login', ['redirect' => '/san-pham/'.$product->slug.'#danh-gia']), false)
             ->assertDontSee('Vui lòng đăng nhập để đánh giá sản phẩm.')
             ->assertDontSee('description-product-callout', false)
             ->assertDontSee('Cách đưa vào routine')

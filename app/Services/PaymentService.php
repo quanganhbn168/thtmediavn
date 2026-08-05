@@ -50,7 +50,7 @@ class PaymentService
             ->withQueryString();
     }
 
-    public function formContext(): array
+    public function editorContext(): array
     {
         return [
             'orders' => Order::query()

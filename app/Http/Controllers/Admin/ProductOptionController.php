@@ -24,7 +24,7 @@ class ProductOptionController extends Controller
 
     public function create(): View
     {
-        return view('admin.product_options.create', $this->productOptionService->formContext(new ProductOption));
+        return view('admin.product_options.create', $this->productOptionService->editorContext(new ProductOption));
     }
 
     public function store(StoreProductOptionRequest $request): RedirectResponse
@@ -36,7 +36,7 @@ class ProductOptionController extends Controller
 
     public function edit(ProductOption $productOption): View
     {
-        return view('admin.product_options.edit', $this->productOptionService->formContext($productOption->load('values')));
+        return view('admin.product_options.edit', $this->productOptionService->editorContext($productOption->load('values')));
     }
 
     public function update(UpdateProductOptionRequest $request, ProductOption $productOption): RedirectResponse

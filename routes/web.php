@@ -101,6 +101,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin', 'admin'])->gro
     // Mini e-commerce
     Route::resource('/products', Admin\ProductController::class)->except(['show']);
     Route::resource('/combos', Admin\ComboController::class)->except(['show']);
+    Route::get('/combos/{combo}/components', [Admin\ComboComponentController::class, 'index'])->name('combos.components.index');
+    Route::get('/combos/{combo}/components/create', [Admin\ComboComponentController::class, 'create'])->name('combos.components.create');
+    Route::post('/combos/{combo}/components', [Admin\ComboComponentController::class, 'store'])->name('combos.components.store');
+    Route::get('/combos/{combo}/components/{comboItem}/edit', [Admin\ComboComponentController::class, 'edit'])->name('combos.components.edit');
+    Route::put('/combos/{combo}/components/{comboItem}', [Admin\ComboComponentController::class, 'update'])->name('combos.components.update');
+    Route::delete('/combos/{combo}/components/{comboItem}', [Admin\ComboComponentController::class, 'destroy'])->name('combos.components.destroy');
     Route::resource('/combo-categories', Admin\ComboCategoryController::class)->except(['show']);
     Route::resource('/product-categories', Admin\ProductCategoryController::class)->except(['show']);
     Route::resource('/brands', Admin\BrandController::class)->except(['show']);

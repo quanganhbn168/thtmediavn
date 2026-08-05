@@ -24,7 +24,7 @@ class BrandController extends Controller
 
     public function create(): View
     {
-        return view('admin.brands.create', $this->brandService->formContext(new Brand));
+        return view('admin.brands.create', $this->brandService->editorContext(new Brand));
     }
 
     public function store(StoreBrandRequest $request): RedirectResponse
@@ -36,7 +36,7 @@ class BrandController extends Controller
 
     public function edit(Brand $brand): View
     {
-        return view('admin.brands.edit', $this->brandService->formContext($brand));
+        return view('admin.brands.edit', $this->brandService->editorContext($brand));
     }
 
     public function update(UpdateBrandRequest $request, Brand $brand): RedirectResponse

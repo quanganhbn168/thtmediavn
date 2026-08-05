@@ -28,7 +28,7 @@ class PostCategoryController extends Controller
 
     public function create()
     {
-        return view('admin.post_categories.create', $this->categoryService->formContext(new PostCategory));
+        return view('admin.post_categories.create', $this->categoryService->editorContext(new PostCategory));
     }
 
     public function store(StorePostCategoryRequest $request)
@@ -48,7 +48,7 @@ class PostCategoryController extends Controller
 
     public function edit(PostCategory $postCategory)
     {
-        return view('admin.post_categories.edit', $this->categoryService->formContext($postCategory));
+        return view('admin.post_categories.edit', $this->categoryService->editorContext($postCategory));
     }
 
     public function update(UpdatePostCategoryRequest $request, PostCategory $postCategory)

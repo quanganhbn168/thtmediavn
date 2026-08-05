@@ -24,7 +24,7 @@ class ProductAttributeController extends Controller
 
     public function create(): View
     {
-        return view('admin.product_attributes.create', $this->productAttributeService->formContext(new ProductAttribute));
+        return view('admin.product_attributes.create', $this->productAttributeService->editorContext(new ProductAttribute));
     }
 
     public function store(StoreProductAttributeRequest $request): RedirectResponse
@@ -36,7 +36,7 @@ class ProductAttributeController extends Controller
 
     public function edit(ProductAttribute $productAttribute): View
     {
-        return view('admin.product_attributes.edit', $this->productAttributeService->formContext($productAttribute));
+        return view('admin.product_attributes.edit', $this->productAttributeService->editorContext($productAttribute));
     }
 
     public function update(UpdateProductAttributeRequest $request, ProductAttribute $productAttribute): RedirectResponse

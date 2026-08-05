@@ -1884,6 +1884,7 @@ img { max-width: 100%; }
 .review-scope-note { padding: 24px; background: var(--canvas); border: 1px solid var(--line); border-radius: 14px; }
 .review-scope-note > i { display: block; margin-bottom: 12px; color: var(--primary); font-size: 30px; }
 .review-scope-note p { color: var(--muted); font-size: 13px; line-height: 1.65; }
+.review-form-card { padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
 .product-mobile-buybar { display: none; }
 
 .checkout-page { background: var(--surface); }

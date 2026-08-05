@@ -26,7 +26,7 @@ class FlashSaleController extends Controller
 
     public function create(Request $request): View
     {
-        return $this->form(new FlashSale, $request);
+        return $this->editor(new FlashSale, $request);
     }
 
     public function products(Request $request): JsonResponse
@@ -52,7 +52,7 @@ class FlashSaleController extends Controller
 
     public function edit(FlashSale $flashSale, Request $request): View
     {
-        return $this->form($flashSale, $request);
+        return $this->editor($flashSale, $request);
     }
 
     public function update(UpdateFlashSaleRequest $request, FlashSale $flashSale): RedirectResponse
@@ -69,7 +69,7 @@ class FlashSaleController extends Controller
         return back()->with('success', 'Đã xóa Flash Sale.');
     }
 
-    private function form(FlashSale $sale, Request $request): View
+    private function editor(FlashSale $sale, Request $request): View
     {
         $oldItems = $request->session()->hasOldInput('items')
             ? (array) $request->session()->getOldInput('items')
@@ -77,7 +77,7 @@ class FlashSaleController extends Controller
 
         return view(
             $sale->exists ? 'admin.flash_sales.edit' : 'admin.flash_sales.create',
-            $this->flashSaleService->formContext($sale, $oldItems)
+            $this->flashSaleService->editorContext($sale, $oldItems)
         );
     }
 }

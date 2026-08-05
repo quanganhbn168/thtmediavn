@@ -11,7 +11,14 @@
         <x-card type="secondary" :outline="true" title="Ảnh Combo" :collapsible="true" class="mb-0 product-editor-media">
             <x-product-image-upload name="image" label="Ảnh Combo" :existing-images="$combo->getMedia('combo_images')->map(fn ($media) => ['id' => $media->id, 'url' => $media->getUrl()])->all()" :max-files="1" />
         </x-card>
-        @include('components.admin.combo-item-manager', ['combo' => $combo, 'componentProducts' => $componentProducts])
+        <x-card type="info" :outline="true" title="Thành phần Combo" :collapsible="true" class="mb-0">
+            @if($combo->exists)
+                <p class="text-muted mb-3">Combo này có <strong>{{ $combo->items->count() }}</strong> thành phần. Thành phần được quản lý riêng để tránh sửa nhầm thông tin Combo và dữ liệu trừ tồn kho.</p>
+                <a class="btn btn-outline-primary" href="{{ route('admin.combos.components.index', $combo) }}"><i class="bi bi-diagram-3 me-1"></i>Quản lý thành phần</a>
+            @else
+                <p class="text-muted mb-0">Lưu Combo trước, sau đó thêm sản phẩm thành phần và số lượng trừ tồn kho.</p>
+            @endif
+        </x-card>
     </div>
     <div class="product-editor-sidebar">
         <x-card type="info" :outline="true" title="Giá và hiển thị" :collapsible="true" class="mb-0">
@@ -21,6 +28,10 @@
             <x-input name="sort_order" type="number" label="Thứ tự" :value="old('sort_order', $combo->sort_order ?: 0)" min="0" step="1" />
             <x-input name="published_at" type="datetime-local" label="Ngày xuất bản" :value="old('published_at', $combo->published_at?->format('Y-m-d\TH:i'))" />
             <div class="border-top pt-3"><input type="hidden" name="is_active" value="0"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="is_active" id="combo_is_active" value="1" @checked(old('is_active', $combo->exists ? $combo->is_active : true))><label class="form-check-label" for="combo_is_active">Hiển thị Combo</label></div><input type="hidden" name="allow_preorder" value="0"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="allow_preorder" id="combo_allow_preorder" value="1" @checked(old('allow_preorder', $combo->allow_preorder))><label class="form-check-label" for="combo_allow_preorder">Cho phép đặt trước</label></div><input type="hidden" name="is_featured" value="0"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="is_featured" id="combo_is_featured" value="1" @checked(old('is_featured', $combo->is_featured))><label class="form-check-label" for="combo_is_featured">Combo nổi bật</label></div></div>
+        </x-card>
+        <x-card type="secondary" :outline="true" title="Tối ưu SEO" :collapsible="true" class="mb-0">
+            <x-input name="seo_title" label="SEO title" :value="old('seo_title', $combo->seo_title)" placeholder="Tiêu đề hiển thị trên công cụ tìm kiếm" />
+            <x-textarea name="seo_description" label="SEO description" :value="old('seo_description', $combo->seo_description)" rows="4" placeholder="Mô tả ngắn cho công cụ tìm kiếm" />
         </x-card>
     </div>
 </div>

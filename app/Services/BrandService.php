@@ -29,7 +29,7 @@ class BrandService
             ->withQueryString();
     }
 
-    public function formContext(Brand $brand): array
+    public function editorContext(Brand $brand): array
     {
         if ($brand->exists) {
             $brand->loadCount('products');

@@ -37,7 +37,7 @@ class FlashSaleService
      * Dữ liệu khởi tạo cho trình soạn Flash Sale. Chỉ đưa sản phẩm hợp lệ vào
      * form để một liên kết cũ hoặc đã xoá không thể vô tình được lưu lại.
      */
-    public function formContext(FlashSale $sale, ?array $oldItems = null): array
+    public function editorContext(FlashSale $sale, ?array $oldItems = null): array
     {
         if ($oldItems !== null) {
             return [

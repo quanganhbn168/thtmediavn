@@ -24,7 +24,7 @@ class CouponController extends Controller
 
     public function create(): View
     {
-        return $this->form(new Coupon);
+        return $this->editor(new Coupon);
     }
 
     public function store(StoreCouponRequest $request): RedirectResponse
@@ -38,7 +38,7 @@ class CouponController extends Controller
 
     public function edit(Coupon $coupon): View
     {
-        return $this->form($coupon->load(['products', 'categories']));
+        return $this->editor($coupon->load(['products', 'categories']));
     }
 
     public function update(UpdateCouponRequest $request, Coupon $coupon): RedirectResponse
@@ -55,8 +55,8 @@ class CouponController extends Controller
         return back()->with('success', 'Đã xóa mã giảm giá.');
     }
 
-    private function form(Coupon $coupon): View
+    private function editor(Coupon $coupon): View
     {
-        return view('admin.coupons.form', $this->couponService->formContext($coupon));
+        return view('admin.coupons.coupon', $this->couponService->editorContext($coupon));
     }
 }

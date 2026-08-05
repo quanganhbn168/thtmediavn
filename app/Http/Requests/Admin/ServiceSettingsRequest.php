@@ -5,7 +5,7 @@ namespace App\Http\Requests\Admin;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ServiceRequestFormRequest extends FormRequest
+class ServiceSettingsRequest extends FormRequest
 {
     public function authorize(): bool
     {

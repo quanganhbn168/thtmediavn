@@ -441,7 +441,40 @@
                         <i class="bi bi-patch-check-fill"></i>
                         <h3 class="h5">Đánh giá được kiểm duyệt</h3>
                         <p class="mb-0">Trang chỉ hiển thị đánh giá đã được RHEA duyệt hoặc xác minh từ đơn hàng.</p>
+                        @auth('web')
+                            <a class="btn btn-primary mt-3" href="#review-form">Viết đánh giá</a>
+                        @else
+                            <a class="btn btn-primary mt-3" href="{{ route('login', ['redirect' => request()->getPathInfo().'#danh-gia']) }}">Viết đánh giá</a>
+                        @endauth
                     </div>
+
+                    @auth('web')
+                        <div class="review-form-card mt-4" id="review-form">
+                            <h3 class="h5 fw-bold mb-3">Viết đánh giá</h3>
+                            @if(session('success'))
+                                <div class="alert alert-success">{{ session('success') }}</div>
+                            @endif
+                            @if($errors->any())
+                                <div class="alert alert-danger">{{ $errors->first() }}</div>
+                            @endif
+                            <form action="{{ route('product.reviews.store', $productModel) }}" method="post">
+                                @csrf
+                                <div class="mb-3">
+                                    <label class="form-label" for="review-rating">Số sao</label>
+                                    <select class="form-select" id="review-rating" name="rating" required>
+                                        @foreach([5 => 'Rất tốt', 4 => 'Tốt', 3 => 'Bình thường', 2 => 'Chưa tốt', 1 => 'Không hài lòng'] as $rating => $label)
+                                            <option value="{{ $rating }}" @selected((int) old('rating', 5) === $rating)>{{ $rating }} sao — {{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="review-content">Nội dung</label>
+                                    <textarea class="form-control" id="review-content" name="content" rows="5" minlength="10" maxlength="2000" required>{{ old('content') }}</textarea>
+                                </div>
+                                <button class="btn btn-primary" type="submit">Gửi đánh giá</button>
+                            </form>
+                        </div>
+                    @endauth
                 </div>
             </div>
         </div>
