@@ -6,6 +6,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Product;
+use App\Models\Combo;
 use App\Observers\SlugObserver;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,5 +30,6 @@ class ObserverServiceProvider extends ServiceProvider
         Post::observe(SlugObserver::class);
         PostCategory::observe(SlugObserver::class);
         Product::observe(SlugObserver::class);
+        Combo::observe(SlugObserver::class);
     }
 }

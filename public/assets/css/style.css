@@ -1874,6 +1874,10 @@ img { max-width: 100%; }
 .product-purchase-proof a { color: inherit; }
 .product-suitability { margin: 15px 0; padding: 12px 14px; background: var(--canvas); border-left: 3px solid var(--secondary); border-radius: 0 10px 10px 0; color: #554c50; font-size: 13px; }
 .product-purchase-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.combo-component-box { padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--primary-wash); }
+.combo-component-box .list-group-item { background: transparent; border-color: var(--line); }
+.combo-component-box a { color: var(--ink); font-weight: 700; }
+.combo-component-box a:hover { color: var(--primary); }
 .product-ingredient-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
 .product-ingredient-list li { padding: 7px 11px; background: rgb(var(--primary-rgb) / .07); border: 1px solid rgb(var(--primary-rgb) / .12); border-radius: 999px; font-size: 12px; font-weight: 700; }
 .routine-guide { padding: 14px; color: #5d5156; background: var(--canvas); border-radius: 10px; }

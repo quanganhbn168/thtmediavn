@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
 use App\Services\SePayExpirationService;
@@ -76,28 +78,62 @@ class CheckoutController extends Controller
         if ($cart->items->isEmpty()) {
             throw ValidationException::withMessages(['cart' => 'Giỏ hàng đang trống.']);
         }
-        if ($cart->items->contains(fn ($item) => ! $item->product?->isVisibleOnSite())) {
+        if ($cart->items->contains(fn ($item) => $item->isCombo() ? ! $item->combo?->isVisibleOnSite() : ! $item->product?->isVisibleOnSite())) {
             throw ValidationException::withMessages(['cart' => 'Giỏ hàng có sản phẩm không còn khả dụng. Vui lòng gỡ sản phẩm đó trước khi thanh toán.']);
         }
 
         $order = DB::transaction(function () use ($cart, $data) {
             DB::table('carts')->where('id', $cart->id)->lockForUpdate()->first();
             $cart->refresh();
-            $cart->load(['items.product.media', 'items.variant', 'items.product.variants']);
+            $cart->load([
+                'items.product.media',
+                'items.variant',
+                'items.product.variants',
+                'items.combo.items.product.variants',
+                'items.combo.items.variant',
+            ]);
             if ($cart->items->isEmpty()) {
                 throw ValidationException::withMessages(['cart' => 'Đơn hàng này đã được ghi nhận hoặc giỏ hàng đang trống.']);
             }
-            $lockedVariants = [];
+
+            $requiredStock = [];
+            $stockLabels = [];
+            $comboReservations = [];
             foreach ($cart->items as $item) {
+                if ($item->isCombo()) {
+                    $reservations = $this->comboReservations($item);
+                    if ($reservations === []) {
+                        throw ValidationException::withMessages(['cart' => "Combo {$item->combo->name} chưa được cấu hình thành phần."]);
+                    }
+                    $comboReservations[$item->id] = $reservations;
+                    foreach ($reservations as $reservation) {
+                        if (! $reservation['stock_reserved']) {
+                            continue;
+                        }
+                        $variantId = $reservation['variant']->id;
+                        $requiredStock[$variantId] = ($requiredStock[$variantId] ?? 0) + $reservation['quantity'];
+                        $stockLabels[$variantId] = $reservation['product']->name;
+                    }
+                    continue;
+                }
+
                 $variant = $item->variant ?: $item->product->activeVariants()->where('is_active', true)->first();
                 if (! $variant) {
                     throw ValidationException::withMessages(['cart' => "Sản phẩm {$item->product->name} chưa có biến thể khả dụng."]);
                 }
 
-                $stockModel = ProductVariant::query()->lockForUpdate()->findOrFail($variant->id);
-                $lockedVariants[$variant->id] = $stockModel;
-                if ($item->product->track_inventory && ! $item->product->allow_preorder && $stockModel->stock < $item->quantity) {
-                    throw ValidationException::withMessages(['cart' => "Sản phẩm {$item->product->name} không còn đủ số lượng."]);
+                if ($item->product->track_inventory && ! $item->product->allow_preorder) {
+                    $requiredStock[$variant->id] = ($requiredStock[$variant->id] ?? 0) + $item->quantity;
+                    $stockLabels[$variant->id] = $item->product->name;
+                }
+            }
+
+            $lockedVariants = [];
+            foreach ($requiredStock as $variantId => $quantity) {
+                $stockModel = ProductVariant::query()->lockForUpdate()->findOrFail($variantId);
+                $lockedVariants[$variantId] = $stockModel;
+                if ($stockModel->stock < $quantity) {
+                    throw ValidationException::withMessages(['cart' => "Sản phẩm {$stockLabels[$variantId]} không còn đủ số lượng."]);
                 }
             }
 
@@ -129,6 +165,39 @@ class CheckoutController extends Controller
             ]);
 
             foreach ($cart->items as $item) {
+                if ($item->isCombo()) {
+                    $reservations = $comboReservations[$item->id] ?? [];
+                    $stockReserved = collect($reservations)->contains('stock_reserved', true);
+                    $orderItem = $order->items()->create([
+                        'item_type' => 'combo',
+                        'item_id' => $item->combo_id,
+                        'item_name' => $item->combo->name,
+                        'product_name' => $item->combo->name,
+                        'image' => $item->combo->image_url,
+                        'quantity' => $item->quantity,
+                        'stock_reserved' => $stockReserved,
+                        'unit_price' => $item->unit_price,
+                        'discount_amount' => 0,
+                        'total_price' => $item->unit_price * $item->quantity,
+                    ]);
+                    foreach ($reservations as $reservation) {
+                        $orderItem->comboComponents()->create([
+                            'combo_id' => $item->combo_id,
+                            'component_product_id' => $reservation['product']->id,
+                            'component_variant_id' => $reservation['variant']->id,
+                            'component_product_name' => $reservation['product']->name,
+                            'component_variant_name' => $reservation['variant']->name,
+                            'sku' => $reservation['variant']->sku,
+                            'quantity' => $reservation['quantity'],
+                            'stock_reserved' => $reservation['stock_reserved'],
+                        ]);
+                        if ($reservation['stock_reserved']) {
+                            $lockedVariants[$reservation['variant']->id]->decrement('stock', $reservation['quantity']);
+                        }
+                    }
+                    continue;
+                }
+
                 $variant = $item->variant ?: $item->product->activeVariants()->where('is_active', true)->first();
                 if (! $variant) {
                     throw ValidationException::withMessages(['cart' => "Sản phẩm {$item->product->name} chưa có biến thể khả dụng."]);
@@ -188,6 +257,33 @@ class CheckoutController extends Controller
         }
 
         return redirect()->to($redirect);
+    }
+
+    /**
+     * @return array<int, array{product: Product, variant: ProductVariant, quantity: int, stock_reserved: bool}>
+     */
+    private function comboReservations(CartItem $item): array
+    {
+        $reservations = [];
+
+        foreach ($item->combo->items as $comboItem) {
+            $component = $comboItem->product;
+            $variant = $comboItem->variant ?: $component?->default_variant;
+            if (! $component || ! $component->isVisibleOnSite() || ! $variant || ! $variant->is_active) {
+                throw ValidationException::withMessages([
+                    'cart' => "Combo {$item->combo->name} có thành phần không còn khả dụng.",
+                ]);
+            }
+
+            $reservations[] = [
+                'product' => $component,
+                'variant' => $variant,
+                'quantity' => $item->quantity * max(1, (int) $comboItem->quantity),
+                'stock_reserved' => $component->track_inventory && ! $component->allow_preorder,
+            ];
+        }
+
+        return $reservations;
     }
 
     public function payment(string $publicToken): View

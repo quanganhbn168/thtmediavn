@@ -3,13 +3,14 @@
 namespace App\Services;
 
 use App\Models\Cart;
+use App\Models\Combo;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CartService
 {
@@ -27,7 +28,16 @@ class CartService
             $cart = Cart::create(['user_id' => Auth::id(), 'session_id' => Auth::check() ? null : $this->guestToken()]);
         }
 
-        return $cart?->load(['items.product.brand', 'items.product.media', 'items.product.flashSaleItems.flashSale', 'items.variant.values.option']);
+        return $cart?->load([
+            'items.product.brand',
+            'items.product.media',
+            'items.product.flashSaleItems.flashSale',
+            'items.variant.values.option',
+            'items.combo.media',
+            'items.combo.category',
+            'items.combo.items.product.variants',
+            'items.combo.items.variant',
+        ]);
     }
 
     public function add(Product $product, ?ProductVariant $variant, int $quantity): Cart
@@ -48,16 +58,42 @@ class CartService
             throw ValidationException::withMessages(['variant_id' => 'Biến thể này hiện đang ngừng kinh doanh.']);
         }
 
-        $stock = (int) $variant->stock;
-        if ($product->track_inventory && ! $product->allow_preorder && $stock < 1) {
+        $stock = $this->availableStockLimit($product, $variant);
+        if ($stock !== null && $stock < 1) {
             throw ValidationException::withMessages(['quantity' => 'Sản phẩm hiện đã hết hàng.']);
         }
 
         $cart = $this->current();
-        $item = $cart->items()->firstOrNew(['product_id' => $product->id, 'product_variant_id' => $variant?->id]);
+        $item = $cart->items()->firstOrNew(['product_id' => $product->id, 'product_variant_id' => $variant->id, 'combo_id' => null]);
         $newQuantity = ($item->exists ? $item->quantity : 0) + max(1, $quantity);
-        if ($product->track_inventory && ! $product->allow_preorder && $newQuantity > $stock) {
+        if ($stock !== null && $newQuantity > $stock) {
             throw ValidationException::withMessages(['quantity' => "Chỉ còn {$stock} sản phẩm trong kho."]);
+        }
+        $item->quantity = $newQuantity;
+        $item->save();
+
+        return $this->current();
+    }
+
+    public function addCombo(Combo $combo, int $quantity): Cart
+    {
+        if (! $combo->isVisibleOnSite()) {
+            throw ValidationException::withMessages(['combo_id' => 'Combo này không khả dụng trong chế độ cửa hàng hiện tại.']);
+        }
+        if ($combo->items()->count() < 1) {
+            throw ValidationException::withMessages(['combo_id' => 'Combo chưa được cấu hình sản phẩm thành phần.']);
+        }
+
+        $stock = $this->availableComboStockLimit($combo);
+        if ($stock !== null && $stock < 1) {
+            throw ValidationException::withMessages(['quantity' => 'Combo hiện đã hết hàng.']);
+        }
+
+        $cart = $this->current();
+        $item = $cart->items()->firstOrNew(['combo_id' => $combo->id, 'product_id' => null, 'product_variant_id' => null]);
+        $newQuantity = ($item->exists ? $item->quantity : 0) + max(1, $quantity);
+        if ($stock !== null && $newQuantity > $stock) {
+            throw ValidationException::withMessages(['quantity' => "Chỉ còn {$stock} Combo trong kho."]);
         }
         $item->quantity = $newQuantity;
         $item->save();
@@ -70,30 +106,59 @@ class CartService
         $cart = $this->current();
         $item = $cart->items->firstWhere('id', $itemId);
         abort_unless($item, 404);
-        $variant = $item->variant ?: $item->product->default_variant;
-        if (! $item->product->isVisibleOnSite()) {
-            throw ValidationException::withMessages(['item_id' => 'Sản phẩm không còn khả dụng. Vui lòng gỡ khỏi giỏ hàng.']);
-        }
-        if (! $variant) {
-            throw ValidationException::withMessages(['item_id' => 'Không xác định được biến thể cho sản phẩm.']);
-        }
 
         if ($quantity < 1) {
             $item->delete();
             return $this->current();
         }
-        $stock = (int) $variant->stock;
-        if ($item->product->track_inventory && ! $item->product->allow_preorder && $quantity > $stock) {
+
+        if ($item->isCombo()) {
+            if (! $item->combo?->isVisibleOnSite()) {
+                throw ValidationException::withMessages(['item_id' => 'Combo không còn khả dụng. Vui lòng gỡ khỏi giỏ hàng.']);
+            }
+            $stock = $this->availableComboStockLimit($item->combo);
+        } else {
+            $variant = $item->variant ?: $item->product->default_variant;
+            if (! $item->product?->isVisibleOnSite()) {
+                throw ValidationException::withMessages(['item_id' => 'Sản phẩm không còn khả dụng. Vui lòng gỡ khỏi giỏ hàng.']);
+            }
+            if (! $variant) {
+                throw ValidationException::withMessages(['item_id' => 'Không xác định được biến thể cho sản phẩm.']);
+            }
+            $stock = $this->availableStockLimit($item->product, $variant);
+        }
+
+        if ($stock !== null && $quantity > $stock) {
             throw ValidationException::withMessages(['quantity' => "Chỉ còn {$stock} sản phẩm trong kho."]);
         }
         $item->update(['quantity' => $quantity]);
+
         return $this->current();
+    }
+
+    public function availableStockLimit(Product $product, ?ProductVariant $variant = null): ?int
+    {
+        if (! $product->track_inventory || $product->allow_preorder) {
+            return null;
+        }
+
+        return (int) ($variant?->stock ?? 0);
+    }
+
+    public function availableComboStockLimit(Combo $combo): ?int
+    {
+        if ($combo->allow_preorder) {
+            return null;
+        }
+
+        return $combo->availableQuantity();
     }
 
     public function remove(int $itemId): Cart
     {
         $cart = $this->current();
         $cart->items()->whereKey($itemId)->delete();
+
         return $this->current();
     }
 
@@ -106,13 +171,14 @@ class CartService
             throw ValidationException::withMessages(['coupon' => 'Mã giảm giá không hợp lệ hoặc chưa đủ điều kiện áp dụng.']);
         }
         $cart->update(['coupon_code' => $coupon->code]);
+
         return $this->current();
     }
 
     public function summary(?Cart $cart = null, bool $withCoupon = true): array
     {
         $cart ??= $this->current();
-        $unavailableItems = $cart->items->filter(fn ($item) => ! $item->product?->isVisibleOnSite());
+        $unavailableItems = $cart->items->filter(fn ($item) => ! $this->itemIsVisible($item));
         $availableItems = $cart->items->reject(fn ($item) => $unavailableItems->contains('id', $item->id));
         $subtotal = $availableItems->sum(fn ($item) => $item->unit_price * $item->quantity);
         $coupon = $withCoupon && $cart->coupon_code ? Coupon::query()->visibleOnSite()->with(['products:id', 'categories:id'])->where('code', $cart->coupon_code)->first() : null;
@@ -124,52 +190,61 @@ class CartService
         $discount = $coupon?->discountFor($eligibleSubtotal) ?? 0;
         $shippingFlatFee = max(0, (int) config('commerce.shipping.flat_fee', 30000));
         $freeShippingThreshold = max(1, (int) config('commerce.shipping.free_threshold', 1000000));
-        $shipping = $subtotal <= 0 || $subtotal >= $freeShippingThreshold || $coupon?->type === 'free_shipping'
-            ? 0
-            : $shippingFlatFee;
+        $shipping = $subtotal <= 0 || $subtotal >= $freeShippingThreshold || $coupon?->type === 'free_shipping' ? 0 : $shippingFlatFee;
         $freeShippingRemain = max(0, $freeShippingThreshold - $subtotal);
         $freeShippingPercent = min(100, (int) round($subtotal / $freeShippingThreshold * 100));
 
-        return compact(
-            'subtotal',
-            'discount',
-            'shipping',
-            'coupon',
-            'unavailableItems',
-            'shippingFlatFee',
-            'freeShippingThreshold',
-            'freeShippingRemain',
-            'freeShippingPercent',
-        ) + ['total' => max(0, $subtotal - $discount + $shipping)];
+        return compact('subtotal', 'discount', 'shipping', 'coupon', 'unavailableItems', 'shippingFlatFee', 'freeShippingThreshold', 'freeShippingRemain', 'freeShippingPercent')
+            + ['total' => max(0, $subtotal - $discount + $shipping)];
     }
 
     private function eligibleSubtotal(Cart $cart, Coupon $coupon): float
     {
         $productIds = $coupon->products->pluck('id');
         $categoryIds = $coupon->categories->pluck('id');
-        $visibleItems = $cart->items->filter(fn ($item) => $item->product?->isVisibleOnSite());
-        if ($productIds->isEmpty() && $categoryIds->isEmpty()) return (float) $visibleItems->sum(fn ($item) => $item->unit_price * $item->quantity);
-        return (float) $visibleItems->filter(fn ($item) => $productIds->contains($item->product_id) || $categoryIds->contains($item->product->product_category_id))->sum(fn ($item) => $item->unit_price * $item->quantity);
+        $visibleItems = $cart->items->filter(fn ($item) => $this->itemIsVisible($item));
+        if ($productIds->isEmpty() && $categoryIds->isEmpty()) {
+            return (float) $visibleItems->sum(fn ($item) => $item->unit_price * $item->quantity);
+        }
+
+        return (float) $visibleItems
+            ->filter(fn ($item) => $item->product && ($productIds->contains($item->product_id) || $categoryIds->contains($item->product->product_category_id)))
+            ->sum(fn ($item) => $item->unit_price * $item->quantity);
+    }
+
+    private function itemIsVisible($item): bool
+    {
+        return $item->isCombo() ? (bool) $item->combo?->isVisibleOnSite() : (bool) $item->product?->isVisibleOnSite();
     }
 
     public function mergeGuestCart(User $user, string $sessionId): void
     {
         $guest = Cart::query()->whereNull('user_id')->where('session_id', $sessionId)->with('items')->first();
-        if (! $guest) return;
+        if (! $guest) {
+            return;
+        }
         $userCart = Cart::firstOrCreate(['user_id' => $user->id], ['session_id' => null]);
         foreach ($guest->items as $item) {
-            $target = $userCart->items()->firstOrNew(['product_id' => $item->product_id, 'product_variant_id' => $item->product_variant_id]);
+            $keys = $item->combo_id
+                ? ['combo_id' => $item->combo_id, 'product_id' => null, 'product_variant_id' => null]
+                : ['product_id' => $item->product_id, 'product_variant_id' => $item->product_variant_id, 'combo_id' => null];
+            $target = $userCart->items()->firstOrNew($keys);
             $target->quantity = ($target->exists ? $target->quantity : 0) + $item->quantity;
             $target->save();
         }
-        if (! $userCart->coupon_code) $userCart->coupon_code = $guest->coupon_code;
+        if (! $userCart->coupon_code) {
+            $userCart->coupon_code = $guest->coupon_code;
+        }
         $userCart->save();
         $guest->delete();
     }
 
     public function guestToken(): string
     {
-        if (! session()->has('cart_token')) session()->put('cart_token', (string) Str::uuid());
+        if (! session()->has('cart_token')) {
+            session()->put('cart_token', (string) Str::uuid());
+        }
+
         return (string) session('cart_token');
     }
 }

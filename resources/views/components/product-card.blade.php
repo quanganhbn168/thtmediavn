@@ -24,7 +24,7 @@
         </a>
         <div class="product-badge-stack">
             @foreach($product['badges'] ?? [] as $badge)
-                <span class="product-badge {{ in_array($badge, ['Mới', 'Combo']) ? 'new' : '' }}">{{ $badge }}</span>
+                <span class="product-badge {{ in_array($badge, ['Mới']) ? 'new' : '' }}">{{ $badge }}</span>
             @endforeach
             @if($discount)
                 <span class="product-badge sale">-{{ $discount }}%</span>

@@ -24,9 +24,12 @@ Route::get('/san-pham', [Frontend\ProductController::class, 'index'])->name('cat
 Route::get('/danh-muc/{category}', [Frontend\SlugController::class, 'category'])
     ->name('products.by-category')
     ->where('category', '[a-z0-9-]+');
-Route::get('/san-pham/{slug}', [Frontend\SlugController::class, 'product'])
-    ->name('product.show')
-    ->where('slug', '[a-z0-9-]+');
+    Route::get('/san-pham/{slug}', [Frontend\SlugController::class, 'product'])
+        ->name('product.show')
+        ->where('slug', '[a-z0-9-]+');
+Route::get('/combo', [Frontend\ComboController::class, 'index'])->name('combos.index');
+Route::get('/danh-muc-combo/{category}', [Frontend\ComboController::class, 'byCategory'])->name('combos.by-category')->where('category', '[a-z0-9-]+');
+Route::get('/combo/{slug}', [Frontend\ComboController::class, 'show'])->name('combo.show')->where('slug', '[a-z0-9-]+');
 Route::get('/gio-hang', [Frontend\CartController::class, 'index'])->name('cart');
 Route::post('/gio-hang', [Frontend\CartController::class, 'store'])->name('cart.store');
 Route::patch('/gio-hang/{item}', [Frontend\CartController::class, 'update'])->name('cart.update');
@@ -97,6 +100,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth:admin', 'admin'])->gro
 
     // Mini e-commerce
     Route::resource('/products', Admin\ProductController::class)->except(['show']);
+    Route::resource('/combos', Admin\ComboController::class)->except(['show']);
+    Route::resource('/combo-categories', Admin\ComboCategoryController::class)->except(['show']);
     Route::resource('/product-categories', Admin\ProductCategoryController::class)->except(['show']);
     Route::resource('/brands', Admin\BrandController::class)->except(['show']);
     Route::resource('/product-options', Admin\ProductOptionController::class)->except(['show']);

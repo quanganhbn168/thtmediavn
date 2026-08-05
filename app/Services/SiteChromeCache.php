@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Brand;
 use App\Models\ContactChannel;
+use App\Models\Combo;
+use App\Models\ComboCategory;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Product;
@@ -18,7 +20,7 @@ use Throwable;
 
 class SiteChromeCache
 {
-    public const KEY = 'site:chrome:v2';
+    public const KEY = 'site:chrome:v4';
 
     /**
      * Dữ liệu dùng lặp lại trong Header, Mega menu và Footer.
@@ -51,7 +53,9 @@ class SiteChromeCache
     private function build(): array
     {
         $siteNavigation = collect();
+        $siteComboCategories = collect();
         $siteBrands = collect();
+        $siteCombos = collect();
         $attributeMenuGroups = collect();
         $contactChannels = collect();
         $siteAssets = null;
@@ -62,6 +66,22 @@ class SiteChromeCache
 
         if (Schema::hasTable('product_categories') && Schema::hasTable('products')) {
             $siteNavigation = $this->buildProductCategoryNavigation();
+        }
+
+        if (Schema::hasTable('combo_categories') && Schema::hasTable('combos')) {
+            $siteComboCategories = ComboCategory::query()
+                ->where('is_active', true)
+                ->whereHas('combos', fn ($query) => $query->visibleOnSite())
+                ->withCount(['combos' => fn ($query) => $query->visibleOnSite()])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug', 'sort_order']);
+            $siteCombos = Combo::query()
+                ->visibleOnSite()
+                ->with('category')
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(['id', 'combo_category_id', 'name', 'slug']);
         }
 
         if (Schema::hasTable('brands')) {
@@ -135,7 +155,9 @@ class SiteChromeCache
 
         return compact(
             'siteNavigation',
+            'siteComboCategories',
             'siteBrands',
+            'siteCombos',
             'attributeMenuGroups',
             'contactChannels',
             'siteAssets',

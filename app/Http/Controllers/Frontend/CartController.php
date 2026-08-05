@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
+use App\Models\Combo;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
@@ -28,12 +29,36 @@ class CartController extends Controller
         $data = $request->validate([
             'product_id' => ['nullable', 'exists:products,id'],
             'variant_id' => ['nullable', 'exists:product_variants,id'],
+            'combo_id' => ['nullable', 'exists:combos,id'],
             'quantity' => ['nullable', 'integer', 'min:1', 'max:99'],
             'action' => ['nullable', 'in:add_to_cart,buy_now'],
         ]);
 
-        if (empty($data['product_id']) && empty($data['variant_id'])) {
+        if (empty($data['product_id']) && empty($data['variant_id']) && empty($data['combo_id'])) {
             throw ValidationException::withMessages(['product_id' => 'Thiếu thông tin sản phẩm hoặc biến thể.']);
+        }
+
+        if (! empty($data['combo_id'])) {
+            if (! empty($data['product_id']) || ! empty($data['variant_id'])) {
+                throw ValidationException::withMessages(['combo_id' => 'Không thể trộn Combo với sản phẩm trong cùng một yêu cầu.']);
+            }
+
+            $combo = Combo::query()->visibleOnSite()->findOrFail((int) $data['combo_id']);
+            $cart = $this->carts->addCombo($combo, (int) ($data['quantity'] ?? 1));
+            $summary = $this->carts->summary($cart);
+            $buyNow = ($data['action'] ?? null) === 'buy_now';
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Đã thêm Combo vào giỏ hàng.',
+                    'product_name' => $combo->name,
+                    'count' => $cart->items->sum('quantity'),
+                    'summary' => $summary,
+                    'cart_url' => route('cart'),
+                    'checkout_url' => route('checkout'),
+                    'redirect' => $buyNow ? route('checkout') : null,
+                ]);
+            }
+            return $buyNow ? redirect()->route('checkout') : back()->with('success', 'Đã thêm Combo vào giỏ hàng.');
         }
 
         if (! empty($data['variant_id'])) {

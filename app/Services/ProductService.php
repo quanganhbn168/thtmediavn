@@ -170,11 +170,17 @@ class ProductService
         $this->ensureOneDefaultVariant($product, $keptVariantIds);
         $product->variants()
             ->whereNotIn('id', $keptVariantIds)
-            ->whereHas('orderItems')
+            ->where(function ($query): void {
+                $query->whereHas('orderItems')
+                    ->orWhereHas('comboItems')
+                    ->orWhereHas('orderItemComboComponents');
+            })
             ->update(['is_active' => false, 'is_default' => false]);
         $product->variants()
             ->whereNotIn('id', $keptVariantIds)
             ->whereDoesntHave('orderItems')
+            ->whereDoesntHave('comboItems')
+            ->whereDoesntHave('orderItemComboComponents')
             ->delete();
 
         $this->syncImages(

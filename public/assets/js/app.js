@@ -370,13 +370,16 @@
           showToast('Vui lòng chọn phân loại sản phẩm', 'info');
           return;
         }
+        const comboId = button.dataset.comboId || qs('[name="combo_id"]', form)?.value;
         const productId = button.dataset.productId || qs('[name="product_id"]', form)?.value;
-        if (!productId) {
-          showToast('Không xác định được sản phẩm', 'info');
+        if (!productId && !comboId) {
+          showToast('Không xác định được sản phẩm hoặc Combo', 'info');
           return;
         }
         const buyNow = button.hasAttribute('data-buy-now');
-        const payload = { product_id: productId, quantity, action: buyNow ? 'buy_now' : 'add_to_cart' };
+        const payload = { quantity, action: buyNow ? 'buy_now' : 'add_to_cart' };
+        if (comboId) payload.combo_id = comboId;
+        else payload.product_id = productId;
         if (variantInput?.value) payload.variant_id = variantInput.value;
         else if (buttonVariantId) payload.variant_id = buttonVariantId;
 

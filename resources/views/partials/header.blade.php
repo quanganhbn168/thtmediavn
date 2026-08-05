@@ -95,6 +95,16 @@
                                             <i class="bi bi-chevron-right"></i>
                                         </a>
                                     @endforeach
+                                    @if($siteCombos->isNotEmpty())
+                                        <a class="mega-category-tab" href="{{ route('combos.index') }}" data-mega-tab="combo-products">
+                                            <span>Combo</span><i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    @endif
+                                    @if($siteBrands->isNotEmpty())
+                                        <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="special-brands">
+                                            <span>Thương hiệu</span><i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    @endif
                                     @foreach($attributeMenuGroups as $attribute)
                                         <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="attribute-{{ $attribute->id }}">
                                             <span>{{ $attribute->name }}</span><i class="bi bi-chevron-right"></i>
@@ -104,8 +114,7 @@
                                 <div class="mega-category-panels">
                                     @foreach($megaMenu->items as $index => $group)
                                         <div class="mega-category-panel {{ $index === 0 ? 'is-active' : '' }}" data-mega-panel="menu-{{ $group->id }}">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ $group->href }}" target="{{ $group->target ?: '_self' }}" @if($group->target === '_blank') rel="noopener" @endif>{{ $group->getTranslation('title', 'vi') }}</a>
+                                            <div class="d-flex align-items-center justify-content-end gap-3 mb-3">
                                                 <a class="mega-panel-all" href="{{ $group->href }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                                             </div>
                                             @if($group->childrenRecursive->isNotEmpty())
@@ -124,6 +133,37 @@
                                             @endif
                                         </div>
                                     @endforeach
+                                    @if($siteCombos->isNotEmpty())
+                                        <div class="mega-category-panel" data-mega-panel="combo-products">
+                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                                <a class="mega-panel-title" href="{{ route('combos.index') }}">Combo</a>
+                                                <a class="mega-panel-all" href="{{ route('combos.index') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                                            </div>
+                                            <div class="mega-child-grid">
+                                                @if($siteComboCategories->isNotEmpty())
+                                                    @foreach($siteComboCategories as $comboCategory)
+                                                        <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combos.by-category', ['category' => $comboCategory->slug]) }}">{{ $comboCategory->name }}</a></div>
+                                                    @endforeach
+                                                @endif
+                                                @foreach($siteCombos as $combo)
+                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combo.show', ['slug' => $combo->slug]) }}">{{ $combo->name }}</a></div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                    @if($siteBrands->isNotEmpty())
+                                        <div class="mega-category-panel" data-mega-panel="special-brands">
+                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                                <a class="mega-panel-title" href="{{ route('catalog') }}">Thương hiệu</a>
+                                                <a class="mega-panel-all" href="{{ route('catalog') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                                            </div>
+                                            <div class="mega-child-grid">
+                                                @foreach($siteBrands as $brand)
+                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('catalog', ['brand' => $brand->slug]) }}">{{ $brand->name }}</a></div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                     @foreach($attributeMenuGroups as $attribute)
                                         <div class="mega-category-panel" data-mega-panel="attribute-{{ $attribute->id }}">
                                             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
@@ -147,6 +187,11 @@
                                             <span>{{ $group->name }}</span><i class="bi bi-chevron-right"></i>
                                         </a>
                                     @endforeach
+                                    @if($siteCombos->isNotEmpty())
+                                        <a class="mega-category-tab" href="{{ route('combos.index') }}" data-mega-tab="combo-products">
+                                            <span>Combo</span><i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    @endif
                                     @if($siteBrands->isNotEmpty())
                                         <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="special-brands">
                                             <span>Theo thương hiệu</span><i class="bi bi-chevron-right"></i>
@@ -161,8 +206,7 @@
                                 <div class="mega-category-panels">
                                     @foreach($siteNavigation as $index => $group)
                                         <div class="mega-category-panel {{ $index === 0 ? 'is-active' : '' }}" data-mega-panel="category-{{ $group->id }}">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $group->slug]) }}">{{ $group->name }}</a>
+                                            <div class="d-flex align-items-center justify-content-end gap-3 mb-3">
                                                 <a class="mega-panel-all" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $group->slug]) }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                                             </div>
                                             <div class="mega-child-grid">
@@ -179,6 +223,24 @@
                                             </div>
                                         </div>
                                     @endforeach
+                                    @if($siteCombos->isNotEmpty())
+                                        <div class="mega-category-panel" data-mega-panel="combo-products">
+                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                                <a class="mega-panel-title" href="{{ route('combos.index') }}">Combo</a>
+                                                <a class="mega-panel-all" href="{{ route('combos.index') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                                            </div>
+                                            <div class="mega-child-grid">
+                                                @if($siteComboCategories->isNotEmpty())
+                                                    @foreach($siteComboCategories as $comboCategory)
+                                                        <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combos.by-category', ['category' => $comboCategory->slug]) }}">{{ $comboCategory->name }}</a></div>
+                                                    @endforeach
+                                                @endif
+                                                @foreach($siteCombos as $combo)
+                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combo.show', ['slug' => $combo->slug]) }}">{{ $combo->name }}</a></div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                     @if($siteBrands->isNotEmpty())
                                         <div class="mega-category-panel" data-mega-panel="special-brands">
                                             <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
@@ -254,6 +316,22 @@
             @else
                 @foreach($siteNavigation as $group)
                     <a class="nav-link" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $group->slug]) }}">{{ $group->name }}</a>
+                @endforeach
+            @endif
+            @if($siteCombos->isNotEmpty())
+                <a class="nav-link" href="{{ route('combos.index') }}">Combo</a>
+                @if($siteComboCategories->isNotEmpty())
+                    <div class="mobile-submenu">
+                        @foreach($siteComboCategories as $comboCategory)
+                            <a href="{{ route('combos.by-category', ['category' => $comboCategory->slug]) }}">{{ $comboCategory->name }}</a>
+                        @endforeach
+                    </div>
+                @endif
+            @endif
+            @if($siteBrands->isNotEmpty())
+                <div class="mobile-menu-heading">Thương hiệu</div>
+                @foreach($siteBrands as $brand)
+                    <a class="nav-link" href="{{ route('catalog', ['brand' => $brand->slug]) }}">{{ $brand->name }}</a>
                 @endforeach
             @endif
         </nav>

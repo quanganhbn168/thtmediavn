@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Models\Brand;
 use App\Models\ContactChannel;
+use App\Models\Combo;
+use App\Models\ComboCategory;
+use App\Models\ComboItem;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Product;
@@ -88,7 +91,9 @@ class AppServiceProvider extends ServiceProvider
 
             $chrome = app(SiteChromeCache::class)->get();
             $siteNavigation = $chrome['siteNavigation'];
+            $siteComboCategories = $chrome['siteComboCategories'];
             $siteBrands = $chrome['siteBrands'];
+            $siteCombos = $chrome['siteCombos'];
             $attributeMenuGroups = $chrome['attributeMenuGroups'];
             $contactChannels = $chrome['contactChannels'];
             $siteAssets = $chrome['siteAssets'];
@@ -108,7 +113,9 @@ class AppServiceProvider extends ServiceProvider
                 'cartCount',
                 'wishlistCount',
                 'siteNavigation',
+                'siteComboCategories',
                 'siteBrands',
+                'siteCombos',
                 'attributeMenuGroups',
                 'contactChannels',
                 'siteAssets',
@@ -145,6 +152,9 @@ class AppServiceProvider extends ServiceProvider
             Menu::class,
             MenuItem::class,
             Product::class,
+            Combo::class,
+            ComboCategory::class,
+            ComboItem::class,
             ProductAttribute::class,
             ProductAttributeValue::class,
             ProductCategory::class,

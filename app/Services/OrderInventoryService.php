@@ -25,6 +25,19 @@ class OrderInventoryService
             Product::withTrashed()->whereKey($productId)->increment('sold_count', $quantity);
         }
 
+        $componentQuantities = $order->items()
+            ->where('item_type', 'combo')
+            ->with('comboComponents')
+            ->get()
+            ->flatMap(fn ($item) => $item->comboComponents)
+            ->whereNotNull('component_product_id')
+            ->groupBy('component_product_id')
+            ->map(fn ($items): int => (int) $items->sum('quantity'));
+
+        foreach ($componentQuantities as $productId => $quantity) {
+            Product::withTrashed()->whereKey($productId)->increment('sold_count', $quantity);
+        }
+
         $order->update(['sold_count_recorded_at' => now()]);
 
         return true;
@@ -39,6 +52,20 @@ class OrderInventoryService
 
         $items = $order->items()->where('stock_reserved', true)->get();
         foreach ($items as $item) {
+            if ($item->item_type === 'combo') {
+                foreach ($item->comboComponents()->where('stock_reserved', true)->get() as $component) {
+                    if (! $component->component_variant_id) {
+                        continue;
+                    }
+
+                    ProductVariant::query()
+                        ->whereKey($component->component_variant_id)
+                        ->lockForUpdate()
+                        ->first()
+                        ?->increment('stock', $component->quantity);
+                }
+                continue;
+            }
             if (! $item->product_variant_id) {
                 continue;
             }

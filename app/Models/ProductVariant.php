@@ -28,6 +28,16 @@ class ProductVariant extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function comboItems(): HasMany
+    {
+        return $this->hasMany(ComboItem::class, 'product_variant_id');
+    }
+
+    public function orderItemComboComponents(): HasMany
+    {
+        return $this->hasMany(OrderItemComboComponent::class, 'component_variant_id');
+    }
+
     public function getEffectivePriceAttribute(): float
     {
         $flashPrice = $this->product?->flashSaleItems
