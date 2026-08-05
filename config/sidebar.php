@@ -45,20 +45,27 @@ return [
         ],
         [
             'type' => 'header',
-            'label' => 'SẢN PHẨM',
+            'label' => 'QUẢN LÝ SẢN PHẨM VÀ KHO',
         ],
         [
             'type' => 'link',
-            'label' => 'Sản phẩm',
+            'label' => 'Quản lý sản phẩm',
             'icon' => 'bi bi-box-seam',
             'children' => [
                 ['label' => 'Sản phẩm', 'route' => 'admin.products.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Danh mục sản phẩm', 'route' => 'admin.product-categories.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Combo', 'route' => 'admin.combos.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Danh mục Combo', 'route' => 'admin.combo-categories.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Thương hiệu', 'route' => 'admin.brands.index', 'icon' => 'bi bi-circle'],
-                ['label' => 'Biến thể bán hàng', 'route' => 'admin.product-options.index', 'icon' => 'bi bi-circle'],
                 ['label' => 'Bộ lọc', 'route' => 'admin.product-attributes.index', 'icon' => 'bi bi-circle'],
+                ['label' => 'Biến thể', 'route' => 'admin.product-options.index', 'icon' => 'bi bi-circle'],
+            ],
+        ],
+        [
+            'type' => 'link',
+            'label' => 'Quản lý Combo',
+            'icon' => 'bi bi-boxes',
+            'children' => [
+                ['label' => 'Danh mục Combo', 'route' => 'admin.combo-categories.index', 'icon' => 'bi bi-circle'],
+                ['label' => 'Combo', 'route' => 'admin.combos.index', 'icon' => 'bi bi-circle'],
             ],
         ],
         [
