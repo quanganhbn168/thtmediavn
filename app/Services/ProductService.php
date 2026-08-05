@@ -35,6 +35,10 @@ class ProductService
             $query->where('product_category_id', (int) $filters['category']);
         }
 
+        if (($filters['brand'] ?? null) !== null && (int) $filters['brand'] > 0) {
+            $query->where('brand_id', (int) $filters['brand']);
+        }
+
         if (($filters['status'] ?? null) !== null) {
             $query->where('status', (string) $filters['status']);
         }
@@ -50,6 +54,11 @@ class ProductService
     public function categoriesForFilter(): Collection
     {
         return ProductCategory::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id');
+    }
+
+    public function brandsForFilter(): Collection
+    {
+        return Brand::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id');
     }
 
     public function editorContext(Product $product): array

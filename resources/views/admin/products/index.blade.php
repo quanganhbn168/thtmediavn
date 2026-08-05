@@ -39,6 +39,15 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-xl-2 col-md-4">
+                    <label for="product-brand" class="form-label">Thương hiệu</label>
+                    <select class="form-select" id="product-brand" name="brand">
+                        <option value="">Tất cả</option>
+                        @foreach($brands as $id => $name)
+                            <option value="{{ $id }}" @selected((string) request('brand') === (string) $id)>{{ $name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-xl-2 col-md-2">
                     <label for="product-per-page" class="form-label">Số dòng</label>
                     <select class="form-select" id="product-per-page" name="per_page">

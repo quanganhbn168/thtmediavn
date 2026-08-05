@@ -20,6 +20,7 @@ class ProductController extends Controller
         return view('admin.products.index', [
             'products' => $this->productService->paginate($request->validated()),
             'categories' => $this->productService->categoriesForFilter(),
+            'brands' => $this->productService->brandsForFilter(),
         ]);
     }
 

@@ -612,6 +612,25 @@ class AdminEcommerceTest extends TestCase
         $this->assertFalse((bool) $product->fresh()->is_active);
     }
 
+    public function test_product_index_can_filter_by_brand(): void
+    {
+        $admin = User::role('admin')->firstOrFail();
+        $brand = Brand::query()->whereHas('products')->firstOrFail();
+        $matchingProduct = $brand->products()->firstOrFail();
+        $otherProduct = Product::query()->where('brand_id', '!=', $brand->id)->first();
+
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.products.index', ['brand' => $brand->id]));
+
+        $response->assertOk()
+            ->assertSee('name="brand"', false)
+            ->assertSee('value="'.$brand->id.'" selected', false)
+            ->assertSee($matchingProduct->name);
+
+        if ($otherProduct) {
+            $response->assertDontSee($otherProduct->name);
+        }
+    }
+
     public function test_product_create_form_renders_clean_variant_assets(): void
     {
         $admin = User::role('admin')->firstOrFail();
