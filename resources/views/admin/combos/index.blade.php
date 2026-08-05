@@ -37,10 +37,11 @@
 
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead><tr><th>Combo</th><th>Danh mục</th><th>Giá bán</th><th class="text-center">Thành phần</th><th class="text-center">Nổi bật</th><th class="text-center">Trạng thái</th><th class="text-end">Thao tác</th></tr></thead>
+            <thead><tr><th data-select-column class="text-center" style="width:48px"><input type="checkbox" class="form-check-input" data-check-all aria-label="Chọn tất cả"></th><th>Combo</th><th>Danh mục</th><th>Giá bán</th><th class="text-center">Thành phần</th><th class="text-center">Nổi bật</th><th class="text-center">Trạng thái</th><th class="text-end">Thao tác</th></tr></thead>
             <tbody>
             @forelse($combos as $combo)
                 <tr data-record-id="{{ $combo->id }}">
+                    <td data-select-column class="text-center"><input form="admin-bulk-combo-form" type="checkbox" name="ids[]" value="{{ $combo->id }}" class="form-check-input" data-check-item aria-label="Chọn {{ $combo->name }}"></td>
                     <td><div class="d-flex gap-2 align-items-center"><img src="{{ $combo->image_url }}" class="admin-product-thumb rounded" width="54" height="54" alt=""><div><strong>{{ $combo->name }}</strong><small class="d-block text-muted">/{{ $combo->slug }}</small></div></div></td>
                     <td>{{ $combo->category?->name ?: 'Chưa phân loại' }}</td>
                     <td><strong>{{ number_format((float) $combo->price, 0, ',', '.') }}₫</strong>@if($combo->compare_price)<small class="d-block text-muted text-decoration-line-through">{{ number_format((float) $combo->compare_price, 0, ',', '.') }}₫</small>@endif</td>
@@ -51,7 +52,7 @@
                 </tr>
                 <form id="delete-combo-{{ $combo->id }}" action="{{ route('admin.combos.destroy', $combo) }}" method="POST" class="d-none" data-admin-delete-form data-delete-title="Xóa Combo này?" data-delete-warning="Combo sẽ không còn hiển thị trên website.">@csrf @method('DELETE')</form>
             @empty
-                <tr><td colspan="7" class="text-center py-5">Chưa có Combo.</td></tr>
+                <tr><td colspan="8" class="text-center py-5">Chưa có Combo.</td></tr>
             @endforelse
             </tbody>
         </table>

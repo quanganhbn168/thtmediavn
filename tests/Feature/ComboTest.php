@@ -37,6 +37,8 @@ class ComboTest extends TestCase
             ->assertSee('Danh mục Combo')
             ->assertSee('data-index-resource="combo_category"', false)
             ->assertSee('data-bulk-form-id="admin-bulk-combo_category-form"', false)
+            ->assertSee('data-check-all', false)
+            ->assertSee('form="admin-bulk-combo_category-form"', false)
             ->assertSee('data-reorderable="1"', false);
         $this->actingAs($admin, 'admin')->postJson(route('admin.common.toggle-field'), ['model' => 'ComboCategory', 'id' => $category->id, 'field' => 'is_active'])->assertOk();
         $category->refresh()->update(['is_active' => true]);
@@ -44,6 +46,7 @@ class ComboTest extends TestCase
             ->assertOk()
             ->assertSee('data-index-resource="combo"', false)
             ->assertSee('data-bulk-form-id="admin-bulk-combo-form"', false)
+            ->assertSee('data-check-all', false)
             ->assertSee('data-reorderable="1"', false);
         $this->actingAs($admin, 'admin')->get(route('admin.combos.create'))->assertOk()->assertSee('Thành phần Combo');
         $this->get(route('admin.combos.create'))
@@ -71,6 +74,9 @@ class ComboTest extends TestCase
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $combo = Combo::query()->where('name', 'like', 'Combo kiểm thử riêng%')->latest('id')->firstOrFail();
+        $this->actingAs($admin, 'admin')->get(route('admin.combos.index'))
+            ->assertSee('form="admin-bulk-combo-form"', false)
+            ->assertSee('data-check-item', false);
         $this->actingAs($admin, 'admin')->post(route('admin.combos.components.store', $combo), [
             'product_id' => $product->id,
             'product_variant_id' => $product->default_variant->id,
