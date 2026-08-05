@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Brand;
 use App\Models\Contact;
+use App\Models\Combo;
+use App\Models\ComboCategory;
 use App\Models\Coupon;
 use App\Models\FlashSale;
 use App\Models\Order;
@@ -45,6 +47,8 @@ class BulkActionService
         ],
         'order' => ['model' => Order::class, 'table' => 'orders', 'label' => 'đơn hàng', 'actions' => ['delete']],
         'product' => ['model' => Product::class, 'table' => 'products', 'label' => 'sản phẩm', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
+        'combo' => ['model' => Combo::class, 'table' => 'combos', 'label' => 'Combo', 'actions' => ['activate', 'deactivate', 'delete']],
+        'combo_category' => ['model' => ComboCategory::class, 'table' => 'combo_categories', 'label' => 'danh mục Combo', 'actions' => ['activate', 'deactivate']],
         'product_category' => ['model' => ProductCategory::class, 'table' => 'product_categories', 'label' => 'danh mục sản phẩm', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
         'brand' => ['model' => Brand::class, 'table' => 'brands', 'label' => 'thương hiệu', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
         'product_option' => ['model' => ProductOption::class, 'table' => 'product_options', 'label' => 'thuộc tính', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],

@@ -32,10 +32,25 @@ class ComboTest extends TestCase
         $this->assertDatabaseHas('combo_categories', ['slug' => 'combo-duong-trang']);
         $admin = \App\Models\User::role('admin')->firstOrFail();
         $category = ComboCategory::query()->firstOrFail();
-        $this->actingAs($admin, 'admin')->get(route('admin.combo-categories.index'))->assertOk()->assertSee('Danh mục Combo');
+        $this->actingAs($admin, 'admin')->get(route('admin.combo-categories.index'))
+            ->assertOk()
+            ->assertSee('Danh mục Combo')
+            ->assertSee('data-index-resource="combo_category"', false)
+            ->assertSee('data-bulk-form-id="admin-bulk-combo_category-form"', false)
+            ->assertSee('data-reorderable="1"', false);
         $this->actingAs($admin, 'admin')->postJson(route('admin.common.toggle-field'), ['model' => 'ComboCategory', 'id' => $category->id, 'field' => 'is_active'])->assertOk();
         $category->refresh()->update(['is_active' => true]);
+        $this->actingAs($admin, 'admin')->get(route('admin.combos.index'))
+            ->assertOk()
+            ->assertSee('data-index-resource="combo"', false)
+            ->assertSee('data-bulk-form-id="admin-bulk-combo-form"', false)
+            ->assertSee('data-reorderable="1"', false);
         $this->actingAs($admin, 'admin')->get(route('admin.combos.create'))->assertOk()->assertSee('Thành phần Combo');
+        $this->get(route('admin.combos.create'))
+            ->assertSee('name="is_active"', false)
+            ->assertSee('name="allow_preorder"', false)
+            ->assertSee('name="is_featured"', false)
+            ->assertSee('name="sort_order"', false);
         $this->get(route('combos.index'))->assertOk()->assertSee('Chưa có Combo phù hợp');
     }
 

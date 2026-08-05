@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Brand;
+use App\Models\Combo;
+use App\Models\ComboCategory;
 use App\Models\Page;
 use App\Models\PostCategory;
 use App\Models\ProductAttribute;
@@ -15,6 +17,8 @@ class ReorderService
 {
     private const RESOURCES = [
         'product_category' => ['model' => ProductCategory::class, 'table' => 'product_categories', 'order_column' => 'sort_order'],
+        'combo' => ['model' => Combo::class, 'table' => 'combos', 'order_column' => 'sort_order'],
+        'combo_category' => ['model' => ComboCategory::class, 'table' => 'combo_categories', 'order_column' => 'sort_order'],
         'brand' => ['model' => Brand::class, 'table' => 'brands', 'order_column' => 'sort_order'],
         'product_option' => ['model' => ProductOption::class, 'table' => 'product_options', 'order_column' => 'sort_order'],
         'product_attribute' => ['model' => ProductAttribute::class, 'table' => 'product_attributes', 'order_column' => 'sort_order'],
