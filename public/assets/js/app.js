@@ -165,7 +165,7 @@
       new window.Swiper(slider, {
         slidesPerView: 1,
         spaceBetween: 12,
-        autoHeight: true,
+        autoHeight: false,
         loop: slideCount > 3,
         speed: 700,
         grabCursor: hasMultipleSlides,

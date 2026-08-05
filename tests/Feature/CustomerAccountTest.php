@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class CustomerAccountTest extends TestCase
@@ -22,6 +24,71 @@ class CustomerAccountTest extends TestCase
         $this->get(route('account.profile'))->assertOk()->assertSee('Thông tin cá nhân');
         $this->post(route('account.addresses.store'), ['name'=>'Khách mới','phone'=>'0911222333','province'=>'Hà Nội','address'=>'Số 1','is_default'=>1])->assertRedirect();
         $this->assertDatabaseHas('user_addresses',['user_id'=>$user->id,'is_default'=>true]);
+    }
+
+    public function test_customer_can_login_with_email(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'login-email@example.com',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+        $user->assignRole('customer');
+
+        $this->post(route('login.store'), [
+            'login' => $user->email,
+            'password' => 'password123',
+        ])->assertRedirect(route('account.index'));
+
+        $this->assertAuthenticatedAs($user, 'web');
+        $this->assertGuest('admin');
+    }
+
+    public function test_customer_can_login_with_phone(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'login-phone@example.com',
+            'phone' => '0911222333',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+        $user->assignRole('customer');
+
+        $this->post(route('login.store'), [
+            'login' => $user->phone,
+            'password' => 'password123',
+        ])->assertRedirect(route('account.index'));
+
+        $this->assertAuthenticatedAs($user, 'web');
+        $this->assertGuest('admin');
+    }
+
+    public function test_admin_login_uses_admin_guard_and_email_only(): void
+    {
+        $admin = User::factory()->create([
+            'email' => 'guard-admin@example.com',
+            'phone' => '0988777666',
+            'password' => Hash::make('password123'),
+            'is_active' => true,
+        ]);
+        $admin->assignRole('admin');
+
+        $this->post(route('admin.login.store'), [
+            'email' => $admin->email,
+            'password' => 'password123',
+        ])->assertRedirect(route('admin.dashboard'));
+
+        $this->assertAuthenticatedAs($admin, 'admin');
+        $this->assertGuest('web');
+
+        Auth::guard('admin')->logout();
+
+        $this->post(route('admin.login.store'), [
+            'email' => $admin->phone,
+            'password' => 'password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest('admin');
     }
 
     public function test_customer_can_submit_a_verified_purchase_review(): void

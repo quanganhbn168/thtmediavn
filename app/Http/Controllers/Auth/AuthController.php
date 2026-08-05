@@ -16,41 +16,63 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    private const FRONTEND_GUARD = 'web';
+
+    private const ADMIN_GUARD = 'admin';
+
     /**
      * Show the login form.
      */
-    public function showLogin(Request $request): View
+    public function showFrontendLogin(Request $request): View
     {
-        $isAdmin = $request->routeIs('admin.login');
         $redirectTo = (string) $request->query('redirect', '');
 
-        if (! $isAdmin && str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) {
+        if (str_starts_with($redirectTo, '/') && ! str_starts_with($redirectTo, '//')) {
             $request->session()->put('url.intended', url($redirectTo));
         }
 
-        return view($isAdmin ? 'admin.auth' : 'frontend.auth', [
-            'isAdmin' => $isAdmin,
-        ]);
+        return view('frontend.auth', ['isAdmin' => false]);
     }
 
-    public function showRegister(): View { return view('frontend.auth'); }
+    public function showAdminLogin(): View
+    {
+        return view('admin.auth', ['isAdmin' => true]);
+    }
+
+    public function showRegister(): View
+    {
+        return view('frontend.auth');
+    }
 
     /**
      * Handle authentication attempt.
      */
-    public function login(Request $request): RedirectResponse
+    public function loginFrontend(Request $request): RedirectResponse
     {
-        $isAdminLogin = $request->routeIs('admin.login*');
-        $guard = $isAdminLogin ? 'admin' : 'web';
+        return $this->attemptLogin($request, self::FRONTEND_GUARD, false);
+    }
 
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+    public function loginAdmin(Request $request): RedirectResponse
+    {
+        return $this->attemptLogin($request, self::ADMIN_GUARD, true);
+    }
+
+    private function attemptLogin(Request $request, string $guard, bool $isAdminLogin): RedirectResponse
+    {
+        $loginField = $isAdminLogin ? 'email' : 'login';
+
+        $validated = $request->validate([
+            $loginField => $isAdminLogin ? ['required', 'email'] : ['required', 'string', 'max:150'],
             'password' => ['required'],
         ], [
             'email.required' => 'Vui lòng nhập địa chỉ email.',
             'email.email' => 'Địa chỉ email không đúng định dạng.',
+            'login.required' => 'Vui lòng nhập email hoặc số điện thoại.',
             'password.required' => 'Vui lòng nhập mật khẩu.',
         ]);
+        $credentials = $isAdminLogin
+            ? $validated
+            : $this->credentialsForFrontendLogin($validated['login'], $validated['password']);
         $credentials = $this->addActiveFilter($credentials);
 
         $remember = $request->boolean('remember');
@@ -68,8 +90,8 @@ class AuthController extends Controller
                 $request->session()->regenerateToken();
 
                 return back()->withErrors([
-                    'email' => 'Có lỗi xảy ra khi xác thực tài khoản.',
-                ])->onlyInput('email', 'remember');
+                    $loginField => 'Có lỗi xảy ra khi xác thực tài khoản.',
+                ])->onlyInput($loginField, 'remember');
             }
 
             app(CartService::class)->mergeGuestCart($user, $sessionId);
@@ -80,8 +102,8 @@ class AuthController extends Controller
                 $request->session()->regenerateToken();
 
                 return back()->withErrors([
-                    'email' => 'Tài khoản này không có quyền quản trị.',
-                ])->onlyInput('email', 'remember');
+                    $loginField => 'Tài khoản này không có quyền quản trị.',
+                ])->onlyInput($loginField, 'remember');
             }
 
             if ($isAdminLogin) {
@@ -92,8 +114,19 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Thông tin đăng nhập không chính xác.',
-        ])->onlyInput('email', 'remember');
+            $loginField => 'Thông tin đăng nhập không chính xác.',
+        ])->onlyInput($loginField, 'remember');
+    }
+
+    private function credentialsForFrontendLogin(string $login, string $password): array
+    {
+        $login = trim($login);
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) !== false ? 'email' : 'phone';
+
+        return [
+            $field => $login,
+            'password' => $password,
+        ];
     }
 
     public function register(Request $request): RedirectResponse
@@ -113,7 +146,7 @@ class AuthController extends Controller
 
         $user = User::create($payload);
         $user->assignRole('customer');
-        Auth::guard('web')->login($user);
+        Auth::guard(self::FRONTEND_GUARD)->login($user);
         $request->session()->regenerate();
         app(CartService::class)->mergeGuestCart($user, $sessionId);
         return redirect()->route('account.index')->with('success', 'Tạo tài khoản thành công.');
@@ -133,8 +166,8 @@ class AuthController extends Controller
      */
     public function logout(Request $request): RedirectResponse
     {
-        Auth::guard('admin')->logout();
-        Auth::guard('web')->logout();
+        Auth::guard(self::ADMIN_GUARD)->logout();
+        Auth::guard(self::FRONTEND_GUARD)->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -54,8 +54,8 @@ Route::post('/dang-ky-nhan-tin', [Frontend\NewsletterController::class, 'store']
 
 // Các route dành cho khách chưa đăng nhập (guest)
 Route::middleware('guest:web')->group(function () {
-    Route::get('/dang-nhap', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/dang-nhap', [AuthController::class, 'login'])->middleware('throttle:frontend-forms')->name('login.store');
+    Route::get('/dang-nhap', [AuthController::class, 'showFrontendLogin'])->name('login');
+    Route::post('/dang-nhap', [AuthController::class, 'loginFrontend'])->middleware('throttle:frontend-forms')->name('login.store');
     Route::get('/dang-ky', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/dang-ky', [AuthController::class, 'register'])->name('register.store');
 });
@@ -63,8 +63,8 @@ Route::redirect('/login', '/dang-nhap');
 Route::redirect('/admin/dang-nhap', '/admin/login');
 
 Route::middleware('guest:admin')->group(function () {
-    Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');
-    Route::post('/admin/login', [AuthController::class, 'login'])->middleware('throttle:admin-login')->name('admin.login.store');
+    Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
+    Route::post('/admin/login', [AuthController::class, 'loginAdmin'])->middleware('throttle:admin-login')->name('admin.login.store');
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

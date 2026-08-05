@@ -26,7 +26,11 @@
                     <form class="row g-3" action="{{ $isRegister ? route('register.store') : route('login.store') }}" method="post">
                         @csrf
                         @if($isRegister)<div class="col-12"><label class="form-label" for="authName">Họ và tên</label><input class="form-control" id="authName" name="name" type="text" value="{{ old('name') }}" required></div>@endif
-                        <div class="col-12"><label class="form-label" for="authEmail">Email</label><input class="form-control" id="authEmail" name="email" type="email" value="{{ old('email') }}" required></div>
+                        @if($isRegister)
+                            <div class="col-12"><label class="form-label" for="authEmail">Email</label><input class="form-control" id="authEmail" name="email" type="email" value="{{ old('email') }}" required></div>
+                        @else
+                            <div class="col-12"><label class="form-label" for="authLogin">Email hoặc số điện thoại</label><input class="form-control" id="authLogin" name="login" type="text" value="{{ old('login') }}" placeholder="Email hoặc số điện thoại" autocomplete="username" required></div>
+                        @endif
                         @if($isRegister)<div class="col-12"><label class="form-label" for="authPhone">Số điện thoại</label><input class="form-control" id="authPhone" name="phone" type="tel" value="{{ old('phone') }}"></div>@endif
                         <div class="col-12"><label class="form-label" for="authPassword">Mật khẩu</label><input class="form-control" id="authPassword" name="password" type="password" required></div>
                         @if($isRegister)<div class="col-12"><label class="form-label" for="authPasswordConfirmation">Nhập lại mật khẩu</label><input class="form-control" id="authPasswordConfirmation" name="password_confirmation" type="password" required></div>@else<div class="col-12"><div class="form-check"><input class="form-check-input" id="remember" name="remember" value="1" type="checkbox"><label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label></div></div>@endif
