@@ -23,6 +23,9 @@ class UpdateComboRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('combos', 'slug')->ignore($comboId), Rule::unique('slugs', 'slug')->ignore($slugId)->where(fn ($query) => $query->where('locale', app()->getLocale()))],
             'summary' => ['nullable', 'string'],
             'description' => ['required', 'string'],
+            'ingredients' => ['nullable', 'string'],
+            'usage' => ['nullable', 'string'],
+            'product_notes' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:1'],
             'compare_price' => ['nullable', 'numeric', 'gt:price'],
             'status' => ['required', 'in:active,draft,archived'],
@@ -35,6 +38,8 @@ class UpdateComboRequest extends FormRequest
             'seo_description' => ['nullable', 'string'],
             'image' => ['nullable', 'string', 'max:4096'],
             'image_remove' => ['nullable', 'boolean'],
+            'image_order' => ['nullable', 'json', 'max:8192'],
+            'image_removed_ids' => ['nullable', 'json', 'max:4096'],
         ];
     }
 

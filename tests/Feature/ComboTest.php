@@ -27,6 +27,9 @@ class ComboTest extends TestCase
         $this->assertTrue(Schema::hasTable('combos'));
         $this->assertTrue(Schema::hasTable('combo_categories'));
         $this->assertTrue(Schema::hasTable('combo_items'));
+        $this->assertTrue(Schema::hasColumn('combos', 'ingredients'));
+        $this->assertTrue(Schema::hasColumn('combos', 'usage'));
+        $this->assertTrue(Schema::hasColumn('combos', 'product_notes'));
         $this->assertFalse(Schema::hasColumn('products', 'product_type'));
         $this->assertDatabaseHas('combo_categories', ['slug' => 'combo-tri-mun']);
         $this->assertDatabaseHas('combo_categories', ['slug' => 'combo-duong-trang']);
@@ -53,7 +56,11 @@ class ComboTest extends TestCase
             ->assertSee('name="is_active"', false)
             ->assertSee('name="allow_preorder"', false)
             ->assertSee('name="is_featured"', false)
-            ->assertSee('name="sort_order"', false);
+            ->assertSee('name="sort_order"', false)
+            ->assertSee('name="ingredients"', false)
+            ->assertSee('name="usage"', false)
+            ->assertSee('name="product_notes"', false)
+            ->assertSee('data-max-files="9"', false);
         $this->get(route('combos.index'))->assertOk()->assertSee('Chưa có Combo phù hợp');
     }
 
@@ -67,6 +74,9 @@ class ComboTest extends TestCase
             'combo_category_id' => $category->id,
             'name' => 'Combo kiểm thử riêng '.uniqid(),
             'description' => '<p>Combo kiểm thử.</p>',
+            'ingredients' => '<p>Thành phần Combo kiểm thử.</p>',
+            'usage' => '<p>Sử dụng Combo kiểm thử.</p>',
+            'product_notes' => '<p>Lưu ý Combo kiểm thử.</p>',
             'price' => 199000,
             'compare_price' => 249000,
             'status' => 'active',
@@ -74,6 +84,12 @@ class ComboTest extends TestCase
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $combo = Combo::query()->where('name', 'like', 'Combo kiểm thử riêng%')->latest('id')->firstOrFail();
+        $this->assertDatabaseHas('combos', [
+            'id' => $combo->id,
+            'ingredients' => '<p>Thành phần Combo kiểm thử.</p>',
+            'usage' => '<p>Sử dụng Combo kiểm thử.</p>',
+            'product_notes' => '<p>Lưu ý Combo kiểm thử.</p>',
+        ]);
         $this->actingAs($admin, 'admin')->get(route('admin.combos.index'))
             ->assertSee('form="admin-bulk-combo-form"', false)
             ->assertSee('data-check-item', false);
@@ -98,6 +114,39 @@ class ComboTest extends TestCase
         $this->actingAs($admin, 'admin')->delete(route('admin.combos.components.destroy', [$combo, $component]))->assertRedirect()->assertSessionHasNoErrors();
         $this->assertDatabaseMissing('combo_items', ['id' => $component->id]);
         $this->assertSame('active', $product->fresh()->status);
+
+        $this->actingAs($admin, 'admin')->put(route('admin.combos.update', $combo), [
+            'combo_category_id' => $category->id,
+            'name' => $combo->name.' đã sửa',
+            'slug' => $combo->slug,
+            'description' => '<p>Combo đã sửa.</p>',
+            'ingredients' => '<p>Thành phần đã sửa.</p>',
+            'usage' => '<p>Cách dùng đã sửa.</p>',
+            'product_notes' => '<p>Lưu ý đã sửa.</p>',
+            'price' => 209000,
+            'compare_price' => 259000,
+            'status' => 'active',
+            'is_active' => 1,
+            'is_featured' => 1,
+            'allow_preorder' => 0,
+            'sort_order' => 2,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('combos', [
+            'id' => $combo->id,
+            'name' => $combo->name.' đã sửa',
+            'ingredients' => '<p>Thành phần đã sửa.</p>',
+            'usage' => '<p>Cách dùng đã sửa.</p>',
+            'product_notes' => '<p>Lưu ý đã sửa.</p>',
+        ]);
+        $this->get(route('combo.show', $combo->slug))
+            ->assertOk()
+            ->assertSee('Thành phần đã sửa.')
+            ->assertSee('Cách dùng đã sửa.')
+            ->assertSee('Lưu ý đã sửa.');
+        $this->actingAs($admin, 'admin')->delete(route('admin.combos.destroy', $combo))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+        $this->assertSoftDeleted('combos', ['id' => $combo->id]);
     }
 
     public function test_combo_cart_checkout_reserves_and_releases_component_stock(): void

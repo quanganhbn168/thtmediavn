@@ -279,19 +279,10 @@
 @pushOnce('css', 'product-variant-manager-css')
 <style>
     [x-cloak] { display: none !important; }
-    .product-editor-layout { display: grid; grid-template-columns: minmax(0, 9fr) minmax(270px, 3fr); grid-template-areas: "media media" "info sidebar" "info variants"; gap: 1rem; align-items: start; }
     .product-editor-layout.has-product-variants { grid-template-areas: "media media" "info sidebar" "variants variants"; }
-    .product-editor-main { display: contents; }
-    .product-editor-media { grid-area: media; }
-    .product-editor-info { grid-area: info; }
-    .product-editor-sidebar { grid-area: sidebar; }
-    .product-editor-variants { grid-area: variants; }
     .variant-builder { background: var(--bs-tertiary-bg); }
     .first-attribute-row:first-of-type { margin-top: 0 !important; border-top: 0 !important; padding-top: 0 !important; }
     .variant-table th { white-space: nowrap; }
-    @media (max-width: 991.98px) {
-        .product-editor-layout { grid-template-columns: 1fr; grid-template-areas: "media" "info" "sidebar" "variants"; }
-    }
 </style>
 @endPushOnce
 

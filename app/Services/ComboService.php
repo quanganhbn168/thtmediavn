@@ -78,6 +78,9 @@ class ComboService
             'slug' => $slug !== '' ? $slug : ($current?->slug ?: Str::slug($name)),
             'summary' => $data['summary'] ?? null,
             'description' => $data['description'] ?? null,
+            'ingredients' => $data['ingredients'] ?? null,
+            'usage' => $data['usage'] ?? null,
+            'product_notes' => $data['product_notes'] ?? null,
             'price' => (float) ($data['price'] ?? 0),
             'compare_price' => filled($data['compare_price'] ?? null) ? (float) $data['compare_price'] : null,
             'status' => $data['status'] ?? 'active',
@@ -93,22 +96,78 @@ class ComboService
 
     private function syncImage(Combo $combo, array $data): void
     {
-        $removedIds = collect(json_decode((string) ($data['image_removed_ids'] ?? '[]'), true) ?: [])
+        $removedIds = collect($this->decodeJsonArray($data['image_removed_ids'] ?? null))
             ->map(fn ($id): int => (int) $id)
             ->filter();
-        $existingIds = $combo->getMedia('combo_images')->pluck('id');
-        if ((bool) ($data['image_remove'] ?? false) || $existingIds->intersect($removedIds)->isNotEmpty()) {
+
+        if ((bool) ($data['image_remove'] ?? false)) {
             $combo->clearMediaCollection('combo_images');
-            return;
         }
 
-        $temporaryPath = collect(explode('|', (string) ($data['image'] ?? '')))->map(fn ($path) => trim($path))->filter()->first();
-        if ($temporaryPath === null) {
-            return;
+        $combo->getMedia('combo_images')
+            ->whereIn('id', $removedIds)
+            ->each->delete();
+
+        $combo->unsetRelation('media');
+        $temporaryPaths = collect(explode('|', (string) ($data['image'] ?? '')))
+            ->map(fn ($path): string => trim($path))
+            ->filter()
+            ->unique()
+            ->values();
+        $newMediaByPath = [];
+
+        foreach ($temporaryPaths as $temporaryPath) {
+            $media = $this->mediaService->syncSingle($combo, 'combo_images', $temporaryPath);
+            if ($media) {
+                $newMediaByPath[$temporaryPath] = $media->id;
+            }
         }
 
-        $combo->clearMediaCollection('combo_images');
-        $this->mediaService->syncSingle($combo, 'combo_images', $temporaryPath);
+        $combo->unsetRelation('media');
+        $media = $combo->getMedia('combo_images')->keyBy('id');
+        $orderedIds = [];
+
+        foreach ($this->decodeJsonArray($data['image_order'] ?? null) as $key) {
+            $key = (string) $key;
+            if (str_starts_with($key, 'existing:')) {
+                $id = (int) substr($key, strlen('existing:'));
+            } elseif (str_starts_with($key, 'temporary:')) {
+                $path = substr($key, strlen('temporary:'));
+                $id = (int) ($newMediaByPath[$path] ?? 0);
+            } else {
+                continue;
+            }
+
+            if ($id > 0 && $media->has($id) && ! in_array($id, $orderedIds, true)) {
+                $orderedIds[] = $id;
+            }
+        }
+
+        foreach ($media->keys() as $id) {
+            $id = (int) $id;
+            if (! in_array($id, $orderedIds, true)) {
+                $orderedIds[] = $id;
+            }
+        }
+
+        foreach ($orderedIds as $index => $id) {
+            $media->get($id)?->update(['order_column' => $index + 1]);
+        }
+    }
+
+    private function decodeJsonArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (! is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     private function toNullableInt(mixed $value): ?int

@@ -18,6 +18,9 @@ class StoreComboRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('combos', 'slug'), Rule::unique('slugs', 'slug')->where(fn ($query) => $query->where('locale', app()->getLocale()))],
             'summary' => ['nullable', 'string'],
             'description' => ['required', 'string'],
+            'ingredients' => ['nullable', 'string'],
+            'usage' => ['nullable', 'string'],
+            'product_notes' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:1'],
             'compare_price' => ['nullable', 'numeric', 'gt:price'],
             'status' => ['required', 'in:active,draft,archived'],
@@ -30,6 +33,8 @@ class StoreComboRequest extends FormRequest
             'seo_description' => ['nullable', 'string'],
             'image' => ['nullable', 'string', 'max:4096'],
             'image_remove' => ['nullable', 'boolean'],
+            'image_order' => ['nullable', 'json', 'max:8192'],
+            'image_removed_ids' => ['nullable', 'json', 'max:4096'],
         ];
     }
 

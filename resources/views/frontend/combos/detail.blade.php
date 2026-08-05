@@ -1,5 +1,89 @@
 @extends('layouts.master')
+
 @section('title', $combo->name)
+
 @section('content')
-<section class="section-space"><div class="container"><div class="row g-5 align-items-start"><div class="col-lg-6"><img class="w-100 rounded-4" src="{{ $combo->image_url }}" alt="{{ $combo->name }}" width="900" height="900"></div><div class="col-lg-6"><div class="eyebrow">{{ $combo->category?->name ?: 'COMBO' }}</div><h1 class="display-6 fw-bold mb-3">{{ $combo->name }}</h1>@if($combo->summary)<p class="lead text-muted">{{ $combo->summary }}</p>@endif<div class="d-flex align-items-center gap-3 mb-4"><span class="product-price fs-3">{{ number_format((float) $combo->price, 0, ',', '.') }}₫</span>@if($combo->compare_price > $combo->price)<span class="product-old-price">{{ number_format((float) $combo->compare_price, 0, ',', '.') }}₫</span>@endif</div><div class="combo-component-box mb-4"><h2 class="h5">Combo gồm</h2><ul class="list-group list-group-flush">@foreach($combo->items as $item)<li class="list-group-item px-0 d-flex justify-content-between gap-3"><span><a href="{{ route('product.show', $item->product->slug) }}">{{ $item->product->name }}</a>@if($item->variant)<small class="d-block text-muted">{{ $item->variant->name ?: 'Mặc định' }}</small>@endif</span><strong>×{{ $item->quantity }}</strong></li>@endforeach</ul></div><form id="combo-purchase-form" action="{{ route('cart.store') }}" method="POST">@csrf<input type="hidden" name="combo_id" value="{{ $combo->id }}"><div class="d-flex gap-2 align-items-center mb-3"><label for="comboQuantity" class="visually-hidden">Số lượng</label><input id="comboQuantity" class="form-control" style="max-width:100px" type="number" name="quantity" min="1" max="99" value="1"><button class="btn btn-outline-primary flex-grow-1" type="submit" name="action" value="add_to_cart" data-add-cart data-combo-id="{{ $combo->id }}" data-product-name="{{ $combo->name }}" data-quantity-target="#comboQuantity"><i class="bi bi-bag-plus me-1"></i>Thêm vào giỏ</button><button class="btn btn-primary flex-grow-1" type="submit" name="action" value="buy_now" data-add-cart data-buy-now data-combo-id="{{ $combo->id }}" data-product-name="{{ $combo->name }}" data-quantity-target="#comboQuantity">Mua ngay</button></div></form>@if($combo->description)<div class="combo-description">{!! $combo->description !!}</div>@endif</div></div>@if($related->isNotEmpty())<div class="mt-5"><h2 class="section-title h3 mb-4">Combo liên quan</h2><div class="row g-4">@foreach($related as $item)<div class="col-6 col-md-3"><x-combo-card :combo="$item" /></div>@endforeach</div></div>@endif</div></section>
+    <section class="section-space">
+        <div class="container">
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-6">
+                    <img class="w-100 rounded-4" src="{{ $combo->image_url }}" alt="{{ $combo->name }}" width="900" height="900">
+                </div>
+                <div class="col-lg-6">
+                    <div class="eyebrow">{{ $combo->category?->name ?: 'COMBO' }}</div>
+                    <h1 class="display-6 fw-bold mb-3">{{ $combo->name }}</h1>
+                    @if($combo->summary)
+                        <p class="lead text-muted">{{ $combo->summary }}</p>
+                    @endif
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <span class="product-price fs-3">{{ number_format((float) $combo->price, 0, ',', '.') }}₫</span>
+                        @if($combo->compare_price > $combo->price)
+                            <span class="product-old-price">{{ number_format((float) $combo->compare_price, 0, ',', '.') }}₫</span>
+                        @endif
+                    </div>
+
+                    <div class="combo-component-box mb-4">
+                        <h2 class="h5">Combo gồm</h2>
+                        <ul class="list-group list-group-flush">
+                            @foreach($combo->items as $item)
+                                <li class="list-group-item px-0 d-flex justify-content-between gap-3">
+                                    <span>
+                                        <a href="{{ route('product.show', $item->product->slug) }}">{{ $item->product->name }}</a>
+                                        @if($item->variant)
+                                            <small class="d-block text-muted">{{ $item->variant->name ?: 'Mặc định' }}</small>
+                                        @endif
+                                    </span>
+                                    <strong>×{{ $item->quantity }}</strong>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <form id="combo-purchase-form" action="{{ route('cart.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="combo_id" value="{{ $combo->id }}">
+                        <div class="d-flex gap-2 align-items-center mb-3">
+                            <label for="comboQuantity" class="visually-hidden">Số lượng</label>
+                            <input id="comboQuantity" class="form-control" style="max-width:100px" type="number" name="quantity" min="1" max="99" value="1">
+                            <button class="btn btn-outline-primary flex-grow-1" type="submit" name="action" value="add_to_cart" data-add-cart data-combo-id="{{ $combo->id }}" data-product-name="{{ $combo->name }}" data-quantity-target="#comboQuantity"><i class="bi bi-bag-plus me-1"></i>Thêm vào giỏ</button>
+                            <button class="btn btn-primary flex-grow-1" type="submit" name="action" value="buy_now" data-add-cart data-buy-now data-combo-id="{{ $combo->id }}" data-product-name="{{ $combo->name }}" data-quantity-target="#comboQuantity">Mua ngay</button>
+                        </div>
+                    </form>
+
+                    @if($combo->description)
+                        <div class="combo-description">{!! $combo->description !!}</div>
+                    @endif
+                    @if($combo->ingredients)
+                        <div class="combo-description mt-4">
+                            <h2 class="h5">Thành phần cấu tạo</h2>
+                            {!! $combo->ingredients !!}
+                        </div>
+                    @endif
+                    @if($combo->usage)
+                        <div class="combo-description mt-4">
+                            <h2 class="h5">Hướng dẫn sử dụng</h2>
+                            {!! $combo->usage !!}
+                        </div>
+                    @endif
+                    @if($combo->product_notes)
+                        <div class="combo-description mt-4">
+                            <h2 class="h5">Lưu ý</h2>
+                            {!! $combo->product_notes !!}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            @if($related->isNotEmpty())
+                <div class="mt-5">
+                    <h2 class="section-title h3 mb-4">Combo liên quan</h2>
+                    <div class="row g-4">
+                        @foreach($related as $item)
+                            <div class="col-6 col-md-3"><x-combo-card :combo="$item" /></div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    </section>
 @endsection

@@ -1,6 +1,7 @@
 @props([
     'name' => 'image',
     'label' => 'Ảnh sản phẩm',
+    'subjectLabel' => 'sản phẩm',
     'existingImages' => [],
     'maxFiles' => 9,
     'required' => false,
@@ -68,7 +69,7 @@
                 @if($item['existing_id']) data-existing-id="{{ $item['existing_id'] }}" @endif
                 @if($item['temporary_path']) data-temporary-path="{{ $item['temporary_path'] }}" @endif
             >
-                <img src="{{ $item['url'] }}" alt="Ảnh sản phẩm" data-gallery-image>
+                <img src="{{ $item['url'] }}" alt="Ảnh {{ $subjectLabel }}" data-gallery-image>
                 <span class="product-gallery-primary-badge" data-primary-badge>
                     <i class="bi bi-star-fill me-1"></i>Ảnh đại diện
                 </span>
@@ -88,7 +89,7 @@
     <div class="product-gallery-dropzone {{ $orderedItems->count() >= $maxFiles ? 'd-none' : '' }}" id="{{ $galleryId }}_dropzone" data-gallery-dropzone>
         <div class="dz-message product-gallery-empty-upload">
             <i class="bi bi-cloud-arrow-up"></i>
-            <strong>Kéo thả ảnh sản phẩm vào đây</strong>
+            <strong>Kéo thả ảnh {{ $subjectLabel }} vào đây</strong>
             <span>Chọn cùng lúc tối đa {{ $maxFiles }} ảnh, ảnh đầu tiên là ảnh đại diện</span>
             <small>{{ implode(', ', array_map('strtoupper', $allowedImageExtensions)) }} · tối đa {{ $maxSize }}MB/ảnh</small>
         </div>
@@ -361,7 +362,7 @@
 
             const image = document.createElement('img');
             image.src = url;
-            image.alt = 'Ảnh sản phẩm';
+            image.alt = 'Ảnh {{ $subjectLabel }}';
             image.dataset.galleryImage = '';
 
             const badge = document.createElement('span');
@@ -418,7 +419,7 @@
                     }
 
                     if (items().length >= maxFiles) {
-                        Swal.fire('Đã đủ ảnh', `Sản phẩm chỉ được có tối đa ${maxFiles} ảnh.`, 'warning');
+                        Swal.fire('Đã đủ ảnh', `{{ ucfirst($subjectLabel) }} chỉ được có tối đa ${maxFiles} ảnh.`, 'warning');
                         return;
                     }
 

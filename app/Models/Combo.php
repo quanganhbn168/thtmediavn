@@ -16,7 +16,7 @@ class Combo extends Model implements HasMedia
     use HasSlug, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
-        'combo_category_id', 'name', 'slug', 'summary', 'description', 'price', 'compare_price',
+        'combo_category_id', 'name', 'slug', 'summary', 'description', 'ingredients', 'usage', 'product_notes', 'price', 'compare_price',
         'sold_count', 'status', 'allow_preorder', 'is_featured', 'is_active', 'seo_title',
         'seo_description', 'published_at', 'sort_order',
     ];
