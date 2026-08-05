@@ -38,18 +38,6 @@ class ProductCategoryService
             $query->where('is_active', false);
         }
 
-        if (($filters['featured'] ?? null) === 'yes') {
-            $query->where('is_featured', true);
-        } elseif (($filters['featured'] ?? null) === 'no') {
-            $query->where('is_featured', false);
-        }
-
-        if (($filters['home'] ?? null) === 'yes') {
-            $query->where('is_home', true);
-        } elseif (($filters['home'] ?? null) === 'no') {
-            $query->where('is_home', false);
-        }
-
         return $query->orderBy('sort_order')
             ->paginate((int) ($filters['per_page'] ?? 20))
             ->withQueryString();

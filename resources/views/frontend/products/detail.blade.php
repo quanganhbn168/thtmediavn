@@ -202,7 +202,6 @@
             <div class="col-lg-7">
                 <div class="row g-4">
                     <div class="col-xl-8">
-                        <div class="product-brand mb-2">{{ $product['brand'] }}</div>
                         <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                             <h1 class="product-detail-title mb-0">{{ $displayName }}</h1>
                             <button class="btn btn-outline-primary btn-icon flex-shrink-0" type="button" data-wishlist="{{ $product['id'] }}" aria-label="Yêu thích {{ $displayName }}">

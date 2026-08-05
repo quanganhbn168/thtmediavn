@@ -322,34 +322,46 @@
 <section class="section-space pt-0 home-testimonials-section" aria-label="Phản hồi khách hàng">
     <div class="container">
         <x-section-heading :title="data_get($homepageSettings?->homepage_section_titles, 'testimonials.vi', 'Khách hàng nói gì về chúng tôi')" />
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 g-lg-4">
-            @foreach($testimonials as $testimonial)
-                <div class="col">
-                    <article class="home-testimonial-card h-100">
-                        @if($video = $testimonial->getFirstMedia('testimonial_video'))
-                            <a href="{{ $video->getUrl() }}" class="glightbox home-testimonial-video-link mb-3" data-gallery="testimonial-videos" data-type="video" data-source="local" data-glightbox="type: video; source: local" aria-label="Xem video cảm nhận của {{ $testimonial->name }}">
-                                <video class="home-testimonial-video" preload="metadata" muted playsinline>
-                                    <source src="{{ $video->getUrl() }}" type="{{ $video->mime_type }}">
-                                    Trình duyệt không hỗ trợ phát video.
-                                </video>
-                                <span class="home-testimonial-video-play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
-                            </a>
-                        @endif
-                        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
-                            <div class="home-testimonial-stars" aria-label="{{ $testimonial->rating }} trên 5 sao">{{ str_repeat('★', $testimonial->rating) }}<span>{{ str_repeat('☆', 5 - $testimonial->rating) }}</span></div>
-                            <i class="bi bi-quote home-testimonial-quote" aria-hidden="true"></i>
-                        </div>
-                        <blockquote>“{{ $testimonial->content }}”</blockquote>
-                        <footer class="home-testimonial-author">
-                            @if($avatar = $testimonial->getFirstMediaUrl('testimonial_avatar'))<img class="home-testimonial-avatar-image" src="{{ $avatar }}" alt="{{ $testimonial->name }}" loading="lazy">@else<span class="home-testimonial-avatar">{{ Str::upper(Str::substr($testimonial->name, 0, 1)) }}</span>@endif
-                            <span>
-                                <strong>{{ $testimonial->name }}</strong>
-                                <small>{{ $testimonial->label ?: 'Khách hàng Rhea Skinlab' }}</small>
-                            </span>
-                        </footer>
-                    </article>
-                </div>
-            @endforeach
+        <div class="swiper home-testimonials-swiper {{ $testimonials->count() > 1 ? 'home-testimonials-swiper--interactive' : 'home-testimonials-swiper--single' }}" data-home-testimonials-swiper data-slide-count="{{ $testimonials->count() }}">
+            <div class="swiper-wrapper">
+                @foreach($testimonials as $testimonial)
+                    <div class="swiper-slide">
+                        <article class="home-testimonial-card h-100">
+                            @if($avatar = $testimonial->getFirstMediaUrl('testimonial_avatar'))
+                                <img class="home-testimonial-image" src="{{ $avatar }}" alt="{{ $testimonial->name }}" loading="lazy">
+                            @endif
+
+                            <div class="home-testimonial-card__content">
+                                @if($video = $testimonial->getFirstMedia('testimonial_video'))
+                                    <a href="{{ $video->getUrl() }}" class="glightbox home-testimonial-video-link mb-3" data-gallery="testimonial-videos" data-type="video" data-source="local" data-glightbox="type: video; source: local" aria-label="Xem video cảm nhận của {{ $testimonial->name }}">
+                                        <video class="home-testimonial-video" preload="metadata" muted playsinline>
+                                            <source src="{{ $video->getUrl() }}" type="{{ $video->mime_type }}">
+                                            Trình duyệt không hỗ trợ phát video.
+                                        </video>
+                                        <span class="home-testimonial-video-play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
+                                    </a>
+                                @endif
+
+                                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                                    <div class="home-testimonial-stars" aria-label="{{ $testimonial->rating }} trên 5 sao">{{ str_repeat('★', $testimonial->rating) }}<span>{{ str_repeat('☆', 5 - $testimonial->rating) }}</span></div>
+                                    <i class="bi bi-quote home-testimonial-quote" aria-hidden="true"></i>
+                                </div>
+                                <blockquote>“{{ $testimonial->content }}”</blockquote>
+                                <footer class="home-testimonial-author">
+                                    <strong>{{ $testimonial->name }}</strong>
+                                    <small>{{ $testimonial->label ?: 'Khách hàng Rhea Skinlab' }}</small>
+                                </footer>
+                            </div>
+                        </article>
+                    </div>
+                @endforeach
+            </div>
+
+            @if($testimonials->count() > 1)
+                <div class="home-testimonials-pagination"></div>
+                <button class="home-testimonials-prev" type="button" aria-label="Cảm nhận trước"><i class="bi bi-arrow-left"></i></button>
+                <button class="home-testimonials-next" type="button" aria-label="Cảm nhận tiếp theo"><i class="bi bi-arrow-right"></i></button>
+            @endif
         </div>
     </div>
 </section>

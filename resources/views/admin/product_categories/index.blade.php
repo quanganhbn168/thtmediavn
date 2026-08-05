@@ -20,7 +20,7 @@
         resource="product_category"
         bulk-delete-warning="Danh mục đang có dữ liệu liên quan sẽ được chặn xóa."
         :reorderable="true"
-        :reorder-enabled="! request()->hasAny(['search', 'per_page', 'parent_id', 'status', 'featured', 'home'])"
+        :reorder-enabled="! request()->hasAny(['search', 'per_page', 'parent_id', 'status'])"
         :order-start="$categories->firstItem() ?? 1"
     >
     <x-slot:filters>
@@ -57,22 +57,6 @@
                     </select>
                 </div>
                 <div class="col-xl-1 col-lg-4 col-md-6">
-                    <label for="product-category-featured" class="form-label">Nổi bật</label>
-                    <select id="product-category-featured" name="featured" class="form-select">
-                        <option value="">Tất cả</option>
-                        <option value="yes" @selected(request('featured') === 'yes')>Có</option>
-                        <option value="no" @selected(request('featured') === 'no')>Không</option>
-                    </select>
-                </div>
-                <div class="col-xl-1 col-lg-4 col-md-6">
-                    <label for="product-category-home" class="form-label">Trang chủ</label>
-                    <select id="product-category-home" name="home" class="form-select">
-                        <option value="">Tất cả</option>
-                        <option value="yes" @selected(request('home') === 'yes')>Có</option>
-                        <option value="no" @selected(request('home') === 'no')>Không</option>
-                    </select>
-                </div>
-                <div class="col-xl-1 col-lg-4 col-md-6">
                     <label for="product-category-per-page" class="form-label">Số dòng</label>
                     <select id="product-category-per-page" name="per_page" class="form-select">
                         @foreach([10, 20, 25, 50] as $size)
@@ -84,7 +68,7 @@
                     <button class="btn btn-primary flex-grow-1"><i class="bi bi-funnel me-1"></i>Lọc</button>
                 </div>
                 <div class="col-xl-1 col-lg-4 col-md-6">
-                    @if(request()->hasAny(['search', 'per_page', 'parent_id', 'status', 'featured', 'home']))
+                    @if(request()->hasAny(['search', 'per_page', 'parent_id', 'status']))
                         <a href="{{ route('admin.product-categories.index') }}" class="btn btn-default d-block" title="Xóa bộ lọc">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </a>

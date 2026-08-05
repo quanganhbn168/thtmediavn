@@ -155,6 +155,44 @@
     });
   }
 
+  function initHomeTestimonialsSwiper() {
+    if (typeof window.Swiper === 'undefined') return;
+
+    qsa('[data-home-testimonials-swiper]').forEach(slider => {
+      const slideCount = Number(slider.dataset.slideCount || 0);
+      const hasMultipleSlides = slideCount > 1;
+
+      new window.Swiper(slider, {
+        slidesPerView: 1,
+        spaceBetween: 0,
+        autoHeight: true,
+        loop: hasMultipleSlides,
+        speed: 700,
+        grabCursor: hasMultipleSlides,
+        watchOverflow: true,
+        keyboard: { enabled: true },
+        autoplay: hasMultipleSlides ? {
+          delay: 6000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        } : false,
+        pagination: hasMultipleSlides ? {
+          el: qs('.home-testimonials-pagination', slider),
+          clickable: true,
+        } : false,
+        navigation: hasMultipleSlides ? {
+          prevEl: qs('.home-testimonials-prev', slider),
+          nextEl: qs('.home-testimonials-next', slider),
+        } : false,
+        a11y: {
+          enabled: true,
+          prevSlideMessage: 'Cảm nhận trước',
+          nextSlideMessage: 'Cảm nhận tiếp theo',
+        },
+      });
+    });
+  }
+
   function initFlashSaleSwiper() {
     if (typeof window.Swiper === 'undefined') return;
 
@@ -864,6 +902,7 @@
     initMegaMenus();
     initHomeHeroSwiper();
     initHomeAdviceSwiper();
+    initHomeTestimonialsSwiper();
     initFlashSaleSwiper();
     initProductGallerySwiper();
     initBackToTop();
