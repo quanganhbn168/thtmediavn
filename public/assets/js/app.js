@@ -164,9 +164,9 @@
 
       new window.Swiper(slider, {
         slidesPerView: 1,
-        spaceBetween: 0,
+        spaceBetween: 12,
         autoHeight: true,
-        loop: hasMultipleSlides,
+        loop: slideCount > 3,
         speed: 700,
         grabCursor: hasMultipleSlides,
         watchOverflow: true,
@@ -184,6 +184,16 @@
           prevEl: qs('.home-testimonials-prev', slider),
           nextEl: qs('.home-testimonials-next', slider),
         } : false,
+        breakpoints: {
+          768: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          1200: {
+            slidesPerView: 3,
+            spaceBetween: 20,
+          },
+        },
         a11y: {
           enabled: true,
           prevSlideMessage: 'Cảm nhận trước',
