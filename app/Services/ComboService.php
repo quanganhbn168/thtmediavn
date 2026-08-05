@@ -109,10 +109,12 @@ class ComboService
             ->each->delete();
 
         $combo->unsetRelation('media');
+        $currentCount = $combo->getMedia('combo_images')->count();
         $temporaryPaths = collect(explode('|', (string) ($data['image'] ?? '')))
             ->map(fn ($path): string => trim($path))
             ->filter()
             ->unique()
+            ->take(max(0, 9 - $currentCount))
             ->values();
         $newMediaByPath = [];
 
