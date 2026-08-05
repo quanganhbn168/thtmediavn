@@ -326,7 +326,18 @@ img { max-width: 100%; }
   font-size: 13.5px;
 }
 .mega-link:hover { color: var(--primary); padding-left: 3px; }
-.category-mega-menu { padding: 0; overflow: hidden; }
+.category-mega-menu {
+  max-height: min(680px, calc(100vh - 180px));
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
+}
+.category-mega-menu::-webkit-scrollbar { width: 8px; }
+.category-mega-menu::-webkit-scrollbar-track { background: transparent; }
+.category-mega-menu::-webkit-scrollbar-thumb { background: var(--line); border: 2px solid #fff; border-radius: 999px; }
 .mega-category-layout {
   display: grid;
   grid-template-columns: minmax(240px, 28%) 1fr;
