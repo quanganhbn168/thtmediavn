@@ -43,14 +43,14 @@ class SiteMenuSliderTest extends TestCase
             'is_active' => true,
         ]);
         $mega = $this->menu('Danh mục mega', 'header', [
-            ['Chăm sóc da', '/danh-muc/cham-soc-da', [['Sữa rửa mặt', '/danh-muc/sua-rua-mat']]],
+            ['Thiết bị truyền thông', '/danh-muc/thiet-bi-truyen-thong', [['Máy quay', '/danh-muc/may-quay']]],
         ]);
         $megaChild = $mega->allItems()->whereNotNull('parent_id')->firstOrFail();
         MenuItem::create([
             'menu_id' => $mega->id,
             'parent_id' => $megaChild->id,
-            'title' => ['vi' => 'Sữa rửa mặt dịu nhẹ'],
-            'url' => '/danh-muc/sua-rua-mat-diu-nhe',
+            'title' => ['vi' => 'Máy quay chuyên dụng'],
+            'url' => '/danh-muc/may-quay-chuyen-dung',
             'sort_order' => 1,
             'is_active' => true,
         ]);
@@ -83,9 +83,9 @@ class SiteMenuSliderTest extends TestCase
             ->assertSee('Tư vấn chuyên sâu')
             ->assertSee('dropdown-submenu-menu', false)
             ->assertSee('data-mega-menu', false)
-            ->assertSee('Chăm sóc da')
-            ->assertSee('Sữa rửa mặt')
-            ->assertSee('Sữa rửa mặt dịu nhẹ')
+            ->assertSee('Thiết bị truyền thông')
+            ->assertSee('Máy quay')
+            ->assertSee('Máy quay chuyên dụng')
             ->assertSee('Chính sách mua hàng')
             ->assertSee('Chính sách đổi trả')
             ->assertSee('Hỗ trợ khách hàng')
@@ -94,8 +94,8 @@ class SiteMenuSliderTest extends TestCase
 
     public function test_mega_menu_auto_nests_product_category_children(): void
     {
-        $rootCategory = ProductCategory::query()->where('slug', 'cham-soc-mat')->firstOrFail();
-        $childCategory = ProductCategory::query()->where('slug', 'sua-rua-mat')->firstOrFail();
+        $rootCategory = ProductCategory::query()->where('slug', 'thiet-bi-truyen-thong')->firstOrFail();
+        $childCategory = ProductCategory::query()->where('slug', 'may-quay')->firstOrFail();
         $this->assertSame($rootCategory->id, $childCategory->parent_id);
         $this->assertTrue($childCategory->products()->where('is_active', true)->exists());
 
@@ -122,8 +122,8 @@ class SiteMenuSliderTest extends TestCase
 
         $this->get(route('home'))
             ->assertOk()
-            ->assertSee('Chăm sóc da')
-            ->assertSee('Sữa rửa mặt')
+            ->assertSee('Thiết bị truyền thông')
+            ->assertSee('Máy quay')
             ->assertDontSee('data-mega-tab="menu-'.$childItem->id.'"', false);
 
         $this->assertDatabaseHas('menu_items', [
@@ -143,8 +143,8 @@ class SiteMenuSliderTest extends TestCase
         ]);
         $item = SliderItem::create([
             'slider_id' => $slider->id,
-            'title' => ['vi' => 'Làn da khỏe đẹp'],
-            'sub_title' => ['vi' => 'Chăm sóc khoa học mỗi ngày'],
+            'title' => ['vi' => 'Nội dung tạo nên khác biệt'],
+            'sub_title' => ['vi' => 'Truyền thông nhất quán trên mọi điểm chạm'],
             'buttons' => [[
                 'text' => ['vi' => 'Khám phá ngay'],
                 'link' => '/san-pham',
@@ -159,10 +159,10 @@ class SiteMenuSliderTest extends TestCase
             ->assertSee('data-home-hero-swiper', false)
             ->assertSee('class="swiper-wrapper"', false)
             ->assertSee('vendor/swiper/swiper-bundle.min.js', false)
-            ->assertSee('Làn da khỏe đẹp')
-            ->assertSee('Chăm sóc khoa học mỗi ngày')
+            ->assertSee('Nội dung tạo nên khác biệt')
+            ->assertSee('Truyền thông nhất quán trên mọi điểm chạm')
             ->assertSee('Khám phá ngay')
-            ->assertDontSee('RHEA SKINLAB đồng hành cùng phụ nữ xây dựng vẻ đẹp khỏe mạnh, tự nhiên và bền vững.');
+            ->assertDontSee('Nội dung giới thiệu lỗi thời.');
 
         $this->assertStringContainsString("effect: 'fade'", file_get_contents(public_path('assets/js/app.js')));
         $this->assertStringContainsString('left: max(7vw', file_get_contents(public_path('assets/css/style.css')));

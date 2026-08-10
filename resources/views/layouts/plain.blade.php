@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow, noarchive">
 
-    <title>@yield('title', config('app.name', 'RHEA SKINLAB'))</title>
+    <title>@yield('title', config('app.name', 'THT MEDIA VN'))</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />

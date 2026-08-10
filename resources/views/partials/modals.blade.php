@@ -10,7 +10,7 @@
                     <input class="form-control" type="search" name="q" placeholder="Nhập tên sản phẩm, thương hiệu..." required>
                     <button class="btn btn-primary btn-icon position-absolute top-50 end-0 translate-middle-y me-2" type="submit" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
                 </form>
-                <div class="mt-4 small text-muted">Gợi ý: serum, sữa rửa mặt, chống nắng, dưỡng thể</div>
+                <div class="mt-4 small text-muted">Gợi ý: nhập tên sản phẩm, mã sản phẩm hoặc thương hiệu.</div>
             </div>
         </div>
     </div>

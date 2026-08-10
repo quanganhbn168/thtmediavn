@@ -350,6 +350,6 @@ class CheckoutController extends Controller
 
     private function nextOrderCode(): string
     {
-        return 'RHEA-'.now()->format('ymd').'-'.Str::upper(substr((string) Str::ulid(), -6));
+        return 'THT-'.now()->format('ymd').'-'.Str::upper(substr((string) Str::ulid(), -6));
     }
 }

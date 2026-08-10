@@ -1,14 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 86" role="img" aria-label="Kinh Bắc Tour">
-  <g transform="translate(4 5)">
-    <circle cx="38" cy="38" r="36" fill="none" stroke="#d8b56b" stroke-width="2"/>
-    <path d="M10 38c10-2 18-8 28-18 10 10 18 16 28 18-5 4-12 5-18 4l-2 18H30l-2-18c-6 1-13 0-18-4Z" fill="#f3d08a"/>
-    <path d="M18 48c7 4 13 5 20 5s13-1 20-5M17 58c8 4 14 5 21 5 8 0 14-1 22-5" fill="none" stroke="#9ed2c9" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="38" cy="15" r="3" fill="#f3d08a"/>
-  </g>
-  <g transform="translate(88 8)">
-    <text x="0" y="35" fill="#fff" font-family="Georgia,serif" font-size="32" font-weight="700" letter-spacing="1.5">KINH BẮC</text>
-    <text x="2" y="58" fill="#9ed2c9" font-family="Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="6">TOUR</text>
-    <path d="M132 53h105" stroke="#d8b56b" stroke-width="1.5"/>
-    <text x="140" y="68" fill="#e6dcc8" font-family="Arial,sans-serif" font-size="9" letter-spacing="2.1">VỀ MIỀN DI SẢN</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="92" viewBox="0 0 310 92" role="img" aria-labelledby="title desc">
+  <title id="title">THT MEDIA VN</title>
+  <desc id="desc">Wordmark sáng THT MEDIA VN</desc>
+  <rect x="4" y="16" width="60" height="60" rx="18" fill="#C7A55B"/>
+  <path d="M18 33h32M34 33v27M19 47h30" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <text x="82" y="47" font-family="Arial,sans-serif" font-size="27" font-weight="800" letter-spacing="1.5" fill="#fff">THT MEDIA</text>
+  <text x="84" y="68" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="6" fill="#DCEBE5">VIET NAM</text>
 </svg>

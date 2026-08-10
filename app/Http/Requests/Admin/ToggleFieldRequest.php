@@ -23,10 +23,6 @@ class ToggleFieldRequest extends FormRequest
         'ProductOption',
         'ProductAttribute',
         'Testimonial',
-        'HomeSkinConcern',
-        'HomeRoutine',
-        'HomeTrustPoint',
-        'HomeConsultationOption',
         'Customer',
         'Subscriber',
     ];
@@ -47,10 +43,6 @@ class ToggleFieldRequest extends FormRequest
         'ProductOption' => ['is_active'],
         'ProductAttribute' => ['is_active', 'show_in_product_menu'],
         'Testimonial' => ['is_active'],
-        'HomeSkinConcern' => ['is_active'],
-        'HomeRoutine' => ['is_active'],
-        'HomeTrustPoint' => ['is_active'],
-        'HomeConsultationOption' => ['is_active'],
         'Customer' => ['is_active'],
         'Subscriber' => ['is_active'],
     ];

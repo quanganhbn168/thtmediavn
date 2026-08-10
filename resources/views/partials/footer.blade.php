@@ -6,10 +6,10 @@
                     @if($siteAssets?->getFirstMediaUrl('logo_footer') ?: $siteAssets?->getFirstMediaUrl('logo'))
                         <img class="footer-logo mb-3" src="{{ $siteAssets->getFirstMediaUrl('logo_footer') ?: $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
                     @else
-                        <div class="h3 fw-black text-white mb-3">RHEA SKINLAB</div>
+                        <div class="h3 fw-black text-white mb-3">THT MEDIA VN</div>
                     @endif
                     <div class="footer-text fw-bold text-white mb-2">{{ $website['company'] }}</div>
-                    <p class="footer-text mb-2">Mỹ phẩm chính hãng, lựa chọn theo nhu cầu và đặc điểm làn da.</p>
+                    <p class="footer-text mb-2">Nội dung, truyền thông và giải pháp thương hiệu được quản trị trên một nền tảng thống nhất.</p>
                     <div class="footer-contact-item"><i class="bi bi-geo-alt-fill"></i><span>{{ $website['address'] }}</span></div>
                     <div class="footer-contact-item"><i class="bi bi-telephone-fill"></i><a href="tel:{{ preg_replace('/[^0-9+]/', '', $website['phone']) }}">{{ $website['phone'] }}</a></div>
                     <div class="footer-contact-item"><i class="bi bi-envelope-fill"></i><a href="mailto:{{ $website['email'] }}">{{ $website['email'] }}</a></div>
@@ -33,12 +33,12 @@
                         <a class="footer-link" href="{{ route('catalog') }}">Tìm kiếm sản phẩm</a>
                         <a class="footer-link" href="{{ route('cart') }}">Giỏ hàng</a>
                         <a class="footer-link" href="{{ route('login') }}">Tài khoản</a>
-                        <a class="footer-link" href="{{ route('news.index') }}">Kiến thức làm đẹp</a>
+                        <a class="footer-link" href="{{ route('news.index') }}">Tin tức và góc nhìn</a>
                     </div>
                 @endif
                 <div class="col-lg-4 col-md-6">
-                    <h2 class="footer-heading">Nhận ưu đãi qua Zalo</h2>
-                    <p class="footer-text">Nhập số điện thoại để nhận thông tin sản phẩm mới và chương trình khuyến mãi qua Zalo.</p>
+                    <h2 class="footer-heading">Nhận thông tin mới</h2>
+                    <p class="footer-text">Nhập số điện thoại để nhận tin tức và thông báo mới từ THT MEDIA VN qua Zalo.</p>
                     @if(session('newsletter_success'))
                         <p class="small text-white mb-0"><i class="bi bi-check-circle-fill me-1"></i>{{ session('newsletter_success') }}</p>
                     @endif
@@ -46,7 +46,7 @@
                         <input class="d-none" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
                         <label class="visually-hidden" for="footer-phone">Số điện thoại Zalo</label>
                         <input class="form-control @error('phone') is-invalid @enderror" id="footer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="{{ old('phone') }}" placeholder="Nhập số điện thoại Zalo" required>
-                        <button class="btn btn-primary" type="submit">Nhận ưu đãi</button>
+                        <button class="btn btn-primary" type="submit">Đăng ký</button>
                     </form>
                     @error('phone')<div class="small text-warning mt-2">{{ $message }}</div>@enderror
                     <div class="mt-4">

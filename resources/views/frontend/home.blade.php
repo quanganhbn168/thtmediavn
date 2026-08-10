@@ -349,7 +349,7 @@
                                 <blockquote>“{{ $testimonial->content }}”</blockquote>
                                 <footer class="home-testimonial-author">
                                     <strong>{{ $testimonial->name }}</strong>
-                                    <small>{{ $testimonial->label ?: 'Khách hàng Rhea Skinlab' }}</small>
+                                    <small>{{ $testimonial->label ?: 'Khách hàng THT MEDIA VN' }}</small>
                                 </footer>
                             </div>
                         </article>
@@ -434,12 +434,12 @@
         <div class="home-lead-card">
             <div class="row g-4 g-xl-5 align-items-center">
                 <div class="col-lg-5">
-                    <span class="home-lead-eyebrow"><i class="bi bi-chat-heart-fill"></i> Tư vấn 1:1</span>
-                    <h2>Chưa biết sản phẩm nào hợp với da?</h2>
-                    <p>Để lại thông tin, đội ngũ Rhea Skinlab sẽ hỗ trợ chọn sản phẩm và routine phù hợp với nhu cầu của bạn.</p>
+                    <span class="home-lead-eyebrow"><i class="bi bi-chat-heart-fill"></i> Trao đổi cùng chúng tôi</span>
+                    <h2>Bạn đang cần một giải pháp truyền thông phù hợp?</h2>
+                    <p>Để lại thông tin, đội ngũ THT MEDIA VN sẽ liên hệ để tìm hiểu mục tiêu và đề xuất hướng triển khai phù hợp.</p>
                     <ul class="home-lead-benefits list-unstyled mb-0">
-                        <li><i class="bi bi-check2-circle"></i> Gợi ý dựa trên tình trạng da và nhu cầu thực tế</li>
-                        <li><i class="bi bi-check2-circle"></i> Không mất phí tư vấn</li>
+                        <li><i class="bi bi-check2-circle"></i> Trao đổi dựa trên mục tiêu và nhu cầu thực tế</li>
+                        <li><i class="bi bi-check2-circle"></i> Tiếp nhận yêu cầu rõ ràng, minh bạch</li>
                         <li><i class="bi bi-check2-circle"></i> Phản hồi trong giờ làm việc</li>
                     </ul>
                 </div>
@@ -455,9 +455,9 @@
                             <div class="col-md-6"><label class="form-label" for="homeLeadName">Họ và tên</label><input class="form-control" id="homeLeadName" name="name" value="{{ old('name') }}" autocomplete="name" required></div>
                             <div class="col-md-6"><label class="form-label" for="homeLeadPhone">Số điện thoại</label><input class="form-control" id="homeLeadPhone" name="phone" value="{{ old('phone') }}" type="tel" autocomplete="tel" required></div>
                             <div class="col-md-6"><label class="form-label" for="homeLeadEmail">Email</label><input class="form-control" id="homeLeadEmail" name="email" value="{{ old('email') }}" type="email" autocomplete="email" required></div>
-                            <div class="col-md-6"><label class="form-label" for="homeLeadSubject">Bạn cần hỗ trợ gì?</label><select class="form-select" id="homeLeadSubject" name="subject"><option value="Tư vấn chọn sản phẩm" @selected(old('subject', 'Tư vấn chọn sản phẩm') === 'Tư vấn chọn sản phẩm')>Tư vấn chọn sản phẩm</option><option value="Tư vấn routine chăm da" @selected(old('subject') === 'Tư vấn routine chăm da')>Tư vấn routine chăm da</option><option value="Nhận ưu đãi mới" @selected(old('subject') === 'Nhận ưu đãi mới')>Nhận ưu đãi mới</option><option value="Hỗ trợ đơn hàng" @selected(old('subject') === 'Hỗ trợ đơn hàng')>Hỗ trợ đơn hàng</option></select></div>
+                            <div class="col-md-6"><label class="form-label" for="homeLeadSubject">Bạn cần hỗ trợ gì?</label><select class="form-select" id="homeLeadSubject" name="subject"><option value="Tư vấn dự án truyền thông" @selected(old('subject', 'Tư vấn dự án truyền thông') === 'Tư vấn dự án truyền thông')>Tư vấn dự án truyền thông</option><option value="Hợp tác sản xuất nội dung" @selected(old('subject') === 'Hợp tác sản xuất nội dung')>Hợp tác sản xuất nội dung</option><option value="Yêu cầu báo giá" @selected(old('subject') === 'Yêu cầu báo giá')>Yêu cầu báo giá</option><option value="Hỗ trợ khác" @selected(old('subject') === 'Hỗ trợ khác')>Hỗ trợ khác</option></select></div>
                             <div class="col-12 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pt-1">
-                                <label class="form-check small text-muted mb-0"><input class="form-check-input" type="checkbox" required> <span class="form-check-label">Tôi đồng ý để Rhea Skinlab liên hệ tư vấn.</span></label>
+                                <label class="form-check small text-muted mb-0"><input class="form-check-input" type="checkbox" required> <span class="form-check-label">Tôi đồng ý để THT MEDIA VN liên hệ trao đổi.</span></label>
                                 <button class="btn btn-primary flex-shrink-0 px-4" type="submit"><i class="bi bi-send me-2"></i>Gửi thông tin</button>
                             </div>
                         </form>

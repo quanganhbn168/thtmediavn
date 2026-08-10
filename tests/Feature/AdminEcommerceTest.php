@@ -80,7 +80,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_category_create_and_edit_forms_render_and_update(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $category = ProductCategory::query()->where('slug', 'tay-trang')->firstOrFail();
+        $category = ProductCategory::query()->where('slug', 'may-quay')->firstOrFail();
         $originalImage = $category->image;
 
         $this->actingAs($admin, 'admin')
@@ -215,7 +215,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_category_image_can_be_replaced_and_removed(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $category = ProductCategory::query()->where('slug', 'tay-trang')->firstOrFail();
+        $category = ProductCategory::query()->where('slug', 'may-quay')->firstOrFail();
         $filename = 'category-test-'.Str::uuid().'.png';
         $temporaryPath = 'uploads/tmp/'.$filename;
         File::ensureDirectoryExists(public_path('uploads/tmp'));
@@ -330,7 +330,7 @@ class AdminEcommerceTest extends TestCase
         $this->actingAs($admin, 'admin')
             ->post(route('admin.product-attributes.store'), [
                 'name' => $name,
-                'values_text' => "Gel\nKem\nSerum",
+                'values_text' => "Cơ bản\nTiêu chuẩn\nNâng cao",
                 'sort_order' => 12,
                 'is_active' => 1,
                 'show_in_product_menu' => 1,
@@ -339,20 +339,20 @@ class AdminEcommerceTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $attribute = ProductAttribute::query()->where('name', $name)->with('values')->firstOrFail();
-        $this->assertSame(['Gel', 'Kem', 'Serum'], $attribute->values->pluck('value')->all());
+        $this->assertSame(['Cơ bản', 'Tiêu chuẩn', 'Nâng cao'], $attribute->values->pluck('value')->all());
 
         $this->actingAs($admin, 'admin')
             ->get(route('admin.product-attributes.edit', $attribute))
             ->assertOk()
             ->assertViewIs('admin.product_attributes.edit')
             ->assertSee('Sửa thuộc tính lọc')
-            ->assertSee('Serum');
+            ->assertSee('Nâng cao');
 
         $this->actingAs($admin, 'admin')
             ->put(route('admin.product-attributes.update', $attribute), [
                 'name' => $name,
                 'slug' => $attribute->slug,
-                'values_text' => "Gel\nKem dưỡng\nSerum",
+                'values_text' => "Tiêu chuẩn\nNâng cao\nChuyên nghiệp",
                 'sort_order' => 15,
                 'is_active' => 0,
                 'show_in_product_menu' => 0,
@@ -368,7 +368,7 @@ class AdminEcommerceTest extends TestCase
         ]);
         $this->assertDatabaseHas('product_attribute_values', [
             'product_attribute_id' => $attribute->id,
-            'value' => 'Kem dưỡng',
+            'value' => 'Nâng cao',
         ]);
     }
 
@@ -432,7 +432,7 @@ class AdminEcommerceTest extends TestCase
 
     public function test_homepage_resolves_uploaded_category_image_paths(): void
     {
-        $category = ProductCategory::query()->where('slug', 'tay-trang')->firstOrFail();
+        $category = ProductCategory::query()->where('slug', 'may-quay')->firstOrFail();
         $category->update(['image' => 'uploads/product-categories/category-test.webp', 'is_home' => true]);
 
         $response = $this->get(route('home'));
@@ -445,7 +445,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_category_index_uses_active_featured_and_home_toggles(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $category = ProductCategory::query()->where('slug', 'tay-trang')->firstOrFail();
+        $category = ProductCategory::query()->where('slug', 'may-quay')->firstOrFail();
 
         $response = $this->actingAs($admin, 'admin')->get(route('admin.product-categories.index'));
         $response->assertOk()
@@ -524,7 +524,7 @@ class AdminEcommerceTest extends TestCase
     public function test_product_category_bulk_actions_are_wired_to_selected_rows(): void
     {
         $admin = User::role('admin')->firstOrFail();
-        $categories = ProductCategory::query()->whereIn('slug', ['tay-trang', 'sua-rua-mat'])->get();
+        $categories = ProductCategory::query()->whereIn('slug', ['may-quay', 'phu-kien'])->get();
 
         $response = $this->actingAs($admin, 'admin')->get(route('admin.product-categories.index'));
         $response->assertOk()
@@ -562,7 +562,7 @@ class AdminEcommerceTest extends TestCase
             ->where('is_active', true)
             ->count());
 
-        $parentCategory = ProductCategory::query()->where('slug', 'cham-soc-mat')->firstOrFail();
+        $parentCategory = ProductCategory::query()->where('slug', 'thiet-bi-truyen-thong')->firstOrFail();
         $this->actingAs($admin, 'admin')
             ->post(route('admin.common.bulk-action'), [
                 'resource' => 'product_category',
@@ -669,7 +669,7 @@ class AdminEcommerceTest extends TestCase
             'product_category_id' => $category->id,
             'name' => $name,
             'description' => '<p>Thông tin sản phẩm.</p>',
-            'product_notes' => '<p>Không dùng khi da đang kích ứng nặng.</p>',
+            'product_notes' => '<p>Không vận hành thiết bị khi nguồn điện không ổn định.</p>',
             'status' => 'active',
             'variant_selection_mode' => 'combination',
             'image' => $temporaryPath,
@@ -689,7 +689,7 @@ class AdminEcommerceTest extends TestCase
             ->assertSessionHasNoErrors();
         $this->assertDatabaseHas('products', [
             'name' => $name,
-            'product_notes' => '<p>Không dùng khi da đang kích ứng nặng.</p>',
+            'product_notes' => '<p>Không vận hành thiết bị khi nguồn điện không ổn định.</p>',
         ]);
     }
 

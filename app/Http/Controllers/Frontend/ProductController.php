@@ -406,44 +406,23 @@ class ProductController extends FrontendController
 
     private function quickFilters(Collection $attributeGroups, array $selectedAttributeValues, Request $request): Collection
     {
-        $definitions = [
-            ['label' => 'Da dầu', 'attribute' => 'loai-da', 'slugs' => ['da-dau'], 'keyword' => 'da dầu'],
-            ['label' => 'Da khô', 'attribute' => 'loai-da', 'slugs' => ['da-kho'], 'keyword' => 'da khô'],
-            ['label' => 'Da nhạy cảm', 'attribute' => 'loai-da', 'slugs' => ['da-nhay-cam'], 'keyword' => 'da nhạy cảm'],
-            ['label' => 'Da mụn', 'attribute' => 'van-de', 'slugs' => ['mun'], 'keyword' => 'mụn'],
-            ['label' => 'Xỉn màu', 'attribute' => 'van-de', 'slugs' => ['xin-mau', 'sang-da'], 'keyword' => 'xỉn màu'],
-            ['label' => 'Phục hồi', 'attribute' => 'van-de', 'slugs' => ['phuc-hoi', 'hang-rao-da-suy-yeu'], 'keyword' => 'phục hồi'],
-            ['label' => 'Chống lão hóa', 'attribute' => 'van-de', 'slugs' => ['lao-hoa'], 'keyword' => 'lão hóa'],
-        ];
-
-        return collect($definitions)->map(function (array $definition) use ($attributeGroups, $selectedAttributeValues, $request): array {
-            $attribute = $attributeGroups->firstWhere('slug', $definition['attribute']);
-            $value = $attribute?->values?->first(fn ($item) => in_array($item->slug, $definition['slugs'], true));
-
-            if ($attribute && $value) {
+        return $attributeGroups
+            ->flatMap(function (ProductAttribute $attribute) use ($selectedAttributeValues, $request): Collection {
+                return $attribute->values->map(function ($value) use ($attribute, $selectedAttributeValues, $request): array {
                 $active = in_array((int) $value->id, $selectedAttributeValues[(int) $attribute->id] ?? [], true);
 
                 return [
-                    'label' => $definition['label'],
+                    'label' => $value->value,
                     'count' => (int) ($value->products_count ?? 0),
                     'active' => $active,
                     'url' => $active
                         ? $this->catalogUrlWithout($request, 'attribute_values', (int) $attribute->id, (int) $value->id)
                         : $this->catalogUrlWithAttribute($request, (int) $attribute->id, (int) $value->id),
                 ];
-            }
-
-            $query = $request->query();
-            unset($query['page'], $query['attribute_values']);
-            $query['q'] = $definition['keyword'];
-
-            return [
-                'label' => $definition['label'],
-                'count' => null,
-                'active' => trim((string) $request->query('q')) === $definition['keyword'],
-                'url' => route('catalog', $query),
-            ];
-        });
+                });
+            })
+            ->take(7)
+            ->values();
     }
 
     private function activeFilterChips(

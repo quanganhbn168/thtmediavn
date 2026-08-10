@@ -12,13 +12,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
+        $seeders = [
             RoleAndPermissionSeeder::class,
-            UserSeeder::class,
-            EcommerceSeeder::class,
+            ThtMediaFoundationSeeder::class,
             ContactChannelSeeder::class,
-            RheaOfficialDataSeeder::class,
-        ]);
+        ];
+
+        $seeders[] = app()->environment('testing')
+            ? TestingContentSeeder::class
+            : UserSeeder::class;
+
+        $this->call($seeders);
 
         SiteAsset::current();
     }

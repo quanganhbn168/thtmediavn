@@ -31,8 +31,7 @@ class ComboTest extends TestCase
         $this->assertTrue(Schema::hasColumn('combos', 'usage'));
         $this->assertTrue(Schema::hasColumn('combos', 'product_notes'));
         $this->assertFalse(Schema::hasColumn('products', 'product_type'));
-        $this->assertDatabaseHas('combo_categories', ['slug' => 'combo-tri-mun']);
-        $this->assertDatabaseHas('combo_categories', ['slug' => 'combo-duong-trang']);
+        $this->assertDatabaseHas('combo_categories', ['slug' => 'goi-noi-dung']);
         $admin = \App\Models\User::role('admin')->firstOrFail();
         $category = ComboCategory::query()->firstOrFail();
         $this->actingAs($admin, 'admin')->get(route('admin.combo-categories.index'))
@@ -69,7 +68,7 @@ class ComboTest extends TestCase
     {
         $admin = \App\Models\User::role('admin')->firstOrFail();
         $product = $this->singleVariantProduct();
-        $category = ComboCategory::query()->where('slug', 'combo-tri-mun')->firstOrFail();
+        $category = ComboCategory::query()->where('slug', 'goi-noi-dung')->firstOrFail();
 
         $this->actingAs($admin, 'admin')->post(route('admin.combos.store'), [
             'combo_category_id' => $category->id,

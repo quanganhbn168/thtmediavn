@@ -11,7 +11,7 @@ class ThemePaletteService
     {
         $palettes = config('frontend-theme.palettes', []);
         $active = config('frontend-theme.active');
-        $fallback = $palettes['rhea_rose'] ?? reset($palettes) ?: [];
+        $fallback = $palettes['emerald_champagne'] ?? reset($palettes) ?: [];
         $palette = $palettes[$active] ?? $fallback;
 
         return collect(['primary', 'secondary', 'ink', 'muted', 'surface', 'canvas', 'line'])

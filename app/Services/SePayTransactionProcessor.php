@@ -161,7 +161,7 @@ class SePayTransactionProcessor
                 $this->normalizeAccount((string) config('commerce.sepay.account_number')),
                 $this->normalizeAccount((string) $transaction->account_number),
             )) {
-                return $this->finish($transaction, 'ignored', 'Tài khoản nhận không khớp cấu hình RHEA.');
+                return $this->finish($transaction, 'ignored', 'Tài khoản nhận không khớp cấu hình THT MEDIA VN.');
             }
 
             if (! $transaction->payment_code) {
@@ -289,7 +289,7 @@ class SePayTransactionProcessor
             return $code;
         }
 
-        $prefix = preg_quote(strtoupper((string) config('commerce.sepay.payment_prefix', 'RHEA')), '/');
+        $prefix = preg_quote(strtoupper((string) config('commerce.sepay.payment_prefix', 'THT')), '/');
         if (preg_match('/(?<![A-Z0-9])('.$prefix.'[A-Z0-9]{8,12})(?![A-Z0-9])/i', (string) $content, $matches)) {
             return strtoupper($matches[1]);
         }

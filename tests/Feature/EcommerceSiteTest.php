@@ -43,12 +43,12 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('style.css', false)
             ->assertSee('assets/fonts/be-vietnam-pro/font.css', false)
             ->assertDontSee('fonts.googleapis.com', false)
-            ->assertSee('RHEA SKINLAB')
+            ->assertSee('THT MEDIA VN')
             ->assertDontSee('Vì sao chọn chúng tôi?')
             ->assertDontSee('section-heading-kicker', false)
             ->assertSee('home-value-card', false)
-            ->assertSee('bi-patch-check', false)
-            ->assertSee('bi-heart', false)
+            ->assertSee('bi-stars', false)
+            ->assertSee('bi-shield-check', false)
             ->assertSee('home-featured-products', false)
             ->assertSee('flash-sale-swiper', false)
             ->assertSee('data-flash-sale-swiper', false);
@@ -124,9 +124,9 @@ class EcommerceSiteTest extends TestCase
         $product = Product::query()->where('is_active', true)->firstOrFail();
         $product->update([
             'description' => '<p>Thông tin sản phẩm kiểm thử.</p>',
-            'ingredients' => '<p>Niacinamide và Panthenol.</p>',
+            'ingredients' => '<p>Nhôm, nhựa kỹ thuật và linh kiện điện tử.</p>',
             'usage' => '<p>Dùng sau bước làm sạch.</p>',
-            'product_notes' => '<p>Ngưng sử dụng nếu có dấu hiệu kích ứng.</p>',
+            'product_notes' => '<p>Ngắt nguồn điện trước khi vệ sinh thiết bị.</p>',
         ]);
 
         $this->get(route('product.show', $product->slug))
@@ -138,15 +138,15 @@ class EcommerceSiteTest extends TestCase
             ->assertSee('Thành phần cấu tạo')
             ->assertSee('Hướng dẫn sử dụng')
             ->assertSee('Lưu ý về sản phẩm')
-            ->assertSee('Niacinamide và Panthenol.')
+            ->assertSee('Nhôm, nhựa kỹ thuật và linh kiện điện tử.')
             ->assertSee('Dùng sau bước làm sạch.')
-            ->assertSee('Ngưng sử dụng nếu có dấu hiệu kích ứng.')
+            ->assertSee('Ngắt nguồn điện trước khi vệ sinh thiết bị.')
             ->assertSee('Đánh giá được kiểm duyệt')
             ->assertSee('Viết đánh giá')
             ->assertSee(route('login', ['redirect' => '/san-pham/'.$product->slug.'#danh-gia']), false)
             ->assertDontSee('Vui lòng đăng nhập để đánh giá sản phẩm.')
             ->assertDontSee('description-product-callout', false)
-            ->assertDontSee('Cách đưa vào routine')
+            ->assertDontSee('Hướng dẫn không còn sử dụng')
             ->assertDontSee('nên được đồng bộ với chính sách vận hành thực tế');
     }
 
@@ -180,7 +180,7 @@ class EcommerceSiteTest extends TestCase
 
     public function test_product_category_uses_its_seo_values_on_the_frontend(): void
     {
-        $category = ProductCategory::query()->where('slug', 'tay-trang')->firstOrFail();
+        $category = ProductCategory::query()->where('slug', 'may-quay')->firstOrFail();
         $category->update([
             'seo_title' => 'SEO danh mục chính chủ',
             'seo_description' => 'Mô tả SEO danh mục chính chủ',
@@ -214,7 +214,7 @@ class EcommerceSiteTest extends TestCase
         $cta = SliderItem::query()->create([
             'slider_id' => $slider->id,
             'title' => ['vi' => 'Chăm da đúng cách, đẹp theo cách của bạn'],
-            'sub_title' => ['vi' => 'Nhận gợi ý routine từ đội ngũ Rhea Skinlab.'],
+            'sub_title' => ['vi' => 'Trao đổi ý tưởng cùng đội ngũ THT MEDIA VN.'],
             'buttons' => [[
                 'text' => ['vi' => 'Nhận tư vấn'],
                 'link' => '#tu-van',
@@ -406,7 +406,7 @@ class EcommerceSiteTest extends TestCase
 
     public function test_homepage_only_shows_category_pills_that_have_visible_products(): void
     {
-        $parent = ProductCategory::query()->where('slug', 'cham-soc-mat')->firstOrFail();
+        $parent = ProductCategory::query()->where('slug', 'thiet-bi-truyen-thong')->firstOrFail();
         $emptyCategory = ProductCategory::query()->create([
             'parent_id' => $parent->id,
             'name' => 'Danh mục không có sản phẩm',
@@ -415,11 +415,11 @@ class EcommerceSiteTest extends TestCase
             'is_active' => true,
         ]);
         $nonHomeProduct = Product::query()
-            ->whereHas('category', fn ($query) => $query->where('slug', 'tay-trang'))
+            ->whereHas('category', fn ($query) => $query->where('slug', 'may-quay'))
             ->firstOrFail();
         $nonHomeCategorySlug = $nonHomeProduct->category->slug;
         $nonHomeProduct->update(['is_home' => false]);
-        $hiddenRootCategory = ProductCategory::query()->where('slug', 'cham-soc-co-the')->firstOrFail();
+        $hiddenRootCategory = ProductCategory::query()->where('slug', 'an-pham')->firstOrFail();
         $hiddenRootCategory->update(['is_home' => false]);
 
         $response = $this->get(route('home'))->assertOk();
@@ -493,11 +493,11 @@ class EcommerceSiteTest extends TestCase
         );
     }
 
-    public function test_only_vietnamese_is_available_and_travel_tables_are_removed(): void
+    public function test_only_vietnamese_is_available_and_unregistered_domain_tables_are_absent(): void
     {
         $this->assertSame(['vi'], Language::pluck('code')->all());
         $this->assertSame(0, DB::table('settings')->where('payload', 'like', '%\"en\"%')->count());
-        foreach (['tours', 'tour_categories', 'tour_itineraries', 'destinations', 'services', 'service_categories', 'service_packages'] as $table) {
+        foreach (['legacy_items', 'legacy_categories', 'legacy_pages'] as $table) {
             $this->assertFalse(Schema::hasTable($table), "Bảng {$table} phải được xóa.");
         }
         $this->assertFalse(collect(app('router')->getRoutes())->contains(fn ($route) => str_contains((string) $route->getName(), 'languages')));

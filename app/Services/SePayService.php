@@ -18,7 +18,7 @@ class SePayService
 
     public function paymentCode(): string
     {
-        $prefix = preg_replace('/[^A-Z0-9]/', '', strtoupper((string) config('commerce.sepay.payment_prefix', 'RHEA'))) ?: 'RHEA';
+        $prefix = preg_replace('/[^A-Z0-9]/', '', strtoupper((string) config('commerce.sepay.payment_prefix', 'THT'))) ?: 'THT';
 
         do {
             $code = $prefix.Str::upper(Str::random(12));

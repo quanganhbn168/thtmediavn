@@ -7,7 +7,7 @@
   <!--begin::Copyright-->
   <strong>
     Copyright &copy; 2024-{{ date('Y') }}&nbsp;
-    <a href="{{ route('admin.dashboard') }}" class="text-decoration-none">{{ config('app.name', 'RHEA SKINLAB') }}</a>.
+    <a href="{{ route('admin.dashboard') }}" class="text-decoration-none">{{ config('app.name', 'THT MEDIA VN') }}</a>.
   </strong>
   Tất cả quyền được bảo lưu.
   <!--end::Copyright-->

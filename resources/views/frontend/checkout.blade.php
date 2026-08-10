@@ -65,7 +65,7 @@
 
                     <div class="content-card checkout-section-card mb-3">
                         <h2 class="h5 fw-bold mb-3">3. Phương thức thanh toán</h2>
-                        <label class="checkout-payment-option mb-2" for="cod"><input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" @checked(old('payment_method', 'cod') === 'cod')><span><strong>Thanh toán khi nhận hàng (COD)</strong><small>RHEA sẽ liên hệ xác nhận trước khi giao.</small></span></label>
+                        <label class="checkout-payment-option mb-2" for="cod"><input class="form-check-input" type="radio" name="payment_method" id="cod" value="cod" @checked(old('payment_method', 'cod') === 'cod')><span><strong>Thanh toán khi nhận hàng (COD)</strong><small>THT MEDIA VN sẽ liên hệ xác nhận trước khi giao.</small></span></label>
                         <label @class(['checkout-payment-option', 'is-disabled' => ! $sePayEnabled]) for="sepay"><input class="form-check-input" type="radio" name="payment_method" id="sepay" value="sepay_qr" @checked(old('payment_method') === 'sepay_qr') @disabled(! $sePayEnabled)><span><strong>QR ngân hàng qua SePay</strong><small>{{ $sePayEnabled ? 'Quét VietQR ngay trên website; hệ thống tự xác nhận khi tiền về.' : 'Đang tạm ẩn vì cửa hàng chưa hoàn tất cấu hình SePay.' }}</small></span></label>
                     </div>
 

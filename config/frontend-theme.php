@@ -10,7 +10,7 @@ return [
 
     'palettes' => [
         'wine_champagne' => [
-            // Wine rose & champagne: ấm, tin cậy và tiết chế cho RHEA Skinlab.
+            // Wine rose & champagne: ấm, tin cậy và tiết chế.
             'primary' => '#8E3154',
             'secondary' => '#C6A56E',
             'ink' => '#292326',
@@ -29,7 +29,7 @@ return [
             'canvas' => '#F8FBF9',
             'line' => '#DFEAE4',
         ],
-        'rhea_rose' => [
+        'rose_violet' => [
             'primary' => '#CF2E70',
             'secondary' => '#7867E3',
             'ink' => '#282631',

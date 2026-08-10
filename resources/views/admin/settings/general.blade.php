@@ -60,7 +60,7 @@
                         label="Bản quyền chân trang (Copyright)" 
                         :value="$settings->copyright" 
                         :translatable="true" 
-                        placeholder="Ví dụ: © 2026 RHEA SKINLAB..."
+                        placeholder="Ví dụ: © 2026 THT MEDIA VN..."
                     />
 
                     <div class="row border-top pt-3 mt-4">

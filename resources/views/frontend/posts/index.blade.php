@@ -16,7 +16,7 @@
 <section class="page-hero">
     <div class="container">
         <h1>Kiến thức làm đẹp</h1>
-        <p>Tổng hợp nội dung chăm sóc da, trang điểm và cách lựa chọn sản phẩm theo nhu cầu thực tế.</p>
+        <p>Tổng hợp tin tức, góc nhìn và nội dung mới từ THT MEDIA VN.</p>
     </div>
 </section>
 <section class="section-space">

@@ -7,7 +7,7 @@
 <section class="section-space bg-soft">
     <div class="container"><article class="content-card policy-content mx-auto">
         <h1 class="h2">Chính sách mua hàng</h1>
-        <p>RHEA tiếp nhận đơn hàng trên website, kiểm tra tình trạng hàng và liên hệ xác nhận trước khi giao.</p>
+        <p>THT MEDIA VN tiếp nhận đơn hàng trên website, kiểm tra tình trạng hàng và liên hệ xác nhận trước khi giao.</p>
         <h2 class="h4">Đặt hàng và xác nhận</h2>
         <p>Khách hàng cần cung cấp đúng tên, số điện thoại và địa chỉ nhận hàng. Đơn chỉ được xử lý khi sản phẩm còn khả dụng và thông tin giao nhận hợp lệ.</p>
         <h2 class="h4">Thanh toán</h2>

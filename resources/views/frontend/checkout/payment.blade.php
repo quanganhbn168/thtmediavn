@@ -17,11 +17,11 @@
             </div>
 
             <div class="alert alert-success text-center {{ $order->payment_status === 'paid' ? '' : 'd-none' }}" data-sepay-success>
-                <i class="bi bi-check-circle-fill me-1"></i><strong>RHEA đã nhận được thanh toán.</strong>
+                <i class="bi bi-check-circle-fill me-1"></i><strong>THT MEDIA VN đã nhận được thanh toán.</strong>
                 <a href="{{ route('checkout.success', ['code' => $order->order_code, 'token' => $order->payment_public_token]) }}">Xem xác nhận đơn hàng</a>
             </div>
             <div class="alert alert-warning text-center {{ $order->status === 'payment_expired' ? '' : 'd-none' }}" data-sepay-expired>
-                <i class="bi bi-clock-history me-1"></i>Phiên thanh toán đã hết hạn và hàng đã được trả lại kho. Nếu đã chuyển tiền, vui lòng liên hệ RHEA để kiểm tra.
+                <i class="bi bi-clock-history me-1"></i>Phiên thanh toán đã hết hạn và hàng đã được trả lại kho. Nếu đã chuyển tiền, vui lòng liên hệ THT MEDIA VN để kiểm tra.
             </div>
 
             <div class="row g-4 align-items-center" data-sepay-waiting @if($order->payment_status === 'paid' || $order->status === 'payment_expired') hidden @endif>

@@ -1,31 +1,30 @@
-# RHEA SKINLAB
+# THT MEDIA VN
 
-Website thương mại điện tử bằng Laravel 12, Blade và Bootstrap 5. Hệ thống chỉ sử dụng tiếng Việt.
+Nền tảng Laravel 12 dùng chung cho website THT MEDIA VN. Dự án giữ kiến trúc CMS, quản trị người dùng, media, nội dung, catalog và commerce theo module để có thể bật rộng dần khi nghiệp vụ được chốt.
 
-## Chức năng chính
+## Yêu cầu
 
-- Giao diện responsive: trang chủ, catalog có lọc, chi tiết sản phẩm, tin tức, giới thiệu và liên hệ.
-- Sản phẩm, danh mục cha/con, thương hiệu, thuộc tính, giá trị và biến thể theo SKU/tồn kho.
-- Flash Sale, coupon theo điều kiện, giỏ hàng khách/session, wishlist và review đã mua hàng.
-- Đăng ký/đăng nhập khách hàng, sổ địa chỉ, checkout COD/chuyển khoản và lịch sử đơn hàng.
-- Admin quản lý catalog, khuyến mãi, đơn hàng, review, CMS, media và phân quyền.
+- PHP 8.2+
+- MySQL 8+
+- Composer 2
 
-## Cài đặt
+## Cài đặt local
 
 ```bash
 composer install
+copy .env.example .env
 php artisan key:generate
-php artisan migrate:fresh --seed
+php artisan migrate --seed
 ```
 
-Tài khoản quản trị mẫu: `admin@example.com` (mật khẩu factory mặc định: `password`).
+Database local mặc định: `thtmediavn`. Database kiểm thử: `thtmediavn_testing`.
+
+Seeder chỉ tạo dữ liệu nền THT MEDIA VN, vai trò/quyền và tài khoản quản trị khi `ADMIN_EMAIL` cùng `ADMIN_PASSWORD` đã được cấu hình trong `.env`. Không có sản phẩm, bài viết, thương hiệu, khách hàng hay đơn hàng mẫu.
 
 ## Kiểm thử
-
-Tạo database MySQL `bonglab_testing`, sau đó chạy:
 
 ```bash
 php artisan test
 ```
 
-Các asset giao diện chính nằm tại `public/assets/css/style.css`, `public/assets/js/app.js` và `public/assets/images`.
+Các thông tin doanh nghiệp thực tế như địa chỉ, số điện thoại, email, mã số thuế và mạng xã hội được để trống, cần cập nhật tại trang quản trị trước khi triển khai production.

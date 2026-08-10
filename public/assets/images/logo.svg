@@ -1,5 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="310" height="92" viewBox="0 0 310 92" role="img" aria-labelledby="t d">
-<title id="t">RHEA SKINLAB</title><desc id="d">Wordmark chữ RHEA SKINLAB</desc>
-<text x="155" y="45" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" font-weight="700" letter-spacing="2" fill="#282833">RHEA</text>
-<text x="155" y="67" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" letter-spacing="5" fill="#63666f">SKINLAB</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="92" viewBox="0 0 310 92" role="img" aria-labelledby="title desc">
+  <title id="title">THT MEDIA VN</title>
+  <desc id="desc">Wordmark THT MEDIA VN</desc>
+  <rect x="4" y="16" width="60" height="60" rx="18" fill="#0B7A5A"/>
+  <path d="M18 33h32M34 33v27M19 47h30" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <text x="82" y="47" font-family="Arial,sans-serif" font-size="27" font-weight="800" letter-spacing="1.5" fill="#21362E">THT MEDIA</text>
+  <text x="84" y="68" font-family="Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="6" fill="#0B7A5A">VIET NAM</text>
 </svg>

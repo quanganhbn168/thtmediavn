@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
@@ -13,30 +14,22 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Xóa sạch user cũ
-        User::query()->delete();
+        $email = trim((string) env('ADMIN_EMAIL'));
+        $password = (string) env('ADMIN_PASSWORD');
 
-        // Lấy vai trò tương ứng
-        $adminRole = Role::where('name', 'admin')->first();
-        $userRole = Role::where('name', 'customer')->first();
-
-        // Tạo tài khoản admin mẫu
-        if ($adminRole) {
-            $admin = User::factory()->create([
-                'name' => 'Quản trị viên',
-                'email' => 'admin@example.com',
-            ]);
-            $admin->assignRole($adminRole);
+        if ($email === '' || $password === '') {
+            return;
         }
 
-        // Tạo tài khoản user mẫu
-        if ($userRole) {
-            $user = User::factory()->create([
-                'name' => 'Khách hàng mẫu',
-                'email' => 'khachhang@example.com',
-                'phone' => '0901234567',
+        $adminRole = Role::where('name', 'admin')->first();
+        if ($adminRole) {
+            $admin = User::query()->updateOrCreate(['email' => $email], [
+                'name' => trim((string) env('ADMIN_NAME', 'Quản trị THT MEDIA VN')),
+                'password' => Hash::make($password),
+                'email_verified_at' => now(),
+                'is_active' => true,
             ]);
-            $user->assignRole($userRole);
+            $admin->assignRole($adminRole);
         }
     }
 }

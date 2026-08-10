@@ -25,7 +25,7 @@
                                 name="name"
                                 label="Tên thương hiệu"
                                 :value="$brand->name"
-                                placeholder="Ví dụ: Skin Aqua"
+                                placeholder="Ví dụ: THT Studio"
                                 required
                             />
                         </div>

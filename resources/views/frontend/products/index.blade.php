@@ -29,8 +29,8 @@
 <section class="section-space">
     <div class="container">
         @if($quickFilters->isNotEmpty())
-            <div class="catalog-quick-filters mb-4" aria-label="Lọc nhanh theo nhu cầu da">
-                <span class="catalog-quick-filters__label">Làn da của bạn:</span>
+            <div class="catalog-quick-filters mb-4" aria-label="Lọc nhanh theo thuộc tính">
+                <span class="catalog-quick-filters__label">Lọc nhanh:</span>
                 @foreach($quickFilters as $filter)
                     <a href="{{ $filter['url'] }}" @class(['catalog-quick-chip', 'is-active' => $filter['active']])>
                         {{ $filter['label'] }}

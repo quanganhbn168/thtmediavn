@@ -93,7 +93,7 @@ abstract class FrontendController extends Controller
     {
         $path = trim((string) $path);
         if ($path === '') {
-            return asset('assets/images/categories/phu-kien.svg');
+            return asset('assets/images/categories/placeholder.svg');
         }
 
         if (Str::startsWith($path, ['http://', 'https://'])) {

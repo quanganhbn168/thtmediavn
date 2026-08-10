@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -59,10 +58,6 @@ return new class extends Migration
             $table->index(['product_id', 'product_variant_id']);
         });
 
-        DB::table('combo_categories')->insert([
-            ['name' => 'Combo trị mụn', 'slug' => 'combo-tri-mun', 'sort_order' => 1, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Combo dưỡng trắng', 'slug' => 'combo-duong-trang', 'sort_order' => 2, 'is_active' => true, 'created_at' => now(), 'updated_at' => now()],
-        ]);
     }
 
     public function down(): void

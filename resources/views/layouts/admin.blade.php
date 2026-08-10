@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow, noarchive">
 
-    <title>@yield('page-title', 'Dashboard') | {{ config('app.name', 'RHEA SKINLAB') }}</title>
+    <title>@yield('page-title', 'Dashboard') | {{ config('app.name', 'THT MEDIA VN') }}</title>
 
     <!-- Favicon quản trị dùng chung nhận diện đã cấu hình -->
     @php($adminFavicon = \App\Models\SiteAsset::current()->getFirstMediaUrl('favicon') ?: asset('favicon.ico'))

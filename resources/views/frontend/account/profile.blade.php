@@ -6,7 +6,7 @@
 <section class="section-space bg-soft">
     <div class="container">
         <div class="row g-4">
-            <aside class="col-lg-3">@include('pages.account._nav')</aside>
+            <aside class="col-lg-3">@include('frontend.account._nav')</aside>
             <div class="col-lg-9">
                 @if(session('success'))
                     <div class="alert alert-positive">{{ session('success') }}</div>

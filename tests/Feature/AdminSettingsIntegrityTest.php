@@ -19,7 +19,7 @@ class AdminSettingsIntegrityTest extends TestCase
 
         $this->actingAs($admin, 'admin')->post(route('admin.settings.general.update'), [
             'timezone' => 'Not/A_Timezone',
-            'site_name' => ['vi' => 'Phương Trần Cosmetics'],
+            'site_name' => ['vi' => 'THT MEDIA VN'],
         ])->assertSessionHasErrors('timezone');
 
         $this->actingAs($admin, 'admin')->post(route('admin.settings.homepage.update'), [
@@ -42,9 +42,9 @@ class AdminSettingsIntegrityTest extends TestCase
         $this->actingAs($admin, 'admin')->post(route('admin.settings.general.update'), [
             'site_status' => '1',
             'timezone' => 'Asia/Ho_Chi_Minh',
-            'site_name' => ['vi' => 'Phương Trần Cosmetics'],
-            'site_description' => ['vi' => 'Mỹ phẩm chính hãng'],
-            'copyright' => ['vi' => '© Phương Trần Cosmetics'],
+            'site_name' => ['vi' => 'THT MEDIA VN'],
+            'site_description' => ['vi' => 'Nền tảng truyền thông'],
+            'copyright' => ['vi' => '© THT MEDIA VN'],
         ])->assertSessionHasNoErrors();
 
         $this->assertSame('Asia/Ho_Chi_Minh', config('app.timezone'));

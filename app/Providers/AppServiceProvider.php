@@ -127,7 +127,7 @@ class AppServiceProvider extends ServiceProvider
             ));
         });
 
-        View::composer(['frontend.home', 'frontend.about', 'frontend.contact', 'frontend.auth', 'pages.auth', 'pages.contact'], function ($view): void {
+        View::composer(['frontend.home', 'frontend.about', 'frontend.contact', 'frontend.auth'], function ($view): void {
             $aboutSettings = null;
             $homepageSettings = null;
             $contactSettings = null;

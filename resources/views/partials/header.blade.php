@@ -17,7 +17,7 @@
                     @if($siteAssets?->getFirstMediaUrl('logo'))
                         <img src="{{ $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
                     @else
-                        <span class="h3 fw-black text-primary mb-0">RHEA SKINLAB</span>
+                        <span class="h3 fw-black text-primary mb-0">THT MEDIA VN</span>
                     @endif
                 </a>
             </div>
@@ -62,7 +62,7 @@
             @if($siteAssets?->getFirstMediaUrl('logo'))
                 <img src="{{ $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
             @else
-                <span class="h5 fw-black text-primary mb-0">RHEA SKINLAB</span>
+                <span class="h5 fw-black text-primary mb-0">THT MEDIA VN</span>
             @endif
         </a>
         <div class="d-flex gap-2">

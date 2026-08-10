@@ -177,12 +177,12 @@ class HomeController extends FrontendController
             $normalizedTitle = Str::lower(Str::ascii($title));
 
             $icon = match (true) {
-                str_contains($normalizedTitle, 'chinh hang') => 'bi-patch-check',
-                str_contains($normalizedTitle, 'tan tam') => 'bi-heart',
+                str_contains($normalizedTitle, 'sang tao') => 'bi-stars',
+                str_contains($normalizedTitle, 'trach nhiem') => 'bi-shield-check',
+                str_contains($normalizedTitle, 'linh hoat') => 'bi-intersect',
                 str_contains($normalizedTitle, 'chat luong') => 'bi-gem',
-                str_contains($normalizedTitle, 'trung thuc') => 'bi-shield-check',
                 str_contains($normalizedTitle, 'ben vung') => 'bi-flower1',
-                default => 'bi-stars',
+                default => 'bi-patch-check',
             };
 
             return compact('title', 'description', 'icon');

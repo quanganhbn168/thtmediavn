@@ -40,7 +40,7 @@
                         label="Từ khóa SEO mặc định (Keywords)" 
                         :value="$settings->seo_keywords" 
                         :translatable="true" 
-                        placeholder="Ví dụ: mỹ phẩm chính hãng, chăm sóc da, trang điểm..."
+                        placeholder="Ví dụ: truyền thông, nội dung, thương hiệu..."
                     />
 
                     <x-textarea 

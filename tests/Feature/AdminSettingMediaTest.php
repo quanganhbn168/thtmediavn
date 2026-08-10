@@ -27,9 +27,9 @@ class AdminSettingMediaTest extends TestCase
         $payload = [
             'site_status' => '1',
             'timezone' => 'Asia/Ho_Chi_Minh',
-            'site_name' => ['vi' => 'Phương Trần Cosmetics'],
-            'site_description' => ['vi' => 'Mỹ phẩm chính hãng'],
-            'copyright' => ['vi' => '© Phương Trần Cosmetics'],
+            'site_name' => ['vi' => 'THT MEDIA VN'],
+            'site_description' => ['vi' => 'Nền tảng truyền thông'],
+            'copyright' => ['vi' => '© THT MEDIA VN'],
             'logo' => 'uploads/tmp/site-logo.png',
         ];
 
@@ -67,7 +67,7 @@ class AdminSettingMediaTest extends TestCase
             ->from(route('admin.settings.general'))
             ->post(route('admin.settings.general.update'), [
                 'timezone' => 'Asia/Ho_Chi_Minh',
-                'site_name' => ['vi' => 'Phương Trần Cosmetics'],
+                'site_name' => ['vi' => 'THT MEDIA VN'],
                 'logo' => '../outside.png',
             ])
             ->assertRedirect(route('admin.settings.general'))

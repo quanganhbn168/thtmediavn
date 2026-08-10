@@ -24,8 +24,8 @@ class CartCheckoutTest extends TestCase
             ->assertOk()
             ->assertJsonPath('count', 2)
             ->assertJsonPath('product_name', $product->name);
-        $this->post(route('cart.coupon'), ['coupon' => 'MTD10'])->assertRedirect();
-        $this->get(route('cart'))->assertOk()->assertSee($product->name)->assertSee('MTD10');
+        $this->post(route('cart.coupon'), ['coupon' => 'THT10'])->assertRedirect();
+        $this->get(route('cart'))->assertOk()->assertSee($product->name)->assertSee('THT10');
 
         $checkout = $this->get(route('checkout'))
             ->assertOk()
@@ -38,7 +38,7 @@ class CartCheckoutTest extends TestCase
 
         $order = Order::firstOrFail();
         $response->assertRedirect(route('checkout.success', $order->order_code));
-        $this->assertMatchesRegularExpression('/^RHEA-\d{6}-[A-Z0-9]{6}$/', $order->order_code);
+        $this->assertMatchesRegularExpression('/^THT-\d{6}-[A-Z0-9]{6}$/', $order->order_code);
         $this->assertCount(1, $order->items);
         $this->assertSame(2, $order->items->first()->quantity);
         $this->assertDatabaseCount('cart_items', 0);
@@ -92,7 +92,7 @@ class CartCheckoutTest extends TestCase
             'commerce.sepay.enabled' => true,
             'commerce.sepay.bank_name' => 'Ngân hàng kiểm thử',
             'commerce.sepay.bank_code' => 'VCB',
-            'commerce.sepay.account_name' => 'CONG TY RHEA',
+            'commerce.sepay.account_name' => 'CONG TY THT MEDIA',
             'commerce.sepay.account_number' => '123456789',
             'commerce.sepay.webhook_secret' => 'test-webhook-secret',
         ]);
@@ -106,7 +106,7 @@ class CartCheckoutTest extends TestCase
 
         $this->assertSame('unpaid', $order->payment_status);
         $this->assertSame('pending_payment', $order->status);
-        $this->assertMatchesRegularExpression('/^RHEA[A-Z0-9]{12}$/', $order->payment_code);
+        $this->assertMatchesRegularExpression('/^THT[A-Z0-9]{12}$/', $order->payment_code);
         $this->assertSame(64, strlen($order->payment_public_token));
         $this->get(route('checkout.payment', $order->payment_public_token))
             ->assertOk()

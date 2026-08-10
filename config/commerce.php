@@ -10,7 +10,7 @@ return [
         'enabled' => filter_var(env('SEPAY_ENABLED', false), FILTER_VALIDATE_BOOL),
         'mode' => env('SEPAY_MODE', 'test'),
         'payment_timeout_minutes' => max(5, (int) env('SEPAY_PAYMENT_TIMEOUT_MINUTES', 20)),
-        'payment_prefix' => strtoupper(trim((string) env('SEPAY_PAYMENT_PREFIX', 'RHEA'))),
+        'payment_prefix' => strtoupper(trim((string) env('SEPAY_PAYMENT_PREFIX', 'THT'))),
         'bank_name' => trim((string) env('SEPAY_BANK_NAME', '')),
         'bank_code' => trim((string) env('SEPAY_BANK_CODE', '')),
         'account_name' => trim((string) env('SEPAY_ACCOUNT_NAME', '')),

@@ -16,7 +16,7 @@
             <div class="text-center">
                 <div class="order-success-icon"><i class="bi bi-check2-circle"></i></div>
                 <h1 class="h2 mt-3">{{ $isSePay && $isPaid ? 'Thanh toán thành công' : 'Đơn hàng đã được tiếp nhận' }}</h1>
-                <p class="text-muted">{{ $isSePay && $isPaid ? 'RHEA đã nhận đủ tiền và chuyển đơn sang chờ xác nhận.' : 'RHEA SkinLab sẽ liên hệ xác nhận trước khi giao hàng.' }}</p>
+                <p class="text-muted">{{ $isSePay && $isPaid ? 'THT MEDIA VN đã nhận đủ tiền và chuyển đơn sang chờ xác nhận.' : 'THT MEDIA VN sẽ liên hệ xác nhận trước khi giao hàng.' }}</p>
             </div>
 
             @if($isSePay && ! $isPaid)

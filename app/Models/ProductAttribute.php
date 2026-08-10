@@ -11,7 +11,10 @@ class ProductAttribute extends Model
     protected $fillable = ['name', 'slug', 'is_active', 'show_in_product_menu', 'sort_order'];
     protected $casts = ['is_active' => 'boolean', 'show_in_product_menu' => 'boolean', 'sort_order' => 'integer'];
 
-    public function values(): HasMany { return $this->hasMany(ProductAttributeValue::class); }
+    public function values(): HasMany
+    {
+        return $this->hasMany(ProductAttributeValue::class)->orderBy('sort_order');
+    }
 
     public function categories(): BelongsToMany
     {

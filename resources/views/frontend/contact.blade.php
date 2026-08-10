@@ -16,7 +16,7 @@
 <section class="page-hero">
     <div class="container">
         <h1>Liên hệ {{ $website['name'] }}</h1>
-        <p>Gửi yêu cầu tư vấn sản phẩm, đơn hàng hoặc nhu cầu chăm sóc da.</p>
+        <p>Gửi yêu cầu hợp tác, tư vấn nội dung hoặc trao đổi về dự án truyền thông.</p>
     </div>
 </section>
 <section class="section-space">
@@ -27,7 +27,7 @@
                     @if($siteAssets?->getFirstMediaUrl('logo_footer') ?: $siteAssets?->getFirstMediaUrl('logo'))
                         <img class="footer-logo mb-4" src="{{ $siteAssets->getFirstMediaUrl('logo_footer') ?: $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
                     @else
-                        <div class="h3 fw-black text-white mb-4">RHEA SKINLAB</div>
+                        <div class="h3 fw-black text-white mb-4">THT MEDIA VN</div>
                     @endif
                     <h2 class="h4 fw-bold">{{ $website['company'] }}</h2>
                     <p class="text-white-50">Tiếp nhận tư vấn mua hàng và hỗ trợ sau bán.</p>

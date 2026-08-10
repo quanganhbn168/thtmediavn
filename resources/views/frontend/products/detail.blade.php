@@ -141,9 +141,7 @@
     $availability = $product['availability'] ?? ($product['stock'] ? 'in_stock' : 'out_of_stock');
     $summaryText = trim(strip_tags((string) $productModel->summary));
     $ingredientAttributeSlugs = ['thanh-phan', 'thanh-phan-noi-bat'];
-    $attributeValuesBySlug = $productModel->attributeValues->groupBy(fn ($item) => $item->attribute?->slug ?? 'khac');
-    $skinTypes = $attributeValuesBySlug->get('loai-da', collect())->pluck('value');
-    $skinConcerns = $attributeValuesBySlug->get('van-de', collect())->pluck('value');
+    $attributeValuesBySlug = $productModel->attributeValues->toBase()->groupBy(fn ($item) => $item->attribute?->slug ?? 'khac');
     $ingredients = $attributeValuesBySlug
         ->only($ingredientAttributeSlugs)
         ->flatten()
@@ -245,13 +243,6 @@
                             <div class="gift-box-head"><i class="bi bi-gift-fill me-2"></i>Quà tặng khuyến mãi</div>
                             <div class="gift-box-body">{{ $giftText }}</div>
                         </div>
-                        @endif
-
-                        @if($skinTypes->isNotEmpty() || $skinConcerns->isNotEmpty())
-                            <div class="product-suitability">
-                                <strong>Phù hợp:</strong>
-                                {{ $skinTypes->merge($skinConcerns)->unique()->implode(' · ') }}
-                            </div>
                         @endif
 
                         <form id="product-purchase-form" action="{{ route('cart.store') }}" method="post">@csrf<input type="hidden" name="product_id" value="{{ $productModel->id }}">
@@ -440,7 +431,7 @@
                     <div class="review-scope-note">
                         <i class="bi bi-patch-check-fill"></i>
                         <h3 class="h5">Đánh giá được kiểm duyệt</h3>
-                        <p class="mb-0">Trang chỉ hiển thị đánh giá đã được RHEA duyệt hoặc xác minh từ đơn hàng.</p>
+                        <p class="mb-0">Trang chỉ hiển thị đánh giá đã được THT MEDIA VN duyệt hoặc xác minh từ đơn hàng.</p>
                         @auth('web')
                             <a class="btn btn-primary mt-3" href="#review-form">Viết đánh giá</a>
                         @else

@@ -1,5 +1,5 @@
 /*
- * RHEA SKINLAB website
+ * THT MEDIA VN website
  * Recreated from scratch for Laravel Blade + Bootstrap 5
  */
 :root {
@@ -1880,7 +1880,6 @@ img { max-width: 100%; }
 .combo-component-box a:hover { color: var(--primary); }
 .product-ingredient-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
 .product-ingredient-list li { padding: 7px 11px; background: rgb(var(--primary-rgb) / .07); border: 1px solid rgb(var(--primary-rgb) / .12); border-radius: 999px; font-size: 12px; font-weight: 700; }
-.routine-guide { padding: 14px; color: #5d5156; background: var(--canvas); border-radius: 10px; }
 .review-scope-note { padding: 24px; background: var(--canvas); border: 1px solid var(--line); border-radius: 14px; }
 .review-scope-note > i { display: block; margin-bottom: 12px; color: var(--primary); font-size: 30px; }
 .review-scope-note p { color: var(--muted); font-size: 13px; line-height: 1.65; }

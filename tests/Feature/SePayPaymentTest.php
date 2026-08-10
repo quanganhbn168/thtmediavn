@@ -21,7 +21,7 @@ class SePayPaymentTest extends TestCase
             'commerce.sepay.mode' => 'test',
             'commerce.sepay.bank_name' => 'Vietcombank',
             'commerce.sepay.bank_code' => 'VCB',
-            'commerce.sepay.account_name' => 'CONG TY RHEA',
+            'commerce.sepay.account_name' => 'CONG TY THT MEDIA',
             'commerce.sepay.account_number' => '123456789',
             'commerce.sepay.webhook_secret' => 'sepay-test-secret',
             'commerce.sepay.api_token' => 'test-token',

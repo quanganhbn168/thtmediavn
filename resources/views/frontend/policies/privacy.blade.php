@@ -7,7 +7,7 @@
 <section class="section-space bg-soft">
     <div class="container"><article class="content-card policy-content mx-auto">
         <h1 class="h2">Chính sách bảo mật</h1>
-        <p>RHEA thu thập thông tin liên hệ và giao nhận mà khách hàng cung cấp để xử lý đơn hàng, hỗ trợ sau bán và thực hiện nghĩa vụ vận hành liên quan.</p>
+        <p>THT MEDIA VN thu thập thông tin liên hệ và giao nhận mà khách hàng cung cấp để xử lý yêu cầu, hỗ trợ khách hàng và thực hiện nghĩa vụ vận hành liên quan.</p>
         <h2 class="h4">Thông tin được sử dụng</h2>
         <p>Thông tin có thể gồm họ tên, số điện thoại, email, địa chỉ giao hàng, nội dung đơn và yêu cầu xuất hóa đơn.</p>
         <h2 class="h4">Bảo vệ và chia sẻ dữ liệu</h2>

@@ -26,7 +26,7 @@ class PaymentTransactionAdminService
                 throw ValidationException::withMessages(['transaction' => 'Chỉ có thể gắn giao dịch tiền vào hợp lệ.']);
             }
 
-            $baseCode = $order->payment_code ?: 'RHEA-MANUAL-'.$order->id;
+            $baseCode = $order->payment_code ?: 'THT-MANUAL-'.$order->id;
             $paymentCode = Payment::query()->where('payment_code', $baseCode)->exists()
                 ? mb_substr($baseCode.'-'.substr($transaction->deduplication_key, 0, 8), 0, 50)
                 : $baseCode;

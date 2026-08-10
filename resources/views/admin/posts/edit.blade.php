@@ -122,7 +122,7 @@
                         label="SEO Keywords" 
                         :value="$post" 
                         :translatable="true" 
-                        placeholder="Ví dụ: tin tuc bac ninh, le hoi lim..."
+                        placeholder="Ví dụ: xu huong truyen thong, kinh nghiem san xuat..."
                     />
                 </x-card>
             </div>
