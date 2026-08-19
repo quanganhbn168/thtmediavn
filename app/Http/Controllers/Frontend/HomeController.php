@@ -3,189 +3,158 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Enums\SliderType;
-use App\Models\Brand;
-use App\Models\Coupon;
-use App\Models\FlashSale;
-use App\Models\Product;
-use App\Models\ProductCategory;
+use App\Models\Client;
+use App\Models\PricingPlan;
+use App\Models\Project;
+use App\Models\SiteAsset;
 use App\Models\Slider;
 use App\Models\Testimonial;
-use App\Settings\AboutSettings;
+use App\Services\WebsiteSettingsService;
+use App\Settings\ContactSettings;
+use App\Settings\HomepageSettings;
+use App\Support\MapEmbed;
+use App\Support\SchemaMarkup;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Schema;
 
 class HomeController extends FrontendController
 {
     public function index(): View
     {
-        $homePromotionSlider = Slider::activeFor(SliderType::HomePromotion);
+        $newsItems = $this->homeNews(3);
 
-        $flashSale = FlashSale::query()
-            ->where('is_active', true)
+        if ($newsItems->isEmpty()) {
+            $newsItems = $this->news(3);
+        }
+
+        $website = app(WebsiteSettingsService::class)->all();
+        $contactPhones = $this->homeContactPhones($website);
+        $contactSettings = Schema::hasTable('settings') ? app(ContactSettings::class) : null;
+        $homeMapEmbedUrl = MapEmbed::url($contactSettings?->map_embed);
+        $siteAssets = Schema::hasTable('site_assets') ? SiteAsset::current() : null;
+        $homepageSettings = Schema::hasTable('settings') ? app(HomepageSettings::class) : null;
+        $homepageSections = collect($homepageSettings?->homepage_sections ?? []);
+        $homepageSectionTitles = $homepageSettings?->homepage_section_titles ?? [];
+        $homepageStats = collect($homepageSettings?->homepage_stats ?? [])
+            ->filter(fn (mixed $stat): bool => is_array($stat) && filled($stat['value'] ?? null) && filled($stat['label'] ?? null))
+            ->values();
+        $homepageReasons = collect(preg_split('/\R/u', (string) data_get($homepageSettings?->homepage_reasons, 'vi', '')) ?: [])
+            ->map(fn (string $reason): string => trim($reason))
+            ->filter()
+            ->values();
+        $homepageReasonIcons = [
+            'fa-solid fa-bullseye',
+            'fa-solid fa-people-group',
+            'fa-solid fa-list-check',
+            'fa-solid fa-circle-check',
+        ];
+        $homepageAboutTitle = trim((string) data_get($homepageSettings?->homepage_about_title, 'vi', 'Công ty TNHH THT Media'));
+        $homepageAboutText = trim((string) data_get($homepageSettings?->homepage_about_text, 'vi', 'THT Media xây dựng một hệ sinh thái sản xuất truyền thông thực tế cho doanh nghiệp, tổ chức và thương hiệu cá nhân.'));
+        $homepageAboutSupportingText = trim((string) data_get($homepageSettings?->homepage_about_supporting_text, 'vi', 'Nhân sự in-house, thiết bị chủ động và quy trình rõ ràng giúp mỗi brief được chuyển thành nội dung có thể sử dụng ngay.'));
+        $homepageAboutImage = $siteAssets?->getFirstMediaUrl('about_image') ?: asset('assets/images/home-demo/team.jpg');
+        $heroSlider = Slider::activeFor(SliderType::HomepageHero);
+        $homeProjects = Project::query()
             ->visibleOnSite()
-            ->where('starts_at', '<=', now())
-            ->where('ends_at', '>=', now())
-            ->with(['items' => fn ($query) => $query->whereHas('product', fn ($productQuery) => $productQuery->where('is_active', true)->visibleOnSite()), 'items.product' => $this->productRelations()])
-            ->first();
-
-        $flashProducts = $flashSale
-            ? $flashSale->items->map(fn ($item) => $this->presentProduct($item->product, (float) $item->sale_price, $item->variant))->filter()
-            : collect();
-
-        $homeProductSections = $this->homeProductSections();
-
-        $featuredProducts = Product::query()
-            ->where('is_active', true)
-            ->where('is_featured', true)
-            ->visibleOnSite()
-            ->with($this->productRelations())
+            ->with(['client', 'category.slugs', 'cover', 'shareImage', 'media', 'slugs'])
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
             ->latest('published_at')
-            ->take(15)
-            ->get()
-            ->map(fn (Product $product) => $this->presentProduct($product));
+            ->take(12)
+            ->get();
+        $projectGroups = collect(['all' => $homeProjects]);
+        $projectFilters = $homeProjects
+            ->groupBy(fn (Project $project): string => $project->category?->getSlug('vi') ?: 'other')
+            ->map(fn (Collection $projects, string $slug): array => [
+                'slug' => $slug,
+                'label' => $projects->first()?->category?->getTranslation('name', 'vi') ?: 'Khác',
+                'projects' => $projects,
+            ])
+            ->values();
 
+        foreach ($projectFilters as $projectFilter) {
+            $projectGroups->put($projectFilter['slug'], $projectFilter['projects']);
+        }
+
+        $featuredClients = Client::query()
+            ->where('is_active', true)
+            ->with('media')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->take(16)
+            ->get();
+        $clientLogoItems = $featuredClients
+            ->filter(fn (Client $client): bool => filled($client->getFirstMediaUrl('logo')))
+            ->values();
+        $useClientMarquee = $clientLogoItems->count() >= 8;
+        $clientMarqueeRows = $useClientMarquee ? $clientLogoItems->split(2)->values() : collect();
         $testimonials = Testimonial::query()
             ->where('is_active', true)
             ->with('media')
             ->orderBy('sort_order')
             ->latest('id')
-            ->take(12)
+            ->take(6)
             ->get();
+        $ratingValues = Testimonial::query()
+            ->where('is_active', true)
+            ->whereBetween('rating', [1, 5])
+            ->pluck('rating');
+        $homepageRating = $ratingValues->isEmpty() ? null : [
+            'ratingValue' => round((float) $ratingValues->avg(), 1),
+            'ratingCount' => $ratingValues->count(),
+        ];
+        $pricingPlans = Schema::hasTable('pricing_plans')
+            ? PricingPlan::query()->where('is_active', true)->orderByDesc('is_featured')->orderBy('sort_order')->get()
+            : collect();
+        $homepageTitle = trim((string) ($website['seo_title'] ?? '')) ?: 'THT Media | Giải pháp truyền thông và sản xuất nội dung';
+        $homepageDescription = trim((string) ($website['seo_description'] ?? '')) ?: 'THT Media đồng hành cùng doanh nghiệp từ ý tưởng đến sản phẩm truyền thông: phim doanh nghiệp, nhiếp ảnh, website, marketing và sự kiện.';
 
         return view('frontend.home', [
-            'heroSlider' => Slider::activeFor(SliderType::HomepageHero),
-            'homeCta' => $homePromotionSlider?->items
-                ->first(fn ($item) => filled($item->getFirstMediaUrl('slide_image'))),
-            'coreValues' => $this->coreValues(),
-            'categories' => $this->categoriesForView(true),
-            'flashProducts' => $flashProducts,
-            'flashSale' => $flashSale,
-            'featuredProducts' => $featuredProducts,
-            'homeProductSections' => $homeProductSections,
-            'brands' => Brand::query()
-                ->where('is_active', true)
-                ->where('is_featured', true)
-                ->orderBy('sort_order')
-                ->orderBy('name')
-                ->take(12)
-                ->get(['id', 'name', 'slug', 'logo']),
-            'activeCoupons' => Coupon::query()
-                ->where('is_active', true)
-                ->visibleOnSite()
-                ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
-                ->where(fn ($query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now()))
-                ->orderBy('id')
-                ->take(2)
-                ->get(),
-            'homePosts' => $this->homeNews(),
-            'testimonials' => $testimonials->take(6),
+            'heroSlider' => $heroSlider,
+            'newsItems' => $newsItems,
+            'homeProjects' => $homeProjects,
+            'projectGroups' => $projectGroups,
+            'projectFilters' => $projectFilters,
+            'featuredClients' => $featuredClients,
+            'clientLogoItems' => $clientLogoItems,
+            'useClientMarquee' => $useClientMarquee,
+            'clientMarqueeRows' => $clientMarqueeRows,
+            'testimonials' => $testimonials,
+            'pricingPlans' => $pricingPlans,
+            'contactPhones' => $contactPhones,
+            'homeMapEmbedUrl' => $homeMapEmbedUrl,
+            'homepageSections' => $homepageSections,
+            'homepageSectionTitles' => $homepageSectionTitles,
+            'homepageStats' => $homepageStats,
+            'homepageReasons' => $homepageReasons,
+            'homepageReasonIcons' => $homepageReasonIcons,
+            'homepageAboutTitle' => $homepageAboutTitle,
+            'homepageAboutText' => $homepageAboutText,
+            'homepageAboutSupportingText' => $homepageAboutSupportingText,
+            'homepageAboutImage' => $homepageAboutImage,
+            'homepageTitle' => $homepageTitle,
+            'homepageDescription' => $homepageDescription,
+            'homepageSchema' => SchemaMarkup::homepage(
+                $website,
+                $siteAssets?->getFirstMediaUrl('logo'),
+                $siteAssets?->getFirstMediaUrl('seo_image') ?: $siteAssets?->getFirstMediaUrl('about_image'),
+                $homepageTitle,
+                $homepageDescription,
+                $homepageRating,
+            ),
         ]);
     }
 
-    private function homeProductSections(): Collection
+    private function homeContactPhones(array $website): Collection
     {
-        return ProductCategory::query()
-            ->whereNull('parent_id')
-            ->where('is_active', true)
-            ->where('is_home', true)
-            ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')])
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get()
-            ->map(function (ProductCategory $category): array {
-                return [
-                    'id' => 'home-product-section-'.$category->id,
-                    'title' => $category->name,
-                    'slug' => $category->slug,
-                    'tabs' => $this->productTabsForCategory($category),
-                ];
-            })
-            ->filter(fn (array $section): bool => $section['tabs']->isNotEmpty())
-            ->values()
-            ->map(function (array $section, int $index): array {
-                $section['sectionClass'] = $index === 0 ? '' : 'pt-0';
+        $phones = $website['phones'] ?? [];
 
-                return $section;
-            });
-    }
-
-    private function productTabsForCategory(ProductCategory $category, int $limit = 5): Collection
-    {
-        $tabCategories = $category->children->prepend($category);
-        $products = Product::query()
-            ->where('is_active', true)
-            ->where('is_home', true)
-            ->visibleOnSite()
-            ->whereIn('product_category_id', $tabCategories->pluck('id'))
-            ->with($this->productRelations())
-            ->orderByDesc('is_featured')
-            ->latest('published_at')
-            ->get();
-
-        if ($products->isEmpty()) {
-            return collect();
+        if (empty($phones) && filled($website['phone'] ?? null)) {
+            $phones = [['number' => $website['phone']]];
         }
 
-        $productsByCategory = $products->groupBy('product_category_id');
-        $allProducts = $products
-            ->map(fn (Product $product) => $this->presentProduct($product))
+        return collect($phones)
+            ->filter(fn (mixed $phone): bool => is_array($phone) && filled($phone['number'] ?? null))
             ->values();
-
-        $childTabs = $category->children
-            ->map(function (ProductCategory $tabCategory) use ($productsByCategory, $limit): ?array {
-                $products = collect($productsByCategory->get($tabCategory->id, []))
-                    ->take($limit)
-                    ->map(fn (Product $product) => $this->presentProduct($product))
-                    ->values();
-
-                if ($products->isEmpty()) {
-                    return null;
-                }
-
-                return [
-                    'id' => 'home-category-'.$tabCategory->id,
-                    'name' => $tabCategory->name,
-                    'slug' => $tabCategory->slug,
-                    'products' => $products,
-                ];
-            })
-            ->filter()
-            ->values();
-
-        return collect([[
-            'id' => 'home-category-all-'.$category->id,
-            'name' => 'Tất cả',
-            'slug' => $category->slug,
-            'products' => $allProducts,
-        ]])->concat($childTabs)->values();
-    }
-
-    private function coreValues(): Collection
-    {
-        $html = (string) data_get(app(AboutSettings::class)->about_core_values, 'vi', '');
-
-        if ($html === '') {
-            return collect();
-        }
-
-        preg_match_all('/<h3\b[^>]*>(.*?)<\/h3>\s*<p\b[^>]*>(.*?)<\/p>/is', $html, $matches, PREG_SET_ORDER);
-
-        return collect($matches)->map(function (array $match): array {
-            $title = trim(html_entity_decode(strip_tags($match[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-            $description = trim(html_entity_decode(strip_tags($match[2]), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-            $normalizedTitle = Str::lower(Str::ascii($title));
-
-            $icon = match (true) {
-                str_contains($normalizedTitle, 'sang tao') => 'bi-stars',
-                str_contains($normalizedTitle, 'trach nhiem') => 'bi-shield-check',
-                str_contains($normalizedTitle, 'linh hoat') => 'bi-intersect',
-                str_contains($normalizedTitle, 'chat luong') => 'bi-gem',
-                str_contains($normalizedTitle, 'ben vung') => 'bi-flower1',
-                default => 'bi-patch-check',
-            };
-
-            return compact('title', 'description', 'icon');
-        })->filter(fn (array $value) => $value['title'] !== '')->values();
     }
 }
