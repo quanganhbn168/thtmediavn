@@ -16,7 +16,7 @@ class ProfileService
         $user->email = $data['email'];
 
         // Cập nhật mật khẩu nếu có nhập mật khẩu mới
-        if (!empty($data['password'])) {
+        if (! empty($data['password'])) {
             $user->password = Hash::make($data['password']);
         }
 

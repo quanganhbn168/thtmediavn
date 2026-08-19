@@ -10,7 +10,7 @@ use Spatie\Translatable\HasTranslations;
 
 class PostCategory extends Model
 {
-    use HasTranslations, HasSlug;
+    use HasSlug, HasTranslations;
 
     protected $fillable = [
         'parent_id',

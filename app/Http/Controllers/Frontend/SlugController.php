@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
-use App\Models\Product;
-use App\Models\ProductCategory;
 use App\Models\Slug;
 use Illuminate\Http\Request;
 
@@ -23,30 +21,11 @@ class SlugController extends Controller
         return $this->resolve(request(), $domain, $slug);
     }
 
-    public function product(string $slug)
-    {
-        return $this->resolve(request(), 'san-pham', $slug);
-    }
-
-    public function category(Request $request, string $category)
-    {
-        return $this->resolve($request, 'danh-muc', $category);
-    }
-
     /**
      * Phân giải Slug đa hình từ CSDL để gọi đúng Controller xử lý.
      */
     public function resolve(Request $request, string $domain, string $slug)
     {
-        if ($domain === 'danh-muc') {
-            $category = ProductCategory::query()
-                ->where('slug', $slug)
-                ->where('is_active', true)
-                ->firstOrFail();
-
-            return app(ProductController::class)->productByCate($request, $category->slug);
-        }
-
         $slugModel = Slug::where('slug', $slug)
             ->where('locale', app()->getLocale())
             ->first();
@@ -80,12 +59,6 @@ class SlugController extends Controller
             abort_unless($domain === 'trang', 404);
 
             return app(PageController::class)->show($slug);
-        }
-
-        if ($sluggable instanceof Product) {
-            abort_unless($domain === 'san-pham', 404);
-
-            return app(ProductController::class)->detail($slug);
         }
 
         abort(404);

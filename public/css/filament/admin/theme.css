@@ -1,0 +1,11 @@
+/* RichEditor UX: keep long content inside the field while preserving Filament's default toolbar. */
+.fi-fo-rich-editor {
+    position: relative;
+}
+
+.fi-fo-rich-editor .tiptap,
+.fi-fo-rich-editor .tiptap-editor {
+    max-height: 520px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}

@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Middleware\EnsureAdminAccess;
-use App\Http\Middleware\VerifySePayWebhookSignature;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,20 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(function ($request) {
             return $request->is('admin/*')
-                ? route('admin.login')
+                ? route('filament.admin.auth.login')
                 : route('login');
         });
         $middleware->redirectUsersTo(function () {
-            if (Auth::guard('admin')->check()) {
-                return route('admin.dashboard');
+            if (Auth::check()) {
+                return route('filament.admin.pages.dashboard');
             }
 
-            return route('account.index');
+            return route('home');
         });
-        $middleware->alias([
-            'admin' => EnsureAdminAccess::class,
-            'sepay.webhook' => VerifySePayWebhookSignature::class,
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

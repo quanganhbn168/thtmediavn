@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('service_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('phone', 50);
             $table->string('email', 100)->nullable();
+            $table->string('company')->nullable();
             $table->string('subject', 255)->nullable();
+            $table->string('budget')->nullable();
+            $table->string('timeline')->nullable();
             $table->text('message');
             $table->string('status', 30)->default('new'); // new, read, processing, replied, spam
             $table->text('admin_notes')->nullable();

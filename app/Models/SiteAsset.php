@@ -11,8 +11,8 @@ class SiteAsset extends Model implements HasMedia
     use InteractsWithMedia;
 
     public const COLLECTIONS = [
-        'logo', 'logo_footer', 'favicon', 'seo_image', 'about_image',
-        'default_product_banner', 'default_promotion_banner', 'default_post_banner',
+        'logo', 'logo_footer', 'favicon', 'watermark', 'seo_image', 'about_image',
+        'default_promotion_banner', 'default_post_banner', 'footer_background',
     ];
 
     protected $fillable = ['key'];

@@ -4,16 +4,23 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
+
+    /**
+     * Roles and permissions on this model belong to the admin panel guard.
+     * The frontend keeps using Laravel's separate `web` session guard.
+     */
+    protected string $guard_name = 'admin';
 
     /**
      * The attributes that are mass assignable.
@@ -43,6 +50,12 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_active
+            && ($this->hasRole(['super_admin', 'admin'], 'admin') || $this->getAllPermissions()->isNotEmpty());
+    }
+
     protected function casts(): array
     {
         return [
@@ -52,17 +65,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function orders(): HasMany { return $this->hasMany(Order::class); }
-    public function addresses(): HasMany { return $this->hasMany(UserAddress::class); }
-    public function reviews(): HasMany { return $this->hasMany(Review::class); }
-
     public function canBeManagedBy(User $actor): bool
     {
-        if ($actor->hasRole('admin')) {
+        if ($actor->hasRole(['super_admin', 'admin'], 'admin')) {
             return true;
         }
 
-        if ($this->hasRole('admin')) {
+        if ($this->hasRole(['super_admin', 'admin'], 'admin')) {
             return false;
         }
 

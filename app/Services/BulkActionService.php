@@ -2,20 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Brand;
 use App\Models\Contact;
-use App\Models\Combo;
-use App\Models\ComboCategory;
-use App\Models\Coupon;
-use App\Models\FlashSale;
-use App\Models\Order;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
-use App\Models\Product;
-use App\Models\ProductAttribute;
-use App\Models\ProductCategory;
-use App\Models\ProductOption;
 use App\Models\Slider;
 use App\Models\Subscriber;
 use App\Models\Testimonial;
@@ -45,19 +35,9 @@ class BulkActionService
             'label' => 'danh mục bài viết',
             'actions' => ['activate', 'deactivate', 'duplicate', 'delete'],
         ],
-        'order' => ['model' => Order::class, 'table' => 'orders', 'label' => 'đơn hàng', 'actions' => ['delete']],
-        'product' => ['model' => Product::class, 'table' => 'products', 'label' => 'sản phẩm', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
-        'combo' => ['model' => Combo::class, 'table' => 'combos', 'label' => 'Combo', 'actions' => ['activate', 'deactivate', 'delete']],
-        'combo_category' => ['model' => ComboCategory::class, 'table' => 'combo_categories', 'label' => 'danh mục Combo', 'actions' => ['activate', 'deactivate']],
-        'product_category' => ['model' => ProductCategory::class, 'table' => 'product_categories', 'label' => 'danh mục sản phẩm', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
-        'brand' => ['model' => Brand::class, 'table' => 'brands', 'label' => 'thương hiệu', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
-        'product_option' => ['model' => ProductOption::class, 'table' => 'product_options', 'label' => 'thuộc tính', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
-        'product_attribute' => ['model' => ProductAttribute::class, 'table' => 'product_attributes', 'label' => 'thuộc tính lọc', 'actions' => ['activate', 'deactivate', 'delete']],
         'testimonial' => ['model' => Testimonial::class, 'table' => 'testimonials', 'label' => 'cảm nhận khách hàng', 'actions' => ['activate', 'deactivate', 'delete']],
-        'coupon' => ['model' => Coupon::class, 'table' => 'coupons', 'label' => 'mã giảm giá', 'actions' => ['activate', 'deactivate', 'delete']],
-        'flash_sale' => ['model' => FlashSale::class, 'table' => 'flash_sales', 'label' => 'flash sale', 'actions' => ['delete']],
         'page' => ['model' => Page::class, 'table' => 'pages', 'label' => 'trang', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
-        'contact' => ['model' => Contact::class, 'table' => 'contacts', 'label' => 'tin nhắn', 'actions' => ['duplicate', 'delete']],
+        'contact' => ['model' => Contact::class, 'table' => 'contacts', 'label' => 'tin nhắn', 'actions' => ['delete']],
         'subscriber' => ['model' => Subscriber::class, 'table' => 'subscribers', 'label' => 'người đăng ký', 'actions' => ['activate', 'deactivate', 'duplicate', 'delete']],
     ];
 
@@ -65,9 +45,6 @@ class BulkActionService
         private readonly SliderService $sliderService,
         private readonly PostService $postService,
         private readonly PostCategoryService $postCategoryService,
-        private readonly ProductCategoryService $productCategoryService,
-        private readonly ProductAttributeService $productAttributeService,
-        private readonly CouponService $couponService,
         private readonly PageService $pageService,
         private readonly TestimonialService $testimonialService,
     ) {}
@@ -113,9 +90,6 @@ class BulkActionService
             'slider' => $this->sliderService->delete($model),
             'post' => $this->postService->delete($model),
             'post_category' => $this->postCategoryService->delete($model),
-            'product_category' => $this->productCategoryService->delete($model),
-            'product_attribute' => $this->productAttributeService->delete($model),
-            'coupon' => $this->couponService->delete($model),
             'page' => $this->pageService->delete($model),
             'testimonial' => $this->testimonialService->delete($model),
             default => $model->delete(),

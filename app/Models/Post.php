@@ -3,20 +3,21 @@
 namespace App\Models;
 
 use App\Traits\HasSlug;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasComments;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Post extends Model implements HasMedia
 {
-    use HasTranslations, HasSlug, InteractsWithMedia, SoftDeletes;
+    use HasComments, HasSlug, HasTranslations, InteractsWithMedia, SoftDeletes;
 
     protected $fillable = [
+        'image_id',
         'post_category_id',
         'name',
         'summary',
@@ -57,6 +58,16 @@ class Post extends Model implements HasMedia
         return $this->belongsTo(PostCategory::class, 'post_category_id');
     }
 
+    public function image(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'image_id');
+    }
+
+    public function getSlugSourceKey(): string
+    {
+        return 'name';
+    }
+
     /**
      * Đăng ký Media Collection cho ảnh đại diện bài viết.
      */
@@ -67,8 +78,4 @@ class Post extends Model implements HasMedia
             ->useDisk('public_media');
     }
 
-    public function comments(): HasMany
-    {
-        return $this->hasMany(Comment::class)->whereNull('parent_id');
-    }
 }

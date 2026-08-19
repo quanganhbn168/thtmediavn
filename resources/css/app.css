@@ -1,0 +1,121 @@
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
+@import "@fontsource/montserrat/600.css";
+@import "@fontsource/montserrat/700.css";
+@import "@fontsource/montserrat/800.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+@import "swiper/css/bundle";
+@import "glightbox/dist/css/glightbox.min.css";
+@import "sweetalert2/dist/sweetalert2.min.css";
+
+@import "tailwindcss/theme.css";
+@import "tailwindcss/preflight.css";
+@import "tailwindcss/utilities.css";
+
+@source "../views";
+
+@theme {
+  --font-sans: "Roboto", Arial, sans-serif;
+  --font-display: "Montserrat", Arial, sans-serif;
+  --color-primary: #247138;
+  --color-primary-hover: #1d5d2d;
+  --color-primary-soft: #eef7e8;
+  --color-secondary: #f68e1e;
+  --color-secondary-soft: #fff6e9;
+  --color-accent: #a4cf59;
+  --color-accent-light: #d8ff96;
+  --color-ink: #1f2b25;
+  --color-muted: #68756c;
+  --color-line: #e4ece2;
+  --color-canvas: #f7faf5;
+}
+
+@import "../../public/assets/css/style.css";
+@import "../../public/assets/css/home.css";
+@import "../../public/assets/css/popup.css";
+@import "aos/dist/aos.css";
+
+@layer components {
+  .ui-label { @apply mb-2 block text-sm font-bold text-ink; }
+  .ui-input, .ui-select { @apply block min-h-12 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition duration-200 placeholder:text-muted/70; }
+  .ui-input:hover, .ui-select:hover { @apply border-slate-300; }
+  .ui-input:focus, .ui-select:focus { @apply border-primary ring-4 ring-primary/10; }
+  .ui-input:disabled, .ui-select:disabled { @apply cursor-not-allowed bg-slate-50 opacity-70; }
+  .ui-input[type="file"] { @apply cursor-pointer px-3 py-2; }
+  .ui-input[type="file"]::file-selector-button { @apply mr-3 rounded-lg border-0 bg-primary-soft px-3 py-2 text-sm font-bold text-primary transition duration-200; }
+  .ui-input[type="file"]:hover::file-selector-button { @apply bg-primary text-white; }
+  textarea.ui-input { @apply min-h-32 resize-y; }
+  select.ui-select { @apply cursor-pointer; }
+  .ui-error { @apply mt-2 text-sm text-red-700; }
+  .ui-alert { @apply rounded-xl border px-4 py-3 text-sm; }
+  .ui-alert--success { @apply border-green-200 bg-green-50 text-green-800; }
+  .ui-alert--error { @apply border-red-200 bg-red-50 text-red-800; }
+
+  .ui-modal { @apply fixed inset-0 z-[1000] items-center justify-center p-4; }
+  .ui-modal.is-open { @apply flex; }
+  .ui-modal__backdrop { @apply absolute inset-0 bg-black/50; }
+  .ui-modal__dialog { @apply relative z-10 w-full; }
+  .ui-modal__dialog--sm { @apply max-w-md; }
+  .ui-modal__dialog--md { @apply max-w-lg; }
+  .ui-modal__dialog--lg { @apply max-w-3xl; }
+  .ui-modal__content { @apply overflow-hidden rounded-2xl bg-white shadow-2xl; }
+  .ui-modal__header, .ui-modal__footer { @apply flex items-center justify-between gap-4 border-line px-5 py-4; }
+  .ui-modal__header { @apply border-b; }
+  .ui-modal__footer { @apply justify-end border-t; }
+  .ui-modal__title { @apply m-0 text-lg font-bold text-ink; }
+  .ui-modal__close { @apply inline-flex h-9 w-9 items-center justify-center rounded-full border-0 bg-slate-100 text-muted transition hover:bg-primary-soft hover:text-primary; }
+  .ui-modal__body { @apply max-h-[70vh] overflow-y-auto p-5; }
+}
+
+/*
+ * Form controls are consumed by legacy Blade components as well as Tailwind
+ * views. Keep this small unlayered compatibility surface after the legacy
+ * imports so the design tokens cannot be lost in the cascade.
+ */
+.ui-input,
+.ui-select {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 3rem;
+  padding: .75rem 1rem;
+  color: var(--ink-color, #1f2b25);
+  background-color: #fff;
+  border: 1px solid var(--line-color, #e4ece2);
+  border-radius: .75rem;
+  outline: 0;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.ui-input::placeholder {
+  color: color-mix(in srgb, var(--muted-color, #68756c) 70%, transparent);
+}
+
+.ui-input:hover,
+.ui-select:hover {
+  border-color: #b8cbbd;
+}
+
+.ui-input:focus,
+.ui-select:focus {
+  border-color: var(--primary-color, #247138);
+  box-shadow: 0 0 0 .25rem rgb(36 113 56 / .1);
+}
+
+.ui-input:disabled,
+.ui-select:disabled {
+  cursor: not-allowed;
+  background-color: #f8faf8;
+  opacity: .7;
+}
+
+textarea.ui-input {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.comments-form .ui-input,
+.comments-form .ui-select {
+  border-color: var(--line-color, #e4ece2);
+}

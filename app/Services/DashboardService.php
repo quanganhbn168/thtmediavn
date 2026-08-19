@@ -2,33 +2,31 @@
 
 namespace App\Services;
 
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\PaymentTransaction;
-use App\Models\Product;
-use App\Models\Review;
+use App\Models\Client;
+use App\Models\Contact;
+use App\Models\Page;
+use App\Models\Post;
+use App\Models\Project;
+use App\Models\Service;
+use App\Models\Subscriber;
+use App\Models\Testimonial;
 use App\Models\User;
 
 class DashboardService
 {
     public function getDashboardStats(User $actor): array
     {
-        $orders = Order::query();
-
         return [
-            'totalProducts' => Product::where('is_active', true)->count(),
-            'lowStockProducts' => Product::where('track_inventory', true)->whereHas('activeVariants', fn ($q) => $q->where('stock', '<=', 5))->count(),
-            'totalOrders' => $orders->count(),
-            'pendingOrders' => (clone $orders)->where('status', 'pending')->count(),
-            'todayOrders' => (clone $orders)->whereDate('created_at', today())->count(),
-            'pendingPaymentOrders' => (clone $orders)->where('status', 'pending_payment')->count(),
-            'processingOrders' => (clone $orders)->whereIn('status', ['processing', 'shipping'])->count(),
-            'todayCollected' => (float) Payment::query()->where('status', 'completed')->whereDate('payment_date', today())->sum('amount'),
-            'monthlyRevenue' => (float) Payment::query()->where('status', 'completed')->whereBetween('payment_date', [now()->startOfMonth(), now()->endOfMonth()])->sum('amount'),
-            'unmatchedTransactions' => PaymentTransaction::query()->whereIn('match_status', ['unmatched', 'amount_mismatch', 'late'])->count(),
-            'pendingReviews' => Review::where('status', 'pending')->count(),
-            'recentOrders' => Order::latest()->take(8)->get(),
-            'recentTransactions' => PaymentTransaction::query()->with('order:id,order_code')->latest('transaction_at')->take(8)->get(),
+            'activePosts' => Post::query()->where('is_active', true)->count(),
+            'activePages' => Page::query()->where('is_active', true)->count(),
+            'activeServices' => Service::query()->where('is_active', true)->count(),
+            'activeProjects' => Project::query()->where('is_active', true)->count(),
+            'activeClients' => Client::query()->where('is_active', true)->count(),
+            'newContacts' => Contact::query()->where('status', 'new')->count(),
+            'activeSubscribers' => Subscriber::query()->where('is_active', true)->count(),
+            'activeTestimonials' => Testimonial::query()->where('is_active', true)->count(),
+            'recentContacts' => Contact::query()->latest()->take(6)->get(),
+            'recentPosts' => Post::query()->with('category')->latest()->take(6)->get(),
         ];
     }
 }

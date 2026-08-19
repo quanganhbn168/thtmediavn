@@ -1,343 +1,98 @@
-<div class="site-topbar d-none d-lg-block">
-    <div class="container d-flex align-items-center justify-content-between py-2">
+<div class="site-topbar hidden lg:block">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2">
         <span>{{ $website['welcome'] }}</span>
-        <div>
-            <a href="{{ route('contact') }}"><i class="bi bi-geo-alt me-1"></i>Hệ thống cửa hàng</a>
-            <span class="topbar-separator">|</span>
-            @auth<a href="{{ route('account.index') }}">{{ auth()->user()->name }}</a><span class="topbar-separator">|</span><form class="d-inline" action="{{ route('logout') }}" method="post">@csrf<button class="btn btn-link text-reset p-0 border-0 align-baseline">Đăng xuất</button></form>@else<a href="{{ route('register') }}">Đăng ký</a><span class="topbar-separator">|</span><a href="{{ route('login') }}">Đăng nhập</a>@endauth
+        <div class="flex gap-3">
+            @if($website['email'])<a href="mailto:{{ $website['email'] }}"><i class="fa-solid fa-envelope mr-1"></i>{{ $website['email'] }}</a>@endif
+            @php($topbarPhones = $website['phones'] ?? [])
+            @if(empty($topbarPhones) && $website['phone'])
+                @php($topbarPhones = [['number' => $website['phone']]])
+            @endif
+            @foreach($topbarPhones as $topbarPhone)
+                @if(filled($topbarPhone['number'] ?? null))<a href="tel:{{ preg_replace('/[^0-9+]/', '', (string) $topbarPhone['number']) }}"><i class="fa-solid fa-phone mr-1"></i>{{ $topbarPhone['number'] }}</a>@endif
+            @endforeach
         </div>
     </div>
 </div>
 
-<header class="site-header-main d-none d-lg-block">
-    <div class="container">
-        <div class="row align-items-center g-3">
-            <div class="col-xl-3 col-lg-3">
-                <a class="site-logo text-decoration-none" href="{{ route('home') }}" aria-label="Trang chủ {{ $website['name'] }}">
+<div class="site-header-shell" data-site-header>
+    <header class="site-header-main">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div class="flex items-center justify-between gap-3">
+                <a class="site-logo no-underline" href="{{ route('home') }}" aria-label="Trang chủ {{ $website['name'] }}">
                     @if($siteAssets?->getFirstMediaUrl('logo'))
                         <img src="{{ $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
                     @else
-                        <span class="h3 fw-black text-primary mb-0">THT MEDIA VN</span>
+                        <span class="text-2xl font-extrabold text-primary">THT MEDIA VN</span>
                     @endif
                 </a>
-            </div>
-            <div class="col-xl-5 col-lg-5">
-                <form class="header-search" action="{{ route('catalog') }}" method="get" role="search">
-                    <label class="visually-hidden" for="desktop-search">Tìm kiếm sản phẩm</label>
-                    <input id="desktop-search" class="form-control" type="search" name="q" value="{{ request('q') }}" placeholder="Bạn muốn tìm gì?">
-                    <button class="btn btn-primary" type="submit" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
-                </form>
-            </div>
-            <div class="col-xl-4 col-lg-4">
-                <div class="d-flex align-items-center justify-content-end gap-2">
-                    <a class="hotline-box d-flex align-items-center gap-2" href="tel:{{ preg_replace('/[^0-9+]/', '', $website['phone']) }}">
-                        <span class="hotline-icon"><i class="bi bi-telephone"></i></span>
-                        <span class="d-flex flex-column">
-                            <small>Hotline tư vấn</small>
-                            <strong>{{ $website['phone'] }}</strong>
-                        </span>
-                    </a>
-                    <a class="header-action" href="{{ route('wishlist') }}">
-                        <span class="header-action-icon"><i class="bi bi-heart"></i></span>
-                        <span class="header-action-label">Yêu thích</span>
-                        <span class="badge-count" data-wishlist-count>{{ $wishlistCount ?? 0 }}</span>
-                    </a>
-                    <a class="header-action" href="{{ route('cart') }}">
-                        <span class="header-action-icon"><i class="bi bi-bag"></i></span>
-                        <span class="header-action-label">Giỏ hàng</span>
-                        <span class="badge-count" data-cart-count>{{ $cartCount ?? 0 }}</span>
-                    </a>
+                <button class="mobile-trigger lg:hidden" type="button" data-mobile-menu-open aria-controls="mobileMenu" aria-label="Mở menu"><i class="fa-solid fa-bars"></i></button>
+                <div class="site-navbar hidden lg:block" data-site-navbar>
+                    <nav class="site-navbar__nav" aria-label="Điều hướng chính">
+                        <ul class="site-navbar__list flex items-stretch justify-end">
+                            @if($headerMenu?->items->isNotEmpty())
+                                @foreach($headerMenu->items as $item)
+                                    @include('partials.menu.header-item', ['item' => $item])
+                                @endforeach
+                            @else
+                                <li class="site-navbar__item"><a class="site-navbar__link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Trang chủ</a></li>
+                                <li class="site-navbar__item"><a class="site-navbar__link {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">Giới thiệu</a></li>
+                                <li class="site-navbar__item site-navbar__item--mega"><a class="site-navbar__link {{ request()->routeIs('services.*') ? 'active' : '' }}" href="{{ route('services.index') }}" aria-haspopup="true">Dịch vụ <i class="fa-solid fa-chevron-down ml-1 text-xs" aria-hidden="true"></i></a>@include('partials.menu.service-mega-menu')</li>
+                                <li class="site-navbar__item"><a class="site-navbar__link {{ request()->routeIs('projects.*') ? 'active' : '' }}" href="{{ route('projects.index') }}">Dự án</a></li>
+                                <li class="site-navbar__item"><a class="site-navbar__link" href="{{ route('pricing') }}">Bảng giá</a></li>
+                                <li class="site-navbar__item"><a class="site-navbar__link {{ request()->routeIs('news.*') ? 'active' : '' }}" href="{{ route('news.index') }}">Tin tức</a></li>
+                                <li class="site-navbar__item"><a class="site-navbar__link {{ request()->routeIs('contact') ? 'active' : '' }}" href="{{ route('contact') }}">Liên hệ</a></li>
+                            @endif
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
-    </div>
-</header>
-
-<div class="mobile-header d-lg-none">
-    <div class="container d-flex align-items-center justify-content-between gap-2">
-        <button class="mobile-trigger" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-label="Mở menu">
-            <i class="bi bi-list"></i>
-        </button>
-        <a class="site-logo text-decoration-none" href="{{ route('home') }}">
-            @if($siteAssets?->getFirstMediaUrl('logo'))
-                <img src="{{ $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
-            @else
-                <span class="h5 fw-black text-primary mb-0">THT MEDIA VN</span>
-            @endif
-        </a>
-        <div class="d-flex gap-2">
-            <button class="mobile-trigger" type="button" data-bs-toggle="modal" data-bs-target="#searchModal" aria-label="Tìm kiếm">
-                <i class="bi bi-search"></i>
-            </button>
-            <a class="mobile-trigger" href="{{ route('cart') }}" aria-label="Giỏ hàng">
-                <i class="bi bi-bag"></i>
-                <span class="badge-count" data-cart-count>{{ $cartCount ?? 0 }}</span>
-            </a>
-        </div>
-    </div>
+    </header>
 </div>
 
-<div class="site-navbar d-none d-lg-block" data-site-navbar>
-    <div class="container">
-        <nav class="navbar navbar-expand-lg" aria-label="Điều hướng chính">
-            <ul class="navbar-nav align-items-stretch w-100">
-                <li class="nav-item dropdown position-static">
-                    <a class="nav-link navbar-category-trigger" href="{{ route('catalog') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-grid me-2"></i>Danh mục sản phẩm
-                    </a>
-                    <div class="dropdown-menu mega-menu category-mega-menu" data-mega-menu>
-                        @if($megaMenu?->items->isNotEmpty())
-                            <div class="mega-category-layout">
-                                <div class="mega-category-tabs" role="tablist" aria-label="{{ $megaMenu->getTranslation('name', 'vi') }}">
-                                    @foreach($megaMenu->items as $index => $group)
-                                        <a class="mega-category-tab {{ $index === 0 ? 'is-active' : '' }}" href="{{ $group->href }}" data-mega-tab="menu-{{ $group->id }}" target="{{ $group->target ?: '_self' }}" @if($group->target === '_blank') rel="noopener" @endif>
-                                            <span>@if($group->icon)<i class="{{ $group->icon }} me-2"></i>@endif{{ $group->getTranslation('title', 'vi') }}</span>
-                                            <i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endforeach
-                                    @if($siteCombos->isNotEmpty())
-                                        <a class="mega-category-tab" href="{{ route('combos.index') }}" data-mega-tab="combo-products">
-                                            <span>Combo</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endif
-                                    @if($siteBrands->isNotEmpty())
-                                        <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="special-brands">
-                                            <span>Thương hiệu</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endif
-                                    @foreach($attributeMenuGroups as $attribute)
-                                        <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="attribute-{{ $attribute->id }}">
-                                            <span>{{ $attribute->name }}</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endforeach
-                                </div>
-                                <div class="mega-category-panels">
-                                    @foreach($megaMenu->items as $index => $group)
-                                        <div class="mega-category-panel {{ $index === 0 ? 'is-active' : '' }}" data-mega-panel="menu-{{ $group->id }}">
-                                            <div class="d-flex align-items-center justify-content-end gap-3 mb-3">
-                                                <a class="mega-panel-all" href="{{ $group->href }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            @if($group->childrenRecursive->isNotEmpty())
-                                                <div class="mega-child-grid">
-                                                    @foreach($group->childrenRecursive as $child)
-                                                        <div class="mega-child-group">
-                                                            <a class="mega-child-title" href="{{ $child->href }}" target="{{ $child->target ?: '_self' }}" @if($child->target === '_blank') rel="noopener" @endif>{{ $child->getTranslation('title', 'vi') }}</a>
-                                                            @foreach($child->childrenRecursive as $grandchild)
-                                                                <a class="mega-link" href="{{ $grandchild->href }}" target="{{ $grandchild->target ?: '_self' }}" @if($grandchild->target === '_blank') rel="noopener" @endif>{{ $grandchild->getTranslation('title', 'vi') }}</a>
-                                                            @endforeach
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @else
-                                                <p class="text-muted mb-0">Khám phá toàn bộ nội dung trong {{ mb_strtolower($group->getTranslation('title', 'vi')) }}.</p>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                    @if($siteCombos->isNotEmpty())
-                                        <div class="mega-category-panel" data-mega-panel="combo-products">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('combos.index') }}">Combo</a>
-                                                <a class="mega-panel-all" href="{{ route('combos.index') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @if($siteComboCategories->isNotEmpty())
-                                                    @foreach($siteComboCategories as $comboCategory)
-                                                        <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combos.by-category', ['category' => $comboCategory->slug]) }}">{{ $comboCategory->name }}</a></div>
-                                                    @endforeach
-                                                @endif
-                                                @foreach($siteCombos as $combo)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combo.show', ['slug' => $combo->slug]) }}">{{ $combo->name }}</a></div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                    @if($siteBrands->isNotEmpty())
-                                        <div class="mega-category-panel" data-mega-panel="special-brands">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('catalog') }}">Thương hiệu</a>
-                                                <a class="mega-panel-all" href="{{ route('catalog') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @foreach($siteBrands as $brand)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('catalog', ['brand' => $brand->slug]) }}">{{ $brand->name }}</a></div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                    @foreach($attributeMenuGroups as $attribute)
-                                        <div class="mega-category-panel" data-mega-panel="attribute-{{ $attribute->id }}">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('catalog') }}">{{ $attribute->name }}</a>
-                                                <a class="mega-panel-all" href="{{ route('catalog') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @foreach($attribute->values as $value)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('catalog', ['attribute_values' => [$attribute->id => [$value->id]]]) }}">{{ $value->value }}</a></div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @elseif($siteNavigation->isNotEmpty())
-                            <div class="mega-category-layout">
-                                <div class="mega-category-tabs" role="tablist" aria-label="Danh mục sản phẩm">
-                                    @foreach($siteNavigation as $index => $group)
-                                        <a class="mega-category-tab {{ $index === 0 ? 'is-active' : '' }}" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $group->slug]) }}" data-mega-tab="category-{{ $group->id }}">
-                                            <span>{{ $group->name }}</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endforeach
-                                    @if($siteCombos->isNotEmpty())
-                                        <a class="mega-category-tab" href="{{ route('combos.index') }}" data-mega-tab="combo-products">
-                                            <span>Combo</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endif
-                                    @if($siteBrands->isNotEmpty())
-                                        <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="special-brands">
-                                            <span>Theo thương hiệu</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endif
-                                    @foreach($attributeMenuGroups as $attribute)
-                                        <a class="mega-category-tab" href="{{ route('catalog') }}" data-mega-tab="attribute-{{ $attribute->id }}">
-                                            <span>{{ $attribute->name }}</span><i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    @endforeach
-                                </div>
-                                <div class="mega-category-panels">
-                                    @foreach($siteNavigation as $index => $group)
-                                        <div class="mega-category-panel {{ $index === 0 ? 'is-active' : '' }}" data-mega-panel="category-{{ $group->id }}">
-                                            <div class="d-flex align-items-center justify-content-end gap-3 mb-3">
-                                                <a class="mega-panel-all" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $group->slug]) }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @forelse($group->children as $item)
-                                                    <div class="mega-child-group">
-                                                        <a class="mega-child-title" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $item->slug]) }}">{{ $item->name }}</a>
-                                                        @foreach($item->children as $grandchild)
-                                                            <a class="mega-link" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $grandchild->slug]) }}">{{ $grandchild->name }}</a>
-                                                        @endforeach
-                                                    </div>
-                                                @empty
-                                                    <p class="text-muted mb-0">Sản phẩm trong danh mục đang được cập nhật.</p>
-                                                @endforelse
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                    @if($siteCombos->isNotEmpty())
-                                        <div class="mega-category-panel" data-mega-panel="combo-products">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('combos.index') }}">Combo</a>
-                                                <a class="mega-panel-all" href="{{ route('combos.index') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @if($siteComboCategories->isNotEmpty())
-                                                    @foreach($siteComboCategories as $comboCategory)
-                                                        <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combos.by-category', ['category' => $comboCategory->slug]) }}">{{ $comboCategory->name }}</a></div>
-                                                    @endforeach
-                                                @endif
-                                                @foreach($siteCombos as $combo)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('combo.show', ['slug' => $combo->slug]) }}">{{ $combo->name }}</a></div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                    @if($siteBrands->isNotEmpty())
-                                        <div class="mega-category-panel" data-mega-panel="special-brands">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('catalog') }}">Theo thương hiệu</a>
-                                                <a class="mega-panel-all" href="{{ route('catalog') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @foreach($siteBrands as $brand)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('catalog', ['brand' => $brand->slug]) }}">{{ $brand->name }}</a></div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                    @foreach($attributeMenuGroups as $attribute)
-                                        <div class="mega-category-panel" data-mega-panel="attribute-{{ $attribute->id }}">
-                                            <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-                                                <a class="mega-panel-title" href="{{ route('catalog') }}">{{ $attribute->name }}</a>
-                                                <a class="mega-panel-all" href="{{ route('catalog') }}">Xem tất cả <i class="bi bi-arrow-right"></i></a>
-                                            </div>
-                                            <div class="mega-child-grid">
-                                                @foreach($attribute->values as $value)
-                                                    <div class="mega-child-group"><a class="mega-child-title" href="{{ route('catalog', ['attribute_values' => [$attribute->id => [$value->id]]]) }}">{{ $value->value }}</a></div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @else
-                            <div class="p-4 text-muted">Danh mục đang được cập nhật.</div>
-                        @endif
-                    </div>
-                </li>
-                @if($headerMenu?->items->isNotEmpty())
-                    @foreach($headerMenu->items as $item)
-                        @include('partials.menu.header-item', ['item' => $item])
-                    @endforeach
+<div class="mobile-drawer" id="mobileMenu" data-mobile-menu>
+    <div class="mobile-drawer__backdrop" data-mobile-menu-backdrop></div>
+    <div class="mobile-drawer__panel" data-mobile-menu-panel aria-hidden="true" aria-labelledby="mobileMenuLabel" tabindex="-1">
+        <div class="mobile-drawer__header">
+            <a class="mobile-drawer__brand" id="mobileMenuLabel" href="{{ route('home') }}" aria-label="Trang chủ {{ $website['name'] }}">
+                @if($siteAssets?->getFirstMediaUrl('logo'))
+                    <img src="{{ $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
                 @else
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">Giới thiệu</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('catalog', 'product.show', 'products.by-category') ? 'active' : '' }}" href="{{ route('catalog') }}">Sản phẩm</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('news.*') ? 'active' : '' }}" href="{{ route('news.index') }}">Tin tức</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}" href="{{ route('contact') }}">Liên hệ</a></li>
+                    <span>THT MEDIA VN</span>
                 @endif
-                @if(request()->routeIs('home'))
-                    <li class="nav-item ms-auto"><a class="nav-link text-primary" href="#flash-sale"><i class="bi bi-lightning-charge-fill me-1"></i>Flash Sale</a></li>
+            </a>
+            <button type="button" class="mobile-drawer__close" data-mobile-menu-close aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="mobile-drawer__body">
+            <nav class="mobile-menu-list">
+                @if($headerMenu?->items->isNotEmpty())
+                    @include('partials.menu.mobile-items', ['items' => $headerMenu->items, 'idPrefix' => 'mobile-header'])
+                @else
+                    <a class="mobile-menu-list__link" href="{{ route('home') }}">Trang chủ</a>
+                    <a class="mobile-menu-list__link" href="{{ route('about') }}">Giới thiệu</a>
+                    <a class="mobile-menu-list__link" href="{{ route('services.index') }}">Dịch vụ</a>
+                    <a class="mobile-menu-list__link" href="{{ route('projects.index') }}">Dự án</a>
+                    <a class="mobile-menu-list__link" href="{{ route('pricing') }}">Bảng giá</a>
+                    <a class="mobile-menu-list__link" href="{{ route('news.index') }}">Tin tức</a>
+                    <a class="mobile-menu-list__link" href="{{ route('contact') }}">Liên hệ</a>
                 @endif
-            </ul>
-        </nav>
-    </div>
-</div>
-
-<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
-    <div class="offcanvas-header">
-        <h2 class="offcanvas-title h5" id="mobileMenuLabel">Danh mục</h2>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
-    </div>
-    <div class="offcanvas-body">
-        <nav class="mobile-menu-list">
-            @if($headerMenu?->items->isNotEmpty())
-                @include('partials.menu.mobile-items', ['items' => $headerMenu->items, 'idPrefix' => 'mobile-header'])
-            @else
-                <a class="nav-link" href="{{ route('home') }}">Trang chủ</a>
-                <a class="nav-link" href="{{ route('about') }}">Giới thiệu</a>
-                <a class="nav-link" href="{{ route('catalog') }}">Sản phẩm</a>
-                <a class="nav-link" href="{{ route('news.index') }}">Tin tức</a>
-                <a class="nav-link" href="{{ route('contact') }}">Liên hệ</a>
+            </nav>
+            @php($mobilePhones = $website['phones'] ?? [])
+            @if(empty($mobilePhones) && filled($website['phone'] ?? null))
+                @php($mobilePhones = [['label' => 'Hotline chính', 'number' => $website['phone']]])
             @endif
-
-            <div class="mobile-menu-heading">Danh mục sản phẩm</div>
-            @if($megaMenu?->items->isNotEmpty())
-                @include('partials.menu.mobile-items', ['items' => $megaMenu->items, 'idPrefix' => 'mobile-mega'])
-            @else
-                @foreach($siteNavigation as $group)
-                    <a class="nav-link" href="{{ route('content.show', ['domain' => 'danh-muc', 'slug' => $group->slug]) }}">{{ $group->name }}</a>
-                @endforeach
-            @endif
-            @if($siteCombos->isNotEmpty())
-                <a class="nav-link" href="{{ route('combos.index') }}">Combo</a>
-                @if($siteComboCategories->isNotEmpty())
-                    <div class="mobile-submenu">
-                        @foreach($siteComboCategories as $comboCategory)
-                            <a href="{{ route('combos.by-category', ['category' => $comboCategory->slug]) }}">{{ $comboCategory->name }}</a>
-                        @endforeach
+            @php($mobilePhoneItems = collect($mobilePhones)->filter(fn (mixed $phone): bool => is_array($phone) && filled($phone['number'] ?? null))->values())
+            @if($mobilePhoneItems->isNotEmpty())
+                <div class="mobile-drawer__phones mt-6 rounded-2xl bg-soft p-4">
+                    <div class="text-sm text-muted">Điện thoại</div>
+                    <div class="mobile-drawer__phone-list">
+                    @foreach($mobilePhoneItems as $mobilePhone)
+                        @if(!$loop->first)<span class="mobile-drawer__phone-separator" aria-hidden="true"> - </span>@endif
+                        <a class="font-bold text-primary" href="tel:{{ preg_replace('/[^0-9+]/', '', (string) $mobilePhone['number']) }}">{{ $mobilePhone['number'] }}</a>
+                    @endforeach
                     </div>
-                @endif
+                </div>
             @endif
-            @if($siteBrands->isNotEmpty())
-                <div class="mobile-menu-heading">Thương hiệu</div>
-                @foreach($siteBrands as $brand)
-                    <a class="nav-link" href="{{ route('catalog', ['brand' => $brand->slug]) }}">{{ $brand->name }}</a>
-                @endforeach
-            @endif
-        </nav>
-        <div class="mt-4 p-3 rounded-4 bg-soft">
-            <div class="small text-muted">Tư vấn mua hàng</div>
-            <a class="fw-bold text-primary" href="tel:{{ preg_replace('/[^0-9+]/', '', $website['phone']) }}">{{ $website['phone'] }}</a>
         </div>
     </div>
 </div>

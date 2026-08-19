@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasSlug
 {
+    protected ?string $slugOverride = null;
+
     /**
      * Get all of the model's slugs.
      */
@@ -39,5 +41,24 @@ trait HasSlug
         }
 
         return $this->getSlug();
+    }
+
+    public function setSlugOverride(mixed $slug): static
+    {
+        $this->slugOverride = filled($slug) ? (string) $slug : null;
+
+        return $this;
+    }
+
+    public function getSlugOverride(): ?string
+    {
+        return $this->slugOverride;
+    }
+
+    public function clearSlugOverride(): static
+    {
+        $this->slugOverride = null;
+
+        return $this;
     }
 }

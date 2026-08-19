@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Settings\MediaSettings;
+use App\Settings\UploadSettings;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -30,15 +30,15 @@ class ImageService
         'mov' => ['video/quicktime'],
     ];
 
-    protected MediaSettings $mediaSettings;
+    protected UploadSettings $uploadSettings;
 
-    public function __construct(MediaSettings $mediaSettings)
+    public function __construct(UploadSettings $uploadSettings)
     {
-        $this->mediaSettings = $mediaSettings;
+        $this->uploadSettings = $uploadSettings;
     }
 
     /**
-     * Xác thực tệp tin tải lên dựa trên cấu hình MediaSettings.
+     * Xác thực tệp tin tải lên dựa trên cấu hình UploadSettings.
      * Trả về null nếu hợp lệ, hoặc chuỗi thông báo lỗi nếu không hợp lệ.
      */
     public function validateFile(UploadedFile $file, bool $onlyImages = false): ?string
@@ -48,7 +48,7 @@ class ImageService
         }
 
         // Lấy danh sách định dạng cho phép từ cấu hình
-        $allowedStr = $this->mediaSettings->media_allowed_extensions ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx,mp4,webm,mov';
+        $allowedStr = $this->uploadSettings->media_allowed_extensions ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx,mp4,webm,mov';
         $allowedExtensions = array_values(array_intersect(
             array_map('trim', explode(',', strtolower($allowedStr))),
             self::SAFE_EXTENSIONS,
@@ -76,7 +76,7 @@ class ImageService
         }
 
         // Kiểm tra dung lượng (MB đổi sang KB)
-        $maxSizeMB = $this->mediaSettings->media_max_size ?? 10;
+        $maxSizeMB = $this->uploadSettings->media_max_size ?? 10;
         $maxSizeKB = $maxSizeMB * 1024;
         $fileSizeKB = $file->getSize() / 1024;
 
@@ -115,10 +115,10 @@ class ImageService
      */
     public function uploadAndOptimize(UploadedFile $file, string $folder, array $options = []): string
     {
-        $convertToWebp = $options['convert_to_webp'] ?? $this->mediaSettings->media_webp_conversion;
+        $convertToWebp = $options['convert_to_webp'] ?? $this->uploadSettings->media_webp_conversion;
         $width = $options['width'] ?? null;
         $height = $options['height'] ?? null;
-        $quality = $options['quality'] ?? $this->mediaSettings->media_quality ?? 100;
+        $quality = $options['quality'] ?? $this->uploadSettings->media_quality ?? 100;
 
         $originalExt = strtolower($file->getClientOriginalExtension());
         $filename = Str::random(40);

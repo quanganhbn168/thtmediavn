@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('seo_description')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_home')->default(false);
             $table->timestamps();
 
             $table->foreign('parent_id')->references('id')->on('post_categories')->onDelete('cascade');

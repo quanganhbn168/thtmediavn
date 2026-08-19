@@ -1,81 +1,74 @@
 @extends('layouts.master')
 
-@section('title', 'Liên hệ — ' . $website['name'])
+@section('title', 'Liên hệ tư vấn — ' . $website['name'])
+@section('meta_description', 'Gửi yêu cầu tư vấn dịch vụ truyền thông, sản xuất hình ảnh, sự kiện và thương hiệu tới THT Media.')
+@include('partials.frontend.structured-data', ['schema' => \App\Support\SchemaMarkup::webPage('Liên hệ tư vấn', 'Gửi yêu cầu tư vấn dịch vụ truyền thông tới THT Media.', route('contact'))])
 
 @section('content')
-<div class="breadcrumb-wrap">
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Trang chủ</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Liên hệ</li>
-            </ol>
-        </nav>
-    </div>
-</div>
 <section class="page-hero">
-    <div class="container">
-        <h1>Liên hệ {{ $website['name'] }}</h1>
-        <p>Gửi yêu cầu hợp tác, tư vấn nội dung hoặc trao đổi về dự án truyền thông.</p>
-    </div>
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8"><span class="eyebrow">Liên hệ</span><h1>Cùng làm rõ nhu cầu trước khi bắt đầu</h1><p>Chia sẻ mục tiêu, phạm vi và thời gian dự kiến. THT Media sẽ liên hệ để trao đổi hướng triển khai phù hợp.</p></div>
 </section>
+
+<x-frontend.breadcrumb :items="[['label' => 'Trang chủ', 'url' => route('home')], ['label' => 'Liên hệ']]" />
+
 <section class="section-space">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="contact-info-card">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-6 xl:gap-12 lg:grid-cols-12">
+            <div class="lg:col-span-4">
+                <aside class="contact-info-card h-full">
                     @if($siteAssets?->getFirstMediaUrl('logo_footer') ?: $siteAssets?->getFirstMediaUrl('logo'))
                         <img class="footer-logo mb-4" src="{{ $siteAssets->getFirstMediaUrl('logo_footer') ?: $siteAssets->getFirstMediaUrl('logo') }}" alt="{{ $website['name'] }}" width="310" height="92">
                     @else
-                        <div class="h3 fw-black text-white mb-4">THT MEDIA VN</div>
+                        <div class="mb-6 text-2xl font-extrabold text-white">THT MEDIA VN</div>
                     @endif
-                    <h2 class="h4 fw-bold">{{ $website['company'] }}</h2>
-                    <p class="text-white-50">Tiếp nhận tư vấn mua hàng và hỗ trợ sau bán.</p>
-                    <div class="contact-info-row"><i class="bi bi-geo-alt-fill"></i><span>{{ $website['address'] }}</span></div>
-                    <div class="contact-info-row"><i class="bi bi-telephone-fill"></i><a href="tel:{{ preg_replace('/[^0-9+]/', '', $website['phone']) }}">{{ $website['phone'] }}</a></div>
-                    <div class="contact-info-row"><i class="bi bi-envelope-fill"></i><a href="mailto:{{ $website['email'] }}">{{ $website['email'] }}</a></div>
-                    <div class="social-links mt-4">
-                        @foreach(['facebook', 'instagram', 'youtube', 'tiktok'] as $network)
-                            @if($website['social'][$network] ?? null)
-                                <a class="social-link" href="{{ $website['social'][$network] }}" target="_blank" rel="noopener" aria-label="{{ ucfirst($network) }}"><i class="bi bi-{{ $network }}"></i></a>
-                            @endif
-                        @endforeach
-                    </div>
+                    <h2 class="text-lg font-bold">{{ $website['company'] }}</h2>
+                    <p class="text-white/60">Đầu mối tiếp nhận yêu cầu tư vấn, báo giá và hợp tác truyền thông.</p>
+                    @if($website['address'])<div class="contact-info-row"><i class="fa-solid fa-location-dot"></i><span>{{ $website['address'] }}</span></div>@endif
+                    @php($contactPhones = $website['phones'] ?? [])
+                    @if(empty($contactPhones) && $website['phone'])
+                        @php($contactPhones = [['label' => 'Điện thoại', 'number' => $website['phone']]])
+                    @endif
+                    @foreach($contactPhones as $contactPhone)
+                        @if(filled($contactPhone['number'] ?? null))<div class="contact-info-row"><i class="fa-solid fa-phone"></i><span>{{ $contactPhone['label'] ?? 'Điện thoại' }}: </span><a href="tel:{{ preg_replace('/[^0-9+]/', '', (string) $contactPhone['number']) }}">{{ $contactPhone['number'] }}</a></div>@endif
+                    @endforeach
+                    @if($website['email'])<div class="contact-info-row"><i class="fa-solid fa-envelope"></i><a href="mailto:{{ $website['email'] }}">{{ $website['email'] }}</a></div>@endif
+                    @if($contactSettings?->working_hours)<div class="contact-info-row"><i class="fa-solid fa-clock"></i><span>{{ $contactSettings->working_hours }}</span></div>@endif
+                    <div class="social-links mt-4">@foreach(['facebook', 'instagram', 'youtube', 'tiktok'] as $network)@if($website['social'][$network] ?? null)<a class="social-link" href="{{ $website['social'][$network] }}" target="_blank" rel="noopener" aria-label="{{ ucfirst($network) }}"><i class="fa-brands fa-{{ $network }}"></i></a>@endif @endforeach</div>
+                </aside>
+            </div>
+            <div class="lg:col-span-8">
+                <div class="content-card consultation-card">
+                    <span class="eyebrow">Thông tin dự án</span>
+                    <h2>Chúng tôi có thể hỗ trợ gì?</h2>
+                    <p class="text-muted">Các trường về ngân sách và thời gian giúp đội ngũ chuẩn bị cuộc trao đổi sát hơn; anh/chị có thể để trống nếu chưa xác định.</p>
+                    @if(session('success'))<div class="ui-alert ui-alert--success">{{ session('success') }}</div>@endif
+                    @if($errors->any())<div class="ui-alert ui-alert--error">{{ $errors->first() }}</div>@endif
+                    @include('partials.frontend.consultation-form', ['extended' => true, 'formId' => 'contact', 'selectedServiceId' => request('service')])
                 </div>
             </div>
-            <div class="col-lg-8">
-                <div class="content-card">
-                    <h2 class="h3 fw-bold mb-4">Chúng tôi có thể hỗ trợ gì?</h2>
-                    @if(session('success'))<div class="alert alert-positive">{{ session('success') }}</div>@endif
-                    @if($errors->any())<div class="alert alert-critical">{{ $errors->first() }}</div>@endif
-                    <form class="row g-3" action="{{ route('contact.submit') }}" method="post">@csrf<input class="d-none" name="website" tabindex="-1" autocomplete="off">
-                        <div class="col-md-6"><label class="form-label" for="contactName">Họ và tên</label><input class="form-control" id="contactName" name="name" value="{{ old('name') }}" type="text" required></div>
-                        <div class="col-md-6"><label class="form-label" for="contactPhone">Số điện thoại</label><input class="form-control" id="contactPhone" name="phone" value="{{ old('phone') }}" type="tel" required></div>
-                        <div class="col-md-6"><label class="form-label" for="contactEmail">Email</label><input class="form-control" id="contactEmail" name="email" value="{{ old('email') }}" type="email" required></div>
-                        <div class="col-md-6"><label class="form-label" for="contactSubject">Chủ đề</label><select class="form-select" id="contactSubject" name="subject"><option>Tư vấn sản phẩm</option><option>Hỗ trợ đơn hàng</option><option>Đổi trả</option><option>Hợp tác kinh doanh</option></select></div>
-                        <div class="col-12"><label class="form-label" for="contactMessage">Nội dung</label><textarea class="form-control" id="contactMessage" name="message" rows="5" required>{{ old('message') }}</textarea></div>
-                        <div class="col-12"><button class="btn btn-primary px-4" type="submit"><i class="bi bi-send me-2"></i>Gửi yêu cầu</button></div>
-                    </form>
-                </div>
-            </div>
-            <div class="col-12">
-                @php($mapEmbedUrl = \App\Support\MapEmbed::url($contactSettings?->map_embed))
-                @if($mapEmbedUrl)
-                    <div class="contact-map-embed">
-                        <iframe src="{{ $mapEmbedUrl }}" title="Bản đồ vị trí {{ $website['name'] }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
-                    </div>
-                @else
-                    <div class="map-placeholder">
-                        <div class="text-center p-4">
-                            <i class="bi bi-geo-alt-fill display-4 text-primary"></i>
-                            <h2 class="h4 fw-bold mt-3">{{ $website['address'] }}</h2>
-                            <p class="text-muted mb-0">Bản đồ sẽ được hiển thị khi doanh nghiệp cung cấp liên kết vị trí chính thức.</p>
+            @if(! empty($website['branches'] ?? []))
+                <div class="lg:col-span-12">
+                    <div class="content-card">
+                        <span class="eyebrow">Hệ thống cơ sở</span>
+                        <h2>Chi nhánh</h2>
+                        <div class="grid gap-6 md:grid-cols-2">
+                            @foreach($website['branches'] as $branch)
+                                <div>
+                                    <article class="h-full rounded-2xl border border-line p-6">
+                                        <h3 class="text-base font-bold">{{ $branch['name'] }}</h3>
+                                        <div class="contact-info-row"><i class="fa-solid fa-location-dot"></i><span>{{ $branch['address'] }}</span></div>
+                                    </article>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                @endif
+                </div>
+            @endif
+            <div class="lg:col-span-12">
+                @php($mapEmbedUrl = \App\Support\MapEmbed::url($contactSettings?->map_embed))
+                @if($mapEmbedUrl)<div class="contact-map-embed"><iframe src="{{ $mapEmbedUrl }}" title="Bản đồ vị trí {{ $website['name'] }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>@endif
             </div>
         </div>
     </div>
 </section>
 @endsection
-

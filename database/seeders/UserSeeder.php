@@ -21,15 +21,20 @@ class UserSeeder extends Seeder
             return;
         }
 
-        $adminRole = Role::where('name', 'admin')->first();
-        if ($adminRole) {
+        $superAdminRole = Role::query()
+            ->where('name', 'super_admin')
+            ->where('guard_name', 'admin')
+            ->first();
+
+        if ($superAdminRole) {
             $admin = User::query()->updateOrCreate(['email' => $email], [
                 'name' => trim((string) env('ADMIN_NAME', 'Quản trị THT MEDIA VN')),
                 'password' => Hash::make($password),
                 'email_verified_at' => now(),
                 'is_active' => true,
             ]);
-            $admin->assignRole($adminRole);
+            // Tài khoản quản trị cấu hình trong env luôn có quyền super admin.
+            $admin->assignRole($superAdminRole);
         }
     }
 }

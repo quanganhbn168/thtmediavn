@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Settings\WebsiteSettings;
 use Illuminate\Database\Eloquent\Model;
 
 class Language extends Model
@@ -40,10 +41,28 @@ class Language extends Model
     {
         return cache()->remember('active_languages', 86400, function () {
             try {
-                return self::where('is_active', true)->orderBy('sort_order')->get();
+                $query = self::query()->where('is_active', true);
+
+                if (! self::multilingualEnabled()) {
+                    $query->where(function ($builder): void {
+                        $builder->where('is_default', true)
+                            ->orWhere('code', config('app.locale', 'vi'));
+                    });
+                }
+
+                return $query->orderByDesc('is_default')->orderBy('sort_order')->get();
             } catch (\Exception $e) {
                 return collect();
             }
         });
+    }
+
+    public static function multilingualEnabled(): bool
+    {
+        try {
+            return app(WebsiteSettings::class)->multilingual_enabled;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

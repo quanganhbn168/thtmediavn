@@ -11,11 +11,11 @@
     $toggleId = 'toggle_' . strtolower($model) . '_' . $field . '_' . $id . '_' . Str::random(4);
 @endphp
 
-<div class="form-check form-switch d-inline-block">
-    <input 
-        class="form-check-input toggle-field-switch cursor-pointer" 
-        type="checkbox" 
-        role="switch" 
+<div class="inline-flex items-center">
+    <input
+        class="toggle-field-switch h-5 w-9 cursor-pointer appearance-none rounded-full bg-slate-300 align-middle transition checked:bg-primary"
+        type="checkbox"
+        role="switch"
         id="{{ $toggleId }}"
         data-model="{{ $model }}"
         data-id="{{ $id }}"
@@ -23,10 +23,9 @@
         {{ $checked ? 'checked' : '' }}
         {{ $disabled ? 'disabled' : '' }}
         {{ $attributes }}
-        style="width: 2.2em; height: 1.1em;"
     >
     @if($label)
-        <label class="form-check-label ms-1 cursor-pointer font-weight-bold" for="{{ $toggleId }}">
+        <label class="ml-2 cursor-pointer font-bold" for="{{ $toggleId }}">
             {{ $label }}
         </label>
     @endif

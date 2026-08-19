@@ -10,7 +10,6 @@ enum SliderType: string
     case HomeAdvertisementLeft = 'home_ad_left';
     case HomeAdvertisementRight = 'home_ad_right';
     case HomePromotion = 'home_promotion';
-    case ProductsBanner = 'products_banner';
     case PostsBanner = 'posts_banner';
     case PromotionBanner = 'promotion_banner';
     case AboutBanner = 'about_banner';
@@ -26,7 +25,6 @@ enum SliderType: string
             self::HomeAdvertisementLeft => 'Ảnh quảng cáo trái trang chủ',
             self::HomeAdvertisementRight => 'Ảnh quảng cáo phải trang chủ',
             self::HomePromotion => 'CTA / khuyến mãi nổi bật trang chủ',
-            self::ProductsBanner => 'Banner trang sản phẩm',
             self::PostsBanner => 'Banner trang Tin tức',
             self::PromotionBanner => 'Banner chương trình khuyến mãi',
             self::AboutBanner => 'Banner trang Giới thiệu',
@@ -43,7 +41,6 @@ enum SliderType: string
             self::HomeAdvertisementLeft => 'Vị trí quảng cáo cột trái hoặc nửa trái trên trang chủ.',
             self::HomeAdvertisementRight => 'Vị trí quảng cáo cột phải hoặc nửa phải trên trang chủ.',
             self::HomePromotion => 'CTA toàn chiều rộng trên trang chủ, hỗ trợ ảnh nền, tiêu đề, phụ đề và tối đa hai nút.',
-            self::ProductsBanner => 'Ảnh banner đầu trang danh sách sản phẩm.',
             self::PostsBanner => 'Ảnh banner đầu trang danh sách Tin tức/Cẩm nang.',
             self::PromotionBanner => 'Ảnh banner dùng cho chương trình khuyến mãi.',
             self::AboutBanner => 'Ảnh banner đầu trang Giới thiệu.',

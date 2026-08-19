@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\Models\SiteAsset;
 use App\Settings\AboutSettings;
+use App\Settings\CompanySettings;
 use App\Settings\ContactSettings;
-use App\Settings\GeneralSettings;
 use App\Settings\HomepageSettings;
-use App\Settings\MediaSettings;
-use App\Settings\MenuSettings;
 use App\Settings\SeoSettings;
+use App\Settings\TrackingSettings;
+use App\Settings\UploadSettings;
+use App\Settings\WebsiteSettings;
 
 class SettingService
 {
@@ -19,36 +20,47 @@ class SettingService
         private readonly SiteChromeCache $siteChromeCache,
     ) {}
 
-    /**
-     * Cập nhật Cài đặt chung
-     */
-    public function updateGeneral(array $data, GeneralSettings $settings): void
+    public function updateCompany(array $data, CompanySettings $settings): void
+    {
+        $settings->company_name = $data['company_name'] ?? null;
+        $settings->tax_code = $data['tax_code'] ?? null;
+        $settings->save();
+
+        $this->websiteSettings->refresh();
+        $this->siteChromeCache->forget();
+    }
+
+    public function updateWebsite(array $data, WebsiteSettings $settings): void
     {
         $settings->site_status = isset($data['site_status']);
+        $settings->multilingual_enabled = isset($data['multilingual_enabled']);
         $settings->timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
         $settings->copyright = $data['copyright'] ?? [];
         $settings->site_name = $data['site_name'] ?? [];
         $settings->site_description = $data['site_description'] ?? [];
 
+        foreach (['header_menu_id', 'mega_menu_id', 'footer_menu_1_id', 'footer_menu_2_id'] as $field) {
+            $settings->{$field} = filled($data[$field] ?? null) ? (int) $data[$field] : null;
+        }
+
         $settings->save();
+        cache()->forget('active_languages');
         $this->websiteSettings->refresh();
         config(['app.timezone' => $settings->timezone]);
         config(['app.name' => $settings->site_name['vi'] ?? config('app.name')]);
         date_default_timezone_set($settings->timezone);
-        $this->syncMedia($data, ['logo', 'logo_footer', 'favicon']);
+        $this->syncMedia($data, ['logo', 'logo_footer', 'footer_background', 'favicon', 'watermark']);
         $this->siteChromeCache->forget();
     }
 
-    /**
-     * Cập nhật Thông tin liên lạc
-     */
     public function updateContact(array $data, ContactSettings $settings): void
     {
-        $settings->company_name = $data['company_name'] ?? null;
         $settings->address = $data['address'] ?? null;
-        $settings->phone = $data['phone'] ?? null;
+        $settings->phones = $this->normalizeContactPhones($data['phones'] ?? $settings->phones);
+        $settings->phone = collect($settings->phones)->firstWhere('is_primary', true)['number']
+            ?? ($settings->phones[0]['number'] ?? null);
+        $settings->branches = $this->normalizeContactBranches($data['branches'] ?? $settings->branches);
         $settings->email = $data['email'] ?? null;
-        $settings->tax_code = $data['tax_code'] ?? null;
         $settings->map_embed = $data['map_embed'] ?? null;
         $settings->working_hours = $data['working_hours'] ?? null;
 
@@ -63,15 +75,53 @@ class SettingService
         $this->siteChromeCache->forget();
     }
 
-    /**
-     * Cập nhật Cấu hình SEO
-     */
+    /** @return array<int, array{label: string, number: string, is_primary: bool}> */
+    private function normalizeContactPhones(mixed $phones): array
+    {
+        $normalized = collect(is_array($phones) ? $phones : [])
+            ->filter(fn (mixed $phone): bool => is_array($phone) && filled($phone['number'] ?? null))
+            ->map(fn (array $phone): array => [
+                'label' => trim((string) ($phone['label'] ?? '')),
+                'number' => trim((string) $phone['number']),
+                'is_primary' => (bool) ($phone['is_primary'] ?? false),
+            ])
+            ->values()
+            ->all();
+
+        if ($normalized === []) {
+            return [];
+        }
+
+        $primaryIndex = collect($normalized)->search(fn (array $phone): bool => $phone['is_primary']);
+        $primaryIndex = $primaryIndex === false ? 0 : $primaryIndex;
+
+        return collect($normalized)
+            ->map(fn (array $phone, int $index): array => [
+                ...$phone,
+                'is_primary' => $index === $primaryIndex,
+            ])
+            ->all();
+    }
+
+    /** @return array<int, array{name: string, address: string, is_active: bool}> */
+    private function normalizeContactBranches(mixed $branches): array
+    {
+        return collect(is_array($branches) ? $branches : [])
+            ->filter(fn (mixed $branch): bool => is_array($branch) && filled($branch['name'] ?? null) && filled($branch['address'] ?? null))
+            ->map(fn (array $branch): array => [
+                'name' => trim((string) $branch['name']),
+                'address' => trim((string) $branch['address']),
+                'is_active' => (bool) ($branch['is_active'] ?? true),
+            ])
+            ->values()
+            ->all();
+    }
+
     public function updateSeo(array $data, SeoSettings $settings): void
     {
         $settings->seo_title = $data['seo_title'] ?? [];
         $settings->seo_description = $data['seo_description'] ?? [];
         $settings->seo_keywords = $data['seo_keywords'] ?? [];
-        $settings->google_analytics_code = $data['google_analytics_code'] ?? null;
 
         $settings->save();
         $this->websiteSettings->refresh();
@@ -79,23 +129,43 @@ class SettingService
         $this->siteChromeCache->forget();
     }
 
-    /**
-     * Cập nhật cấu hình Trang chủ
-     */
+    public function updateTracking(array $data, TrackingSettings $settings): void
+    {
+        $settings->head_code = $data['head_code'] ?? null;
+        $settings->body_open_code = $data['body_open_code'] ?? null;
+        $settings->body_close_code = $data['body_close_code'] ?? null;
+        $settings->google_analytics_code = $data['google_analytics_code'] ?? null;
+        $settings->meta_pixel_code = $data['meta_pixel_code'] ?? null;
+
+        $settings->save();
+    }
+
     public function updateHomepage(array $data, HomepageSettings $settings): void
     {
         $settings->homepage_banner_type = 'slider';
         $settings->homepage_sections = $data['homepage_sections'] ?? [];
         $settings->homepage_section_titles = $data['homepage_section_titles'] ?? [];
+        $settings->homepage_stats = $data['homepage_stats'] ?? [];
+        $settings->homepage_about_title = $data['homepage_about_title'] ?? [];
+        $settings->homepage_about_text = $data['homepage_about_text'] ?? [];
+        $settings->homepage_about_supporting_text = $data['homepage_about_supporting_text'] ?? [];
+        $settings->homepage_intro_title = $data['homepage_intro_title'] ?? [];
+        $settings->homepage_intro_text = $data['homepage_intro_text'] ?? [];
+        $settings->homepage_reasons = $data['homepage_reasons'] ?? [];
+        $settings->homepage_process = $data['homepage_process'] ?? [];
+        $settings->homepage_capacity = $data['homepage_capacity'] ?? [];
+        $settings->homepage_consultation_title = $data['homepage_consultation_title'] ?? [];
+        $settings->homepage_consultation_text = $data['homepage_consultation_text'] ?? [];
 
         $settings->save();
+        $this->syncMedia($data, ['about_image']);
     }
 
-    /**
-     * Cập nhật cấu hình Trang giới thiệu
-     */
     public function updateAbout(array $data, AboutSettings $settings): void
     {
+        $settings->about_page_label = $data['about_page_label'] ?? [];
+        $settings->about_page_title = $data['about_page_title'] ?? [];
+        $settings->about_page_intro = $data['about_page_intro'] ?? [];
         $settings->about_story = $data['about_story'] ?? [];
         $settings->about_history = $data['about_history'] ?? [];
         $settings->about_mission = $data['about_mission'] ?? [];
@@ -103,13 +173,9 @@ class SettingService
         $settings->about_core_values = $data['about_core_values'] ?? [];
 
         $settings->save();
-        $this->syncMedia($data, ['about_image']);
     }
 
-    /**
-     * Cập nhật cấu hình Media & Banner mặc định
-     */
-    public function updateMedia(array $data, MediaSettings $settings): void
+    public function updateUpload(array $data, UploadSettings $settings): void
     {
         $settings->media_allowed_extensions = $data['media_allowed_extensions'] ?? 'jpg,jpeg,png,webp,gif,pdf,doc,docx,mp4,webm,mov';
         $settings->media_max_size = (int) ($data['media_max_size'] ?? 10);
@@ -117,18 +183,7 @@ class SettingService
         $settings->media_quality = (int) ($data['media_quality'] ?? 100);
 
         $settings->save();
-        $this->syncMedia($data, ['default_product_banner', 'default_promotion_banner', 'default_post_banner']);
-        $this->siteChromeCache->forget();
-    }
-
-    /** Cập nhật các menu được gán cho từng vị trí ngoài website. */
-    public function updateMenu(array $data, MenuSettings $settings): void
-    {
-        foreach (['header_menu_id', 'mega_menu_id', 'footer_menu_1_id', 'footer_menu_2_id'] as $field) {
-            $settings->{$field} = filled($data[$field] ?? null) ? (int) $data[$field] : null;
-        }
-
-        $settings->save();
+        $this->syncMedia($data, ['default_promotion_banner', 'default_post_banner']);
         $this->siteChromeCache->forget();
     }
 

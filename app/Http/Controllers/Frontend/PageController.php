@@ -10,11 +10,7 @@ class PageController extends FrontendController
 {
     public function show(string $slug): View
     {
-        $page = Page::query()
-            ->where('is_active', true)
-            ->where(fn (Builder $query) => $query
-                ->whereNull('published_at')
-                ->orWhere('published_at', '<=', now()))
+        $page = Page::query()->visibleOnSite()
             ->whereHas('slugs', fn (Builder $query) => $query
                 ->where('slug', $slug)
                 ->where('locale', app()->getLocale()))

@@ -29,38 +29,35 @@
     $showTabs = $translatable && $langs->count() > 1;
 @endphp
 
-<div class="mb-3">
+<div class="mb-4">
     @if($label)
-        <label for="{{ $inputId }}" class="form-label font-weight-bold">
+        <label for="{{ $inputId }}" class="ui-label">
             {{ $label }}
-            @if($required) <span class="text-danger">*</span> @endif
+            @if($required) <span class="text-red-600">*</span> @endif
         </label>
     @endif
 
     @if($translatable)
         @if($showTabs)
-            <ul class="nav nav-tabs mb-2" id="{{ $inputId }}_tabs" role="tablist">
+            <div class="mb-3 flex flex-wrap gap-2" id="{{ $inputId }}_tabs" data-language-tabs role="tablist">
                 @foreach($langs as $index => $lang)
                     @php
                         $langCode = $lang->code;
                         $tabId = $inputId . '_' . $langCode;
                         $hasError = $errors->has($name . '.' . $langCode);
                     @endphp
-                    <li class="nav-item" role="presentation">
-                    <button class="nav-link {{ $index === 0 ? 'active' : '' }} py-1 px-3" 
-                            id="{{ $tabId }}-tab" 
-                            data-bs-toggle="tab" 
-                            data-bs-target="#{{ $tabId }}" 
-                            type="button" 
-                            role="tab" 
-                            aria-controls="{{ $tabId }}" 
+                    <button class="rounded-lg border border-line px-3 py-2 text-sm font-semibold text-muted transition hover:border-primary hover:text-primary {{ $index === 0 ? 'border-primary bg-primary-soft text-primary' : 'bg-white' }}"
+                            id="{{ $tabId }}-tab"
+                            data-language-tab-toggle="{{ $tabId }}"
+                            type="button"
+                            role="tab"
+                            aria-controls="{{ $tabId }}"
                             aria-selected="{{ $index === 0 ? 'true' : 'false' }}">
-                        {{ $lang->name }} 
-                        @if($hasError)<span class="badge bg-danger rounded-circle ms-1" style="font-size: 0.6rem; padding: 0.2em 0.4em;">!</span>@endif
+                        {{ $lang->name }}
+                        @if($hasError)<span class="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-xs text-white">!</span>@endif
                     </button>
-                </li>
             @endforeach
-        </ul>
+            </div>
         @endif
         <div class="tab-content" id="{{ $inputId }}_tabContent">
             @foreach($langs as $index => $lang)
@@ -69,33 +66,33 @@
                     $tabId = $inputId . '_' . $langCode;
                     $hasError = $errors->has($name . '.' . $langCode);
                 @endphp
-                <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}" id="{{ $tabId }}" role="tabpanel" aria-labelledby="{{ $tabId }}-tab">
-                    <textarea 
-                        name="{{ $name }}[{{ $langCode }}]" 
+                <div class="{{ $index === 0 ? '' : 'hidden' }}" id="{{ $tabId }}" data-language-tab-panel role="tabpanel" aria-labelledby="{{ $tabId }}-tab">
+                    <textarea
+                        name="{{ $name }}[{{ $langCode }}]"
                         id="{{ $tabId }}_field"
                         rows="{{ $rows }}"
-                        class="form-control {{ $hasError ? 'is-invalid' : '' }}" 
+                        class="ui-input {{ $hasError ? 'border-red-500' : '' }}"
                         placeholder="{{ $placeholder ?: 'Nhập ' . strtolower($label) . ' (' . $lang->name . ')...' }}"
                         {{ $attributes }}
                     >{{ old($name . '.' . $langCode, $translations[$langCode] ?? '') }}</textarea>
                     @error($name . '.' . $langCode)
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="ui-error">{{ $message }}</div>
                     @enderror
                 </div>
             @endforeach
         </div>
     @else
-        <textarea 
-            name="{{ $name }}" 
+        <textarea
+            name="{{ $name }}"
             id="{{ $inputId }}"
             rows="{{ $rows }}"
-            class="form-control @error($name) is-invalid @enderror" 
+            class="ui-input @error($name) border-red-500 @enderror"
             placeholder="{{ $placeholder ?: ($label ? 'Nhập ' . strtolower($label) . '...' : '') }}"
             {{ $required ? 'required' : '' }}
             {{ $attributes }}
         >{{ old($name, $value) }}</textarea>
         @error($name)
-            <div class="invalid-feedback">{{ $message }}</div>
+            <div class="ui-error">{{ $message }}</div>
         @enderror
     @endif
 </div>

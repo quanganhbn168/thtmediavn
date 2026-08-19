@@ -13,11 +13,26 @@ class SlugObserver
      */
     public function saving(Model $model): void
     {
-        if (!method_exists($model, 'getSlugSourceKey') || $model->getSlugSourceKey() !== 'slug') {
+        if (! method_exists($model, 'getSlugSourceKey')) {
             return;
         }
 
-        $value = $model->getAttribute('slug') ?: $model->getAttribute('name');
+        $sourceField = $model->getSlugSourceKey();
+        $hasPhysicalSlug = array_key_exists('slug', $model->getAttributes());
+
+        if ($sourceField !== 'slug' && ! $hasPhysicalSlug) {
+            return;
+        }
+
+        $physicalSlug = $model->getAttribute('slug');
+
+        $value = $hasPhysicalSlug && filled($physicalSlug)
+            ? $physicalSlug
+            : ($sourceField === 'slug'
+            ? ($model->getAttribute('slug') ?: $model->getAttribute('name'))
+            : (method_exists($model, 'getTranslation')
+                ? $model->getTranslation($sourceField, app()->getLocale())
+                : $model->getAttribute($sourceField)));
         $slug = Str::slug((string) $value);
         if ($slug === '') {
             return;
@@ -34,14 +49,17 @@ class SlugObserver
      */
     public function saved(Model $model): void
     {
-        $sourceField = method_exists($model, 'getSlugSourceKey') 
-            ? $model->getSlugSourceKey() 
+        $sourceField = method_exists($model, 'getSlugSourceKey')
+            ? $model->getSlugSourceKey()
             : ($model->slugSource ?? 'name');
 
         // Kiểm tra xem model có sử dụng Spatie Translatable không
         if (method_exists($model, 'getTranslations')) {
             $translations = $model->getTranslations($sourceField) ?: [];
-            
+            $slugOverride = method_exists($model, 'getSlugOverride')
+                ? $model->getSlugOverride()
+                : null;
+
             // Lấy danh sách locale hiện có của slug trong DB để so sánh
             $existingSlugs = $model->slugs()->pluck('id', 'locale')->toArray();
             $processedLocales = [];
@@ -51,7 +69,11 @@ class SlugObserver
                     continue;
                 }
 
-                $slugText = Str::slug($value);
+                $slugText = Str::slug(
+                    $locale === app()->getLocale() && filled($slugOverride)
+                        ? $slugOverride
+                        : $value,
+                );
                 if (empty($slugText)) {
                     continue;
                 }
@@ -79,7 +101,7 @@ class SlugObserver
         } else {
             // Trường hợp không đa ngôn ngữ, lấy giá trị đơn
             $value = $model->getAttribute($sourceField);
-            if (!empty($value)) {
+            if (! empty($value)) {
                 $slugText = Str::slug($value);
                 $locale = app()->getLocale();
                 $finalSlug = $this->makeUniqueSlug($slugText, $model, $locale);
@@ -89,6 +111,10 @@ class SlugObserver
                     ['slug' => $finalSlug]
                 );
             }
+        }
+
+        if (method_exists($model, 'clearSlugOverride')) {
+            $model->clearSlugOverride();
         }
     }
 
@@ -116,12 +142,12 @@ class SlugObserver
             if ($model->exists) {
                 $query->where(function ($q) use ($model) {
                     $q->where('sluggable_type', '!=', $model->getMorphClass())
-                      ->orWhere('sluggable_id', '!=', $model->getKey());
+                        ->orWhere('sluggable_id', '!=', $model->getKey());
                 });
             }
 
             $physicalSlugExists = false;
-            if (method_exists($model, 'getSlugSourceKey') && $model->getSlugSourceKey() === 'slug') {
+            if (array_key_exists('slug', $model->getAttributes())) {
                 $physicalQuery = $model->newQueryWithoutScopes()->where('slug', $slug);
                 if ($model->exists) {
                     $physicalQuery->whereKeyNot($model->getKey());
@@ -129,11 +155,11 @@ class SlugObserver
                 $physicalSlugExists = $physicalQuery->exists();
             }
 
-            if (!$query->exists() && !$physicalSlugExists) {
+            if (! $query->exists() && ! $physicalSlugExists) {
                 return $slug;
             }
 
-            $slug = $originalSlug . '-' . $count;
+            $slug = $originalSlug.'-'.$count;
             $count++;
         }
     }

@@ -6,7 +6,7 @@ use App\Models\Menu;
 use App\Services\SettingService;
 use App\Services\SiteChromeCache;
 use App\Services\WebsiteSettingsService;
-use App\Settings\MenuSettings;
+use App\Settings\WebsiteSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -45,7 +45,10 @@ class SiteChromeCacheTest extends TestCase
         $this->assertFalse(Cache::has(SiteChromeCache::KEY));
 
         $chromeCache->get();
-        app(SettingService::class)->updateMenu([], app(MenuSettings::class));
+        app(SettingService::class)->updateWebsite([
+            'timezone' => 'Asia/Ho_Chi_Minh',
+            'site_name' => ['vi' => 'THT MEDIA VN'],
+        ], app(WebsiteSettings::class));
 
         $this->assertFalse(Cache::has(SiteChromeCache::KEY));
 

@@ -60,6 +60,8 @@ class PostService
     public function create(array $data): Post
     {
         $post = new Post;
+        $post->setSlugOverride($data['slug'] ?? null);
+        $post->image_id = $data['image_id'] ?? null;
         $post->post_category_id = $data['post_category_id'];
         $post->name = $data['name'] ?? [];
         $post->summary = $data['summary'] ?? [];
@@ -72,7 +74,9 @@ class PostService
         $post->published_at = $data['published_at'] ?? now();
         $post->save();
 
-        $this->mediaService->syncSingle($post, 'post_image', $data['image'] ?? null);
+        if (array_key_exists('image', $data)) {
+            $this->mediaService->syncSingle($post, 'post_image', $data['image'] ?? null);
+        }
 
         return $post;
     }
@@ -82,6 +86,8 @@ class PostService
      */
     public function update(Post $post, array $data): void
     {
+        $post->setSlugOverride($data['slug'] ?? null);
+        $post->image_id = $data['image_id'] ?? null;
         $post->post_category_id = $data['post_category_id'];
         $post->name = $data['name'] ?? [];
         $post->summary = $data['summary'] ?? [];
@@ -94,12 +100,14 @@ class PostService
         $post->published_at = $data['published_at'] ?? null;
         $post->save();
 
-        $this->mediaService->syncSingle(
-            $post,
-            'post_image',
-            $data['image'] ?? null,
-            (bool) ($data['image_remove'] ?? false),
-        );
+        if (array_key_exists('image', $data)) {
+            $this->mediaService->syncSingle(
+                $post,
+                'post_image',
+                $data['image'] ?? null,
+                (bool) ($data['image_remove'] ?? false),
+            );
+        }
     }
 
     /**
