@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\PostCategory;
+use App\Models\PricingPlan;
 use App\Models\Service;
 use App\Models\CompanyContent;
 use App\Settings\CompanySettings;
@@ -66,6 +67,25 @@ class ThtMediaFoundationTest extends TestCase
         $this->seed();
 
         $this->get(route('home'))->assertOk()->assertSee('THT MEDIA VN');
+    }
+
+    public function test_pricing_plan_supports_normalized_starting_price_with_unit(): void
+    {
+        $this->seed();
+
+        $profilePlan = PricingPlan::query()->where('name', 'Profile doanh nghiệp')->firstOrFail();
+
+        $this->assertSame('Từ 250.000đ/trang', $profilePlan->display_price);
+        $this->assertTrue($profilePlan->is_price_from);
+        $this->assertSame('250000.00', $profilePlan->price_amount);
+        $this->assertSame('trang', $profilePlan->price_unit);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Từ 250.000đ/trang');
+        $this->get(route('pricing'))
+            ->assertOk()
+            ->assertSee('Từ 250.000đ/trang');
     }
 
     public function test_about_page_renders_company_content_records(): void

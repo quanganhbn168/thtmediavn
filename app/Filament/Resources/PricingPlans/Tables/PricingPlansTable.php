@@ -20,7 +20,9 @@ class PricingPlansTable
         return $table
             ->columns([
                 TextColumn::make('name')->label('Tên gói')->searchable()->sortable(),
-                TextColumn::make('price')->label('Mức giá')->placeholder('Liên hệ'),
+                TextColumn::make('display_price')
+                    ->label('Mức giá')
+                    ->getStateUsing(fn (PricingPlan $record): string => $record->display_price),
                 ToggleColumn::make('is_featured')->label('Nổi bật'),
                 ToggleColumn::make('is_active')->label('Hiển thị'),
                 TextColumn::make('sort_order')->label('Thứ tự')->numeric()->sortable(),

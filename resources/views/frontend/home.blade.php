@@ -91,8 +91,8 @@
                                     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                                         <div class="grid items-center gap-12 lg:grid-cols-12">
                                             <div class="lg:col-span-8">
-                                                @if($slideTitle !== '')<h2>{{ $slideTitle }}</h2>@endif
-                                                @if($slideSubtitle !== '')<p class="home-hero__lead">{{ $slideSubtitle }}</p>@endif
+                                                @if($slideTitle !== '')<h2 class="font-display text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">{{ $slideTitle }}</h2>@endif
+                                                @if($slideSubtitle !== '')<p class="home-hero__lead text-base leading-relaxed text-white/80 sm:text-lg">{{ $slideSubtitle }}</p>@endif
                                                 @if(($buttonOneText !== '' && $buttonOneLink !== '') || ($buttonTwoText !== '' && $buttonTwoLink !== ''))
                                                     <div class="flex flex-wrap gap-3">
                                                         @if($buttonOneText !== '' && $buttonOneLink !== '')<a class="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-transparent bg-secondary px-6 py-4 text-base font-bold leading-tight text-white shadow-sm transition duration-200 hover:-translate-y-px hover:bg-orange-700 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary max-md:min-h-10 max-md:px-4 max-md:py-2 max-md:text-xs" href="{{ $buttonOneLink }}">{{ $buttonOneText }} <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i></a>@endif
@@ -121,8 +121,8 @@
                 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="grid items-center gap-12 lg:grid-cols-12">
                         <div class="lg:col-span-8" data-aos="fade-up">
-                            <h2>Biến mục tiêu truyền thông thành sản phẩm có thể triển khai.</h2>
-                            <p class="home-hero__lead">Từ chiến lược, hình ảnh đến video và sự kiện, THT Media giúp doanh nghiệp có một đội ngũ đồng hành xuyên suốt.</p>
+                            <h2 class="font-display text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">Biến mục tiêu truyền thông thành sản phẩm có thể triển khai.</h2>
+                            <p class="home-hero__lead text-base leading-relaxed text-white/80 sm:text-lg">Từ chiến lược, hình ảnh đến video và sự kiện, THT Media giúp doanh nghiệp có một đội ngũ đồng hành xuyên suốt.</p>
                             <div class="flex flex-wrap gap-3">
                                 <a class="inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-white/60 bg-transparent px-6 py-4 text-base font-bold leading-tight text-white shadow-sm transition duration-200 hover:-translate-y-px hover:border-white hover:bg-white hover:text-ink hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-md:min-h-10 max-md:px-4 max-md:py-2 max-md:text-xs glightbox" href="https://www.youtube.com/watch?v=aqz-KE-bpKQ" data-type="video">Xem showreel <i class="fa-solid fa-circle-play ml-2"></i></a>
                             </div>
@@ -198,19 +198,43 @@
                 <div><span class="section-eyebrow">Hệ sinh thái</span><h2 class="section-title section-title--small">Dịch vụ truyền thông - media toàn diện</h2></div>
                 <a class="home-link" href="{{ route('services.index') }}">Xem tất cả dịch vụ <i class="fa-solid fa-arrow-right"></i></a>
             </div>
-            <div class="home-service-bento">
-                <article class="home-service-bento__card home-service-bento__card--featured" data-aos="fade-up">
-                    <div class="home-service-bento__visual"><img src="{{ asset('assets/images/home-demo/factory.jpg') }}" alt="Sản xuất Video & Phim" loading="lazy"></div>
-                    <div class="home-service-bento__body"><span class="home-service-bento__number">01</span><h3>Sản xuất Video &amp; Phim</h3><p>Biến câu chuyện thương hiệu, sản phẩm và sự kiện thành nội dung có sức lan tỏa.</p><ul><li>Phim doanh nghiệp &amp; thương hiệu</li><li>TVC, video quảng cáo &amp; short video</li><li>Video sự kiện, TikTok và livestream</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Khám phá nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div>
-                </article>
-                <article class="home-service-bento__card" data-aos="fade-up" data-aos-delay="80"><div class="home-service-bento__body"><span class="home-service-bento__number">02</span><h3>Thiết kế Profile &amp; Đồ họa</h3><p>Hệ nhận diện và ấn phẩm giúp thương hiệu xuất hiện nhất quán.</p><ul><li>Profile doanh nghiệp</li><li>Logo, banner, catalogue, menu</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-                <article class="home-service-bento__card" data-aos="fade-up" data-aos-delay="160"><div class="home-service-bento__body"><span class="home-service-bento__number">03</span><h3>Nhiếp ảnh thương mại</h3><p>Bộ ảnh profile, sản phẩm, không gian và ẩm thực sẵn sàng để sử dụng.</p><ul><li>Profile lãnh đạo &amp; doanh nghiệp</li><li>Sản phẩm, food &amp; lookbook</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-                <article class="home-service-bento__card" data-aos="fade-up" data-aos-delay="240"><div class="home-service-bento__body"><span class="home-service-bento__number">04</span><h3>Website &amp; SEO</h3><p>Nền tảng số hiện đại, dễ quản trị và được tối ưu để được tìm thấy.</p><ul><li>Website chuẩn SEO, UX/UI</li><li>SEO Web &amp; nội dung tìm kiếm</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-                <article class="home-service-bento__card" data-aos="fade-up" data-aos-delay="320"><div class="home-service-bento__body"><span class="home-service-bento__number">05</span><h3>Marketing thuê ngoài</h3><p>Một đầu mối cho chiến lược, nội dung, kênh truyền thông và quảng cáo.</p><ul><li>Nghiên cứu &amp; định hướng</li><li>Content, quản trị kênh &amp; Digital Ads</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-                <article class="home-service-bento__card home-service-bento__card--wide" data-aos="fade-up" data-aos-delay="400"><div class="home-service-bento__body"><span class="home-service-bento__number">06</span><h3>Tổ chức sự kiện trọn gói</h3><p>Từ ý tưởng, kịch bản đến thiết bị và nhân sự tại hiện trường.</p><ul><li>Sự kiện doanh nghiệp, cá nhân &amp; tổ chức</li><li>Concept, kịch bản, thiết bị &amp; nhân sự</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-                <article class="home-service-bento__card" data-aos="fade-up" data-aos-delay="480"><div class="home-service-bento__body"><span class="home-service-bento__number">07</span><h3>Đào tạo khóa học</h3><p>Học nhiếp ảnh, hậu kỳ và tư duy tạo nội dung theo hướng thực chiến.</p><ul><li>Nhiếp ảnh cơ bản &amp; thương mại</li><li>Photoshop, Lightroom &amp; hậu kỳ</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-                <article class="home-service-bento__card" data-aos="fade-up" data-aos-delay="560"><div class="home-service-bento__body"><span class="home-service-bento__number">08</span><h3>Media sự kiện &amp; đời sống</h3><p>Lưu giữ những khoảnh khắc đáng nhớ bằng hình ảnh và video chỉn chu.</p><ul><li>Gala, hội thảo, khai trương</li><li>Cưới hỏi, kỷ yếu &amp; livestream</li></ul><a class="home-service-bento__link" href="{{ route('services.index') }}">Xem nhóm dịch vụ <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a></div></article>
-            </div>
+            @if($homeServiceCategories->isNotEmpty())
+                <div class="home-service-bento">
+                    @foreach($homeServiceCategories as $category)
+                        @php
+                            $categoryName = $category->getTranslation('name', 'vi');
+                            $categorySlug = $category->getSlug('vi');
+                            $categoryUrl = $categorySlug ? route('services.show', ['slug' => $categorySlug]) : route('services.index');
+                            $categoryDescription = trim(strip_tags((string) $category->getTranslation('description', 'vi')));
+                            $categoryServices = $category->services
+                                ->map(fn ($service): string => $service->getTranslation('name', 'vi'))
+                                ->filter()
+                                ->take(3);
+                            $categoryImage = $category->services->first()?->thumbnail?->url
+                                ?: $category->services->first()?->getFirstMediaUrl('thumbnail')
+                                ?: asset('assets/images/home-demo/factory.jpg');
+                            $cardClass = 'home-service-bento__card'.($loop->first ? ' home-service-bento__card--featured' : '').($loop->index === 5 ? ' home-service-bento__card--wide' : '');
+                        @endphp
+                        <article class="{{ $cardClass }}" data-aos="fade-up" @if($loop->index > 0) data-aos-delay="{{ min($loop->index * 80, 240) }}" @endif>
+                            @if($loop->first)
+                                <div class="home-service-bento__visual"><img src="{{ $categoryImage }}" alt="{{ $categoryName }}" loading="lazy"></div>
+                            @endif
+                            <div class="home-service-bento__body">
+                                <h3><a href="{{ $categoryUrl }}">{{ $categoryName }}</a></h3>
+                                @if($categoryDescription)<p>{{ $categoryDescription }}</p>@endif
+                                @if($categoryServices->isNotEmpty())
+                                    <ul>
+                                        @foreach($categoryServices as $serviceName)
+                                            <li>{{ $serviceName }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                                <a class="home-service-bento__link" href="{{ $categoryUrl }}">Xem danh mục <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </section>
 
@@ -367,7 +391,7 @@
             <div class="section-heading-row" data-aos="fade-up"><div><span class="section-eyebrow">Bảng giá</span><h2 class="section-title section-title--small">Chọn gói phù hợp với mục tiêu triển khai.</h2></div><a class="home-link" href="{{ route('pricing') }}">Xem bảng giá <i class="fa-solid fa-arrow-right"></i></a></div>
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                 @forelse($pricingPlans as $index => $plan)
-                    <div><article id="pricing-plan-{{ $plan->id }}" class="home-pricing-card {{ $plan->is_featured ? 'home-pricing-card--featured' : '' }}" data-aos="fade-up" @if($index > 0) data-aos-delay="{{ min($index * 80, 240) }}" @endif><h3>{{ $plan->name }}</h3>@if($plan->summary)<p>{{ $plan->summary }}</p>@endif<div class="home-pricing-card__price">{{ $plan->price ?: 'Liên hệ' }}</div>@if($plan->price_note)<small class="home-pricing-card__price-note">{{ $plan->price_note }}</small>@endif<ul>@foreach($plan->features ?? [] as $feature)<li>{{ $feature }}</li>@endforeach</ul><a class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-secondary bg-transparent px-5 py-3 text-sm font-bold leading-tight text-secondary shadow-sm transition duration-200 hover:-translate-y-px hover:bg-secondary hover:text-white hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary" href="{{ route('pricing') }}#pricing-plan-{{ $plan->id }}">Xem chi tiết <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></article></div>
+                    <div><article id="pricing-plan-{{ $plan->id }}" class="home-pricing-card {{ $plan->is_featured ? 'home-pricing-card--featured' : '' }}" data-aos="fade-up" @if($index > 0) data-aos-delay="{{ min($index * 80, 240) }}" @endif><h3>{{ $plan->name }}</h3>@if($plan->summary)<p>{{ $plan->summary }}</p>@endif<div class="home-pricing-card__price">{{ $plan->display_price }}</div>@if($plan->price_note)<small class="home-pricing-card__price-note">{{ $plan->price_note }}</small>@endif<ul>@foreach($plan->features ?? [] as $feature)<li>{{ $feature }}</li>@endforeach</ul><a class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-secondary bg-transparent px-5 py-3 text-sm font-bold leading-tight text-secondary shadow-sm transition duration-200 hover:-translate-y-px hover:bg-secondary hover:text-white hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary" href="{{ route('pricing') }}#pricing-plan-{{ $plan->id }}">Xem chi tiết <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></article></div>
                 @empty
                     <div class="md:col-span-2 xl:col-span-4"><div class="empty-state"><i class="fa-solid fa-tags" aria-hidden="true"></i><h3>Bảng giá đang được cập nhật</h3><p>Các gói dịch vụ sẽ được quản lý và hiển thị tại trang bảng giá.</p><a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-primary px-5 py-3 text-sm font-bold leading-tight text-white" href="{{ route('pricing') }}">Mở trang bảng giá</a></div></div>
                 @endforelse

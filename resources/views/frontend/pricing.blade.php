@@ -35,7 +35,7 @@
                         @if($plan->summary)<p>{{ $plan->summary }}</p>@endif
                         <ul>@foreach($plan->features ?? [] as $feature)<li>{{ $feature }}</li>@endforeach</ul>
                     </div>
-                    <div class="pricing-plan-card__aside"><strong>{{ $plan->price ?: 'Liên hệ' }}</strong>@if($plan->price_note)<span>{{ $plan->price_note }}</span>@endif<a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-primary px-5 py-3 text-sm font-bold leading-tight text-white transition hover:bg-primary-hover" href="{{ route('contact') }}">Trao đổi gói này <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></div>
+                    <div class="pricing-plan-card__aside"><strong>{{ $plan->display_price }}</strong>@if($plan->price_note)<span>{{ $plan->price_note }}</span>@endif<a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-primary px-5 py-3 text-sm font-bold leading-tight text-white transition hover:bg-primary-hover" href="{{ route('contact') }}">Trao đổi gói này <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></div>
                 </article>
             @empty
                 <div class="empty-state"><i class="fa-solid fa-tags" aria-hidden="true"></i><h2>Bảng giá đang được cập nhật</h2><p>Vui lòng liên hệ để nhận phương án phù hợp.</p><a class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-transparent bg-primary px-5 py-3 text-sm font-bold leading-tight text-white" href="{{ route('contact') }}">Liên hệ tư vấn</a></div>

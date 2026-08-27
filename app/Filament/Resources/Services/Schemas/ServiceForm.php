@@ -141,7 +141,7 @@ class ServiceForm
                                         ->orderBy('sort_order')
                                         ->get()
                                         ->mapWithKeys(fn (PricingPlan $plan): array => [
-                                            $plan->getKey() => $plan->name.($plan->is_active ? '' : ' (đang ẩn)'),
+                                            $plan->getKey() => $plan->name.' — '.$plan->display_price.($plan->is_active ? '' : ' (đang ẩn)'),
                                         ])
                                         ->all())
                                     ->multiple()

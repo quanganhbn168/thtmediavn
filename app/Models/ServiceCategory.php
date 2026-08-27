@@ -13,7 +13,7 @@ class ServiceCategory extends Model
     use HasSlug, HasTranslations;
 
     protected $fillable = [
-        'parent_id', 'name', 'description', 'seo_title', 'seo_description', 'sort_order', 'is_active',
+        'parent_id', 'name', 'description', 'seo_title', 'seo_description', 'sort_order', 'is_active', 'is_home',
     ];
 
     public array $translatable = ['name', 'description', 'seo_title', 'seo_description'];
@@ -22,6 +22,7 @@ class ServiceCategory extends Model
     {
         return [
             'is_active' => 'boolean',
+            'is_home' => 'boolean',
             'sort_order' => 'integer',
         ];
     }

@@ -178,6 +178,7 @@ HTML];
                     'name' => ['vi' => $name],
                     'sort_order' => array_search($sortOrder, array_keys(Service::GROUPS), true) * 10,
                     'is_active' => true,
+                    'is_home' => true,
                 ],
             );
         }

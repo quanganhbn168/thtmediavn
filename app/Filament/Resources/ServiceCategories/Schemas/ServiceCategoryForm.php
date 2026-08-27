@@ -51,7 +51,17 @@ class ServiceCategoryForm
                     Textarea::make('seo_description.vi')->label('SEO description')->rows(3)->columnSpanFull(),
                 ])
                 ->columns(2),
-            Toggle::make('is_active')->label('Đang hiển thị')->default(true),
+            Section::make('Hiển thị')
+                ->icon('heroicon-o-adjustments-horizontal')
+                ->schema([
+                    Toggle::make('is_active')
+                        ->label('Đang hiển thị')
+                        ->default(true),
+                    Toggle::make('is_home')
+                        ->label('Hiển thị trên trang chủ')
+                        ->default(false),
+                ])
+                ->columns(2),
         ]);
     }
 }

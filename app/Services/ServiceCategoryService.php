@@ -38,6 +38,7 @@ class ServiceCategoryService
             'seo_description' => $data['seo_description'] ?? [],
             'sort_order' => (int) ($data['sort_order'] ?? 0),
             'is_active' => (bool) ($data['is_active'] ?? true),
+            'is_home' => (bool) ($data['is_home'] ?? false),
         ];
     }
 }

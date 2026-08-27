@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Contact;
 use App\Models\Project;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,6 +28,8 @@ class ThtMediaPortfolioTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('Dịch vụ truyền thông - media toàn diện')
+            ->assertSee('home-service-bento__card--featured', false)
+            ->assertSee('home-service-bento__visual', false)
             ->assertSee('Gửi yêu cầu tư vấn');
         $this->assertSame($outputBufferLevel, ob_get_level(), 'Trang chủ để lại output buffer chưa đóng.');
 
@@ -94,6 +97,30 @@ class ThtMediaPortfolioTest extends TestCase
         $this->assertSame('Công ty Minh Anh', $lead->company);
         $this->assertSame('30–80 triệu', $lead->budget);
         $this->assertSame('new', $lead->status);
+    }
+
+    public function test_homepage_only_uses_active_service_categories_marked_for_homepage(): void
+    {
+        $this->seed();
+
+        $homeCategory = ServiceCategory::query()->where('is_active', true)->where('is_home', true)->firstOrFail();
+        $activeOnlyCategory = ServiceCategory::query()->create([
+            'name' => ['vi' => 'Danh mục chỉ hiển thị trong trang dịch vụ'],
+            'is_active' => true,
+            'is_home' => false,
+        ]);
+        $inactiveHomeCategory = ServiceCategory::query()->create([
+            'name' => ['vi' => 'Danh mục đã tắt trên toàn website'],
+            'is_active' => false,
+            'is_home' => true,
+        ]);
+
+        $response = $this->get(route('home'))->assertOk();
+        $homeCategoryIds = $response->viewData('homeServiceCategories')->modelKeys();
+
+        $this->assertContains($homeCategory->id, $homeCategoryIds);
+        $this->assertNotContains($activeOnlyCategory->id, $homeCategoryIds);
+        $this->assertNotContains($inactiveHomeCategory->id, $homeCategoryIds);
     }
 
 }

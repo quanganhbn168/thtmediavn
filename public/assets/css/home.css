@@ -28,11 +28,11 @@
     gap: 1rem;
     margin-bottom: 1.25rem;
     color: var(--primary-color);
-    font-size: clamp(1.35rem, 2vw, 1.85rem);
-    font-weight: 700;
-    letter-spacing: .01em;
+    font-size: clamp(1.55rem, 2.6vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: .035em;
     line-height: 1.05;
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 .home-page .section-eyebrow::before {
@@ -59,7 +59,7 @@
 }
 
 .home-page .section-title--small {
-    font-size: clamp(1.8rem, 3vw, 3rem);
+    font-size: clamp(1.3rem, 2.1vw, 1.9rem);
 }
 
 .home-page .section-lead {
@@ -117,7 +117,6 @@
 .home-hero {
     position: relative;
     overflow: hidden;
-    color: #fff;
     background: var(--dark-color);
 }
 
@@ -136,7 +135,9 @@
 }
 
 .home-hero__media::after {
-    background: linear-gradient(90deg, rgb(31 43 37 / .94), rgb(31 43 37 / .68) 52%, rgb(31 43 37 / .18));
+    right: auto;
+    width: min(70%, 62rem);
+    background: linear-gradient(90deg, rgb(31 43 37 / .68), rgb(31 43 37 / .28) 62%, transparent 100%);
     content: "";
 }
 
@@ -169,19 +170,11 @@
 .home-hero h2 {
     max-width: 760px;
     margin: 0;
-    color: #fff;
-    font-size: clamp(1.8rem, 3vw, 3rem);
-    font-weight: 500;
-    letter-spacing: -.045em;
-    line-height: 1.08;
 }
 
 .home-hero__lead {
     max-width: 600px;
     margin: 1.5rem 0 2rem;
-    color: rgb(255 255 255 / .78);
-    font-size: clamp(1rem, 1.4vw, 1.2rem);
-    line-height: 1.8;
 }
 
 .home-hero__content,
@@ -1410,7 +1403,7 @@
 .home-contact--plain .home-contact__intro .section-eyebrow {
     margin-bottom: 1.5rem;
     color: var(--dark-color);
-    font-size: clamp(1.45rem, 2.2vw, 2rem);
+    font-size: clamp(1.55rem, 2.6vw, 2.2rem);
 }
 
 .home-contact__heading {
@@ -1595,9 +1588,9 @@
         aspect-ratio: auto;
     }
 
-    .home-hero h1,
-    .home-hero h2 {
-        font-size: clamp(1.35rem, 6.5vw, 1.9rem);
+    .home-hero__media::after {
+        width: 100%;
+        background: linear-gradient(90deg, rgb(31 43 37 / .58), rgb(31 43 37 / .22) 62%, transparent 100%);
     }
 
     .home-proof {

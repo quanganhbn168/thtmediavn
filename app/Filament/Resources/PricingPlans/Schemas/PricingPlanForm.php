@@ -20,9 +20,16 @@ class PricingPlanForm
                         ->label('Tên gói')
                         ->required()
                         ->maxLength(160),
-                    TextInput::make('price')
-                        ->label('Mức giá hiển thị')
-                        ->placeholder('Liên hệ'),
+                    TextInput::make('price_amount')
+                        ->label('Giá cơ sở')
+                        ->numeric()
+                        ->minValue(0)
+                        ->prefix('₫')
+                        ->helperText('Nhập số tiền, ví dụ 250000. Để trống nếu cần liên hệ.'),
+                    TextInput::make('price_unit')
+                        ->label('Đơn vị tính')
+                        ->maxLength(80)
+                        ->placeholder('trang, gói, tháng'),
                     Textarea::make('summary')
                         ->label('Mô tả ngắn')
                         ->rows(3)
@@ -50,11 +57,14 @@ class PricingPlanForm
                         ->required(),
                     Toggle::make('is_featured')
                         ->label('Gói nổi bật'),
+                    Toggle::make('is_price_from')
+                        ->label('Hiển thị “Từ”')
+                        ->helperText('Dùng cho giá khởi điểm hoặc đơn giá tham khảo.'),
                     Toggle::make('is_active')
                         ->label('Đang hiển thị')
                         ->default(true),
                 ])
-                ->columns(3),
+                ->columns(4),
         ]);
     }
 }

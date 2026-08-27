@@ -6,6 +6,7 @@ use App\Enums\SliderType;
 use App\Models\Client;
 use App\Models\PricingPlan;
 use App\Models\Project;
+use App\Models\ServiceCategory;
 use App\Models\SiteAsset;
 use App\Models\Slider;
 use App\Models\Testimonial;
@@ -53,6 +54,17 @@ class HomeController extends FrontendController
         $homepageAboutText = trim((string) data_get($homepageSettings?->homepage_about_text, 'vi', 'THT Media xây dựng một hệ sinh thái sản xuất truyền thông thực tế cho doanh nghiệp, tổ chức và thương hiệu cá nhân.'));
         $homepageAboutSupportingText = trim((string) data_get($homepageSettings?->homepage_about_supporting_text, 'vi', 'Nhân sự in-house, thiết bị chủ động và quy trình rõ ràng giúp mỗi brief được chuyển thành nội dung có thể sử dụng ngay.'));
         $homepageAboutImage = $siteAssets?->getFirstMediaUrl('about_image') ?: asset('assets/images/home-demo/team.jpg');
+        $homeServiceCategories = ServiceCategory::query()
+            ->where('is_active', true)
+            ->where('is_home', true)
+            ->with(['services' => fn ($query) => $query
+                ->where('is_active', true)
+                ->with('thumbnail')
+                ->orderBy('sort_order')
+                ->orderBy('id')])
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
         $heroSlider = Slider::activeFor(SliderType::HomepageHero);
         $homeProjects = Project::query()
             ->visibleOnSite()
@@ -132,6 +144,7 @@ class HomeController extends FrontendController
             'homepageAboutText' => $homepageAboutText,
             'homepageAboutSupportingText' => $homepageAboutSupportingText,
             'homepageAboutImage' => $homepageAboutImage,
+            'homeServiceCategories' => $homeServiceCategories,
             'homepageTitle' => $homepageTitle,
             'homepageDescription' => $homepageDescription,
             'homepageSchema' => SchemaMarkup::homepage(
