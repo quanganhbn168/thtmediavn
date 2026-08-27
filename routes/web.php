@@ -2,7 +2,27 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Frontend;
+use App\Models\SiteAsset;
+use App\Support\Branding\FaviconService;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+
+Route::get('/favicon.ico', function (FaviconService $favicons) {
+    $favicon = Schema::hasTable('site_assets')
+        ? SiteAsset::current()->getFirstMedia('favicon')
+        : null;
+
+    try {
+        $path = $favicons->primaryPath($favicon);
+    } catch (RuntimeException) {
+        abort(404);
+    }
+
+    return response()->file($path, [
+        'Content-Type' => $favicons->primaryMimeType($favicon),
+        'Cache-Control' => 'public, max-age=604800',
+    ]);
+})->name('favicon');
 
 Route::get('/', [Frontend\HomeController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', [Frontend\SeoController::class, 'sitemap'])->name('sitemap');

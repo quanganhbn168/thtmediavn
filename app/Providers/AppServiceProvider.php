@@ -4,9 +4,9 @@ namespace App\Providers;
 
 use App\Models\Menu;
 use App\Models\MenuItem;
-use App\Models\SiteAsset;
 use App\Models\Service;
 use App\Models\ServiceCategory;
+use App\Models\SiteAsset;
 use App\Models\User;
 use App\Services\PopupService;
 use App\Services\SiteChromeCache;
@@ -17,6 +17,7 @@ use App\Settings\HomepageSettings;
 use App\Settings\SeoSettings;
 use App\Settings\TrackingSettings;
 use App\Settings\WebsiteSettings;
+use App\Support\Branding\FaviconService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -61,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
             $trackingSettings = null;
             $chrome = app(SiteChromeCache::class)->get();
             $popup = app(PopupService::class)->activeForPage(request()->routeIs('home'));
+            $faviconLinks = app(FaviconService::class)->links($chrome['siteAssets']?->getFirstMedia('favicon'));
 
             if (Schema::hasTable('settings')) {
                 try {
@@ -80,6 +82,7 @@ class AppServiceProvider extends ServiceProvider
                 'seoSettings' => $seoSettings,
                 'trackingSettings' => $trackingSettings,
                 'popup' => $popup,
+                'faviconLinks' => $faviconLinks,
             ]);
         });
 

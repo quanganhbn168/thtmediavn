@@ -25,8 +25,7 @@
     <meta name="twitter:description" content="@yield('meta_description', $website['seo_description'] ?? $website['tagline'] ?? '')">
     <meta name="twitter:image" content="@yield('seo_image', $siteAssets?->getFirstMediaUrl('seo_image') ?: $siteAssets?->getFirstMediaUrl('logo'))">
 
-    <link rel="icon" href="{{ $siteAssets?->getFirstMediaUrl('favicon') }}">
-    <link rel="apple-touch-icon" href="{{ $siteAssets?->getFirstMediaUrl('favicon') }}">
+    @include('partials.head.favicon')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('structured_data')
     @if($trackingSettings?->head_code)

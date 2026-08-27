@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Models\SiteAsset;
+use App\Support\Branding\FaviconService;
 use Awcodes\Curator\CuratorPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -14,6 +15,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -36,7 +38,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('THT Media VN')
             ->brandLogo(fn (): ?string => SiteAsset::current()->getFirstMediaUrl('logo') ?: null)
             ->brandLogoHeight('2.5rem')
-            ->favicon(fn (): ?string => SiteAsset::current()->getFirstMediaUrl('favicon') ?: asset('favicon.ico'))
+            ->favicon(fn (): ?string => app(FaviconService::class)->primaryUrl(SiteAsset::current()->getFirstMedia('favicon')))
+            ->renderHook(PanelsRenderHook::HEAD_END, function (): string {
+                return view('filament.partials.favicon', [
+                    'faviconLinks' => app(FaviconService::class)->links(SiteAsset::current()->getFirstMedia('favicon')),
+                ])->render();
+            })
             ->colors([
                 'primary' => Color::Orange,
             ])

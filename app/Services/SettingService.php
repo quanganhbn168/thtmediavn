@@ -11,6 +11,7 @@ use App\Settings\SeoSettings;
 use App\Settings\TrackingSettings;
 use App\Settings\UploadSettings;
 use App\Settings\WebsiteSettings;
+use App\Support\Branding\FaviconService;
 
 class SettingService
 {
@@ -18,6 +19,7 @@ class SettingService
         private readonly MediaService $mediaService,
         private readonly WebsiteSettingsService $websiteSettings,
         private readonly SiteChromeCache $siteChromeCache,
+        private readonly FaviconService $favicons,
     ) {}
 
     public function updateCompany(array $data, CompanySettings $settings): void
@@ -50,6 +52,7 @@ class SettingService
         config(['app.name' => $settings->site_name['vi'] ?? config('app.name')]);
         date_default_timezone_set($settings->timezone);
         $this->syncMedia($data, ['logo', 'logo_footer', 'footer_background', 'favicon', 'watermark']);
+        $this->favicons->sync(SiteAsset::current()->getFirstMedia('favicon'));
         $this->siteChromeCache->forget();
     }
 
