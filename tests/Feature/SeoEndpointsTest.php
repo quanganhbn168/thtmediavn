@@ -35,4 +35,15 @@ class SeoEndpointsTest extends TestCase
             $master,
         );
     }
+
+    public function test_plain_error_layout_also_allows_indexing(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/plain.blade.php'));
+
+        $this->assertIsString($layout);
+        $this->assertStringContainsString(
+            '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">',
+            $layout,
+        );
+    }
 }

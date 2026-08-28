@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <title>@yield('title', config('app.name', 'THT MEDIA VN'))</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     @vite('resources/css/app.css')
