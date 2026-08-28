@@ -11,7 +11,6 @@ final class RobotsTxt
         return implode(PHP_EOL, [
             'User-agent: *',
             'Allow: /',
-            'Disallow: /admin',
             '',
             'Sitemap: '.$baseUrl.'/sitemap.xml',
             '',

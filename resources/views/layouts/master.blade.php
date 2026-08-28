@@ -8,7 +8,7 @@
     <meta name="description" content="@yield('meta_description', $website['seo_description'] ?? $website['tagline'] ?? '')">
     <meta name="keywords" content="@yield('meta_keywords', $website['seo_keywords'] ?? '')">
     <meta name="author" content="{{ $website['company'] ?? $website['name'] ?? config('app.name', 'Laravel') }}">
-    <meta name="robots" content="@yield('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="@yield('canonical', url()->current())">
 
     <meta property="og:locale" content="{{ str_replace('-', '_', app()->getLocale()) }}">
