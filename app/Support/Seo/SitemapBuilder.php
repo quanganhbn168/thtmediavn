@@ -35,7 +35,7 @@ class SitemapBuilder
             ['news.index', Url::CHANGE_FREQUENCY_WEEKLY, 0.7],
             ['contact', Url::CHANGE_FREQUENCY_MONTHLY, 0.6],
         ] as [$route, $frequency, $priority]) {
-            $this->addUrl($sitemap, route($route), null, $frequency, $priority);
+            $this->addUrl($sitemap, $this->routeUrl($route), null, $frequency, $priority);
         }
     }
 
@@ -160,14 +160,27 @@ class SitemapBuilder
 
     private function routeWithSlug(string $route, ?string $slug): ?string
     {
-        return filled($slug) ? route($route, ['slug' => $slug]) : null;
+        return filled($slug) ? $this->routeUrl($route, ['slug' => $slug]) : null;
     }
 
     /**
-     * @param array<string, mixed> $parameters
+     * @param  array<string, mixed>  $parameters
      */
     private function routeWithParameters(string $route, array $parameters): ?string
     {
-        return filled($parameters['slug'] ?? null) ? route($route, $parameters) : null;
+        return filled($parameters['slug'] ?? null) ? $this->routeUrl($route, $parameters) : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    private function routeUrl(string $route, array $parameters = []): string
+    {
+        $baseUrl = rtrim((string) config('app.url'), '/');
+        $path = route($route, $parameters, false);
+
+        return $path === '/'
+            ? $baseUrl.'/'
+            : $baseUrl.'/'.ltrim($path, '/');
     }
 }
