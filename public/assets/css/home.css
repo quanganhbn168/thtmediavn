@@ -122,7 +122,6 @@
 
 .home-hero-swiper .swiper-slide {
     position: relative;
-    aspect-ratio: 16 / 9;
     height: auto;
     overflow: hidden;
 }
@@ -139,10 +138,6 @@
     width: min(70%, 62rem);
     background: linear-gradient(90deg, rgb(31 43 37 / .68), rgb(31 43 37 / .28) 62%, transparent 100%);
     content: "";
-}
-
-.home-hero__media--plain::after {
-    display: none;
 }
 
 .home-hero__media img {
@@ -1582,10 +1577,6 @@
     .home-hero__content {
         min-height: 0;
         padding-block: 5rem 4rem;
-    }
-
-    .home-hero-swiper .swiper-slide {
-        aspect-ratio: auto;
     }
 
     .home-hero__media::after {

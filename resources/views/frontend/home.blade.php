@@ -83,9 +83,7 @@
                             $slideImage = $slide->getFirstMediaUrl('slide_image') ?: asset('assets/images/home-demo/hero.jpg');
                         @endphp
                         <div class="swiper-slide">
-                            <div class="home-hero__media{{ $hasSlideContent ? '' : ' home-hero__media--plain' }}" aria-hidden="true">
-                                <img src="{{ $slideImage }}" alt="" fetchpriority="high" width="1920" height="1080">
-                            </div>
+                            <img src="{{ $slideImage }}" alt="" fetchpriority="high">
                             @if($hasSlideContent)
                                 <div class="home-hero__content">
                                     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
