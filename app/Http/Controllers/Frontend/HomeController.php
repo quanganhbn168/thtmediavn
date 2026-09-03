@@ -53,6 +53,7 @@ class HomeController extends FrontendController
         $homepageAboutTitle = trim((string) data_get($homepageSettings?->homepage_about_title, 'vi', 'Công ty TNHH THT Media'));
         $homepageAboutText = trim((string) data_get($homepageSettings?->homepage_about_text, 'vi', 'THT Media xây dựng một hệ sinh thái sản xuất truyền thông thực tế cho doanh nghiệp, tổ chức và thương hiệu cá nhân.'));
         $homepageAboutSupportingText = trim((string) data_get($homepageSettings?->homepage_about_supporting_text, 'vi', 'Nhân sự in-house, thiết bị chủ động và quy trình rõ ràng giúp mỗi brief được chuyển thành nội dung có thể sử dụng ngay.'));
+        $homepageCompanyName = trim((string) ($website['company'] ?? '')) ?: trim((string) ($website['name'] ?? config('app.name')));
         $homepageAboutImage = $siteAssets?->getFirstMediaUrl('about_image') ?: asset('assets/images/home-demo/team.jpg');
         $homeServiceCategories = ServiceCategory::query()
             ->where('is_active', true)
@@ -140,6 +141,7 @@ class HomeController extends FrontendController
             'homepageStats' => $homepageStats,
             'homepageReasons' => $homepageReasons,
             'homepageReasonIcons' => $homepageReasonIcons,
+            'homepageCompanyName' => $homepageCompanyName,
             'homepageAboutTitle' => $homepageAboutTitle,
             'homepageAboutText' => $homepageAboutText,
             'homepageAboutSupportingText' => $homepageAboutSupportingText,

@@ -160,7 +160,8 @@
             <div class="grid items-center gap-12 lg:grid-cols-12">
                 <div class="lg:col-span-6" data-aos="fade-right">
                     <span class="section-eyebrow">Về chúng tôi</span>
-                    <h2 class="section-title">{{ $homepageAboutTitle }}</h2>
+                    <h1 class="section-title">{{ $homepageCompanyName }}</h1>
+                    @if($homepageAboutTitle && $homepageAboutTitle !== $homepageCompanyName)<p class="section-lead">{{ $homepageAboutTitle }}</p>@endif
                     <p class="section-lead">{{ $homepageAboutText }}</p>
                     @if($homepageAboutSupportingText)<p class="mt-3 text-muted">{{ $homepageAboutSupportingText }}</p>@endif
                     <div class="home-about__actions flex flex-wrap gap-3 mt-4">
