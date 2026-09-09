@@ -6,11 +6,7 @@ use Spatie\LaravelSettings\Settings;
 
 class TrackingSettings extends Settings
 {
-    public ?string $google_analytics_id = null;
-
     public ?string $google_analytics_code = null;
-
-    public ?string $google_tag_manager_id = null;
 
     public ?string $google_tag_manager_head_code = null;
 

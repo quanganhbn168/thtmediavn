@@ -54,25 +54,15 @@ class TrackingScriptsTest extends TestCase
         }
     }
 
-    public function test_google_ids_are_supported_but_full_scripts_take_precedence(): void
+    public function test_legacy_ids_are_not_exposed_or_used_to_generate_tracking(): void
     {
         $settings = $this->settings(['google_analytics_id' => 'G-TEST123', 'google_tag_manager_id' => 'GTM-TEST123']);
-        $output = (new TrackingScripts($settings))->render();
-        $this->assertStringContainsString('gtag/js?id=G-TEST123', $output['head_start']);
-        $this->assertStringContainsString('gtm.js?id=', $output['head_start']);
-        $this->assertStringContainsString('ns.html?id=GTM-TEST123', $output['body']);
-        $settings->google_analytics_code = '<script>customGA();</script>';
-        $settings->google_tag_manager_head_code = '<script>customGTM();</script>';
-        $output = (new TrackingScripts($settings))->render();
-        $this->assertStringContainsString('customGA()', $output['head_start']);
-        $this->assertStringContainsString('customGTM()', $output['head_start']);
-        $this->assertStringNotContainsString('TEST123', implode('', $output));
-    }
-
-    public function test_invalid_legacy_ids_cannot_inject_generated_script(): void
-    {
-        $settings = $this->settings(['google_analytics_id' => "G-X');alert(1);//", 'google_tag_manager_id' => '<script>bad()</script>']);
-        $this->assertSame('', implode('', (new TrackingScripts($settings))->render()));
+        $scripts = new TrackingScripts($settings);
+        $this->assertArrayNotHasKey('google_analytics_id', $scripts->formData());
+        $this->assertArrayNotHasKey('google_tag_manager_id', $scripts->formData());
+        $this->assertFalse(property_exists(TrackingSettings::class, 'google_analytics_id'));
+        $this->assertFalse(property_exists(TrackingSettings::class, 'google_tag_manager_id'));
+        $this->assertSame('', implode('', $scripts->render()));
     }
 
     public function test_legacy_custom_google_tag_does_not_also_generate_the_same_id(): void
