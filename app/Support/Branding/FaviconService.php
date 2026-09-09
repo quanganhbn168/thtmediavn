@@ -101,23 +101,24 @@ final class FaviconService
 
         $source = $this->sourceContents($customMedia);
         $directory = public_path(self::GENERATED_DIRECTORY);
-        $this->ensureDirectory($directory);
+        $this->assertWritable();
 
+        $files = [];
         $pngs = [];
         $extension = strtolower(pathinfo($customMedia->file_name, PATHINFO_EXTENSION));
 
         foreach (self::PNG_FILES as $filename => $size) {
             $pngs[$size] = $this->renderPng($source, $extension, $size);
-            $this->writeFile($directory.DIRECTORY_SEPARATOR.$filename, $pngs[$size]);
+            $files[$filename] = $pngs[$size];
         }
 
-        $this->writeFile($directory.DIRECTORY_SEPARATOR.'favicon.svg', $this->svgFromPng($pngs[512]));
-        $this->writeFile(
-            $directory.DIRECTORY_SEPARATOR.'favicon.ico',
-            $this->icoFromPngs([16 => $pngs[16], 32 => $pngs[32], 48 => $pngs[48]]),
-        );
-        $this->writeFile($directory.DIRECTORY_SEPARATOR.'site.webmanifest', $this->manifest());
-        $this->writeFile($directory.DIRECTORY_SEPARATOR.'.source', $this->sourceSignature($customMedia));
+        $files['favicon.svg'] = $this->svgFromPng($pngs[512]);
+        $files['favicon.ico'] = $this->icoFromPngs([16 => $pngs[16], 32 => $pngs[32], 48 => $pngs[48]]);
+        $files['site.webmanifest'] = $this->manifest();
+        $files['.source'] = $this->sourceSignature($customMedia);
+        foreach ($files as $filename => $contents) {
+            $this->writeFile($directory.DIRECTORY_SEPARATOR.$filename, $contents);
+        }
     }
 
     private function sourceContents(Media $media): string
@@ -256,6 +257,19 @@ final class FaviconService
                 ['src' => 'android-chrome-512x512.png', 'sizes' => '512x512', 'type' => 'image/png'],
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL;
+    }
+
+    public function assertWritable(): void
+    {
+        $directory = public_path(self::GENERATED_DIRECTORY);
+        $this->ensureDirectory($directory);
+        foreach ([...array_keys(self::PNG_FILES), 'favicon.svg', 'favicon.ico', 'site.webmanifest', '.source'] as $filename) {
+            $path = $directory.DIRECTORY_SEPARATOR.$filename;
+            clearstatcache(true, $path);
+            if (file_exists($path) ? (! is_file($path) || ! is_writable($path)) : ! is_writable($directory)) {
+                throw new RuntimeException("PHP không có quyền ghi file favicon: {$path}");
+            }
+        }
     }
 
     private function ensureDirectory(string $directory): void

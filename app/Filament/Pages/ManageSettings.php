@@ -213,8 +213,8 @@ class ManageSettings extends Page
         $data = $this->settingsFormData();
         $service = app(SettingService::class);
 
-        $service->updateCompany($data, app(CompanySettings::class));
         $service->updateWebsite($data, app(WebsiteSettings::class));
+        $service->updateCompany($data, app(CompanySettings::class));
         $service->updateContact($data, app(ContactSettings::class));
         $service->updateSeo($data, app(SeoSettings::class));
         $service->updateTracking($data, app(TrackingSettings::class));

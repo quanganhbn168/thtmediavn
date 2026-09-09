@@ -15,6 +15,10 @@ use App\Settings\UploadSettings;
 use App\Settings\WebsiteSettings;
 use App\Support\Branding\FaviconService;
 
+use ErrorException;
+use RuntimeException;
+use Illuminate\Validation\ValidationException;
+
 class SettingService
 {
     public function __construct(
@@ -36,6 +40,22 @@ class SettingService
 
     public function updateWebsite(array $data, WebsiteSettings $settings): void
     {
+        $hasNewFavicon = filled($data['favicon'] ?? null) && ! ($data['favicon_remove'] ?? false);
+        try {
+            if ($hasNewFavicon) {
+                $this->favicons->assertWritable();
+            }
+            $this->syncMedia($data, ['favicon']);
+            if ($hasNewFavicon) {
+                $this->favicons->sync(SiteAsset::current()->getFirstMedia('favicon'));
+            }
+        } catch (RuntimeException | ErrorException $exception) {
+            report($exception);
+            throw ValidationException::withMessages([
+                'data.favicon' => 'Chưa lưu được favicon. Kiểm tra file nguồn và quyền ghi thư mục public/favicon-assets, sau đó lưu lại.',
+            ]);
+        }
+
         $settings->site_status = isset($data['site_status']);
         $settings->multilingual_enabled = isset($data['multilingual_enabled']);
         $settings->timezone = $data['timezone'] ?? 'Asia/Ho_Chi_Minh';
@@ -53,8 +73,7 @@ class SettingService
         config(['app.timezone' => $settings->timezone]);
         config(['app.name' => $settings->site_name['vi'] ?? config('app.name')]);
         date_default_timezone_set($settings->timezone);
-        $this->syncMedia($data, ['logo', 'logo_footer', 'footer_background', 'favicon', 'watermark']);
-        $this->favicons->sync(SiteAsset::current()->getFirstMedia('favicon'));
+        $this->syncMedia($data, ['logo', 'logo_footer', 'footer_background', 'watermark']);
         $this->siteChromeCache->forget();
     }
 
