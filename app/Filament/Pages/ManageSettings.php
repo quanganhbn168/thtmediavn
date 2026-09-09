@@ -187,7 +187,6 @@ class ManageSettings extends Page
                 Actions::make($this->getFormActions())
                     ->alignment($this->getFormActionsAlignment())
                     ->fullWidth($this->hasFullWidthFormActions())
-                    ->sticky()
                     ->key('form-actions'),
             ]);
     }
