@@ -88,7 +88,7 @@ class SettingsSchemaTest extends TestCase
             ->sort()
             ->values();
 
-        $this->assertCount(14, $migrations);
+        $this->assertCount(15, $migrations);
         $this->assertSame([
             '2026_08_10_200000_create_company_settings.php',
             '2026_08_10_200100_create_website_settings.php',
@@ -104,6 +104,7 @@ class SettingsSchemaTest extends TestCase
             '2026_08_19_120000_add_homepage_content_settings.php',
             '2026_08_19_130000_create_company_intro_settings.php',
             '2026_08_19_140000_add_company_content_settings.php',
+            '2026_09_09_150000_add_platform_tracking_settings.php',
         ], $migrations->all());
     }
 
@@ -174,14 +175,14 @@ class SettingsSchemaTest extends TestCase
             ->assertSee('Tracking')
             ->assertSee('Logo footer')
             ->assertSee('Ảnh chia sẻ mặc định')
-            ->assertSee('Mã trong head')
-            ->assertSee('Mã ngay sau body mở')
-            ->assertSee('Mã trước body đóng')
+            ->assertSee('Mã bổ sung trước &lt;/head&gt;', false)
+            ->assertSee('Mã bổ sung ngay sau &lt;body&gt;', false)
+            ->assertSee('Mã bổ sung trước &lt;/body&gt;', false)
             ->assertSee('Logo website')
             ->assertSee('Favicon')
             ->assertSee('Ảnh watermark')
-            ->assertSee('Mã Google Analytics / tracking')
-            ->assertSee('Mã Meta Pixel')
+            ->assertSee('GA4 — mã Google tag')
+            ->assertSee('Meta Pixel — mã đầy đủ')
             ->assertSee('Lưu cài đặt')
             ->assertSee('fi-sc-actions')
             ->assertSee('build/assets/theme-');

@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    @include('partials.tracking.head_start')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $website['seo_title'] ?? $website['name'] ?? config('app.name', 'Laravel'))</title>
@@ -28,21 +29,11 @@
     @include('partials.head.favicon')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('structured_data')
-    @if($trackingSettings?->head_code)
-        {!! $trackingSettings->head_code !!}
-    @endif
-    @if($trackingSettings?->google_analytics_code)
-        {!! $trackingSettings->google_analytics_code !!}
-    @endif
-    @if($trackingSettings?->meta_pixel_code)
-        {!! $trackingSettings->meta_pixel_code !!}
-    @endif
     @stack('styles')
+    @include('partials.tracking.head')
 </head>
 <body>
-    @if($trackingSettings?->body_open_code)
-        {!! $trackingSettings->body_open_code !!}
-    @endif
+    @include('partials.tracking.body')
     @include('partials.header')
 
     <main>
@@ -78,8 +69,6 @@
         });
     </script>
     @stack('scripts')
-    @if($trackingSettings?->body_close_code)
-        {!! $trackingSettings->body_close_code !!}
-    @endif
+    @include('partials.tracking.footer')
 </body>
 </html>

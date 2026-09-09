@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    @include('partials.tracking.head_start')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <title>@yield('title', config('app.name', 'THT MEDIA VN'))</title>
@@ -9,9 +10,12 @@
     @vite('resources/css/app.css')
     <style>html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f8fafc;color:#172033}a{color:inherit}</style>
     @stack('css')
+    @include('partials.tracking.head')
 </head>
 <body>
+    @include('partials.tracking.body')
     @yield('body')
     @stack('js')
+    @include('partials.tracking.footer')
 </body>
 </html>

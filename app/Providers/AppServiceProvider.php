@@ -15,7 +15,6 @@ use App\Settings\AboutSettings;
 use App\Settings\ContactSettings;
 use App\Settings\HomepageSettings;
 use App\Settings\SeoSettings;
-use App\Settings\TrackingSettings;
 use App\Settings\WebsiteSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -58,7 +57,6 @@ class AppServiceProvider extends ServiceProvider
             $aboutSettings = null;
             $homepageSettings = null;
             $seoSettings = null;
-            $trackingSettings = null;
             $chrome = app(SiteChromeCache::class)->get();
             $popup = app(PopupService::class)->activeForPage(request()->routeIs('home'));
 
@@ -67,7 +65,6 @@ class AppServiceProvider extends ServiceProvider
                     $aboutSettings = app(AboutSettings::class);
                     $homepageSettings = app(HomepageSettings::class);
                     $seoSettings = app(SeoSettings::class);
-                    $trackingSettings = app(TrackingSettings::class);
                 } catch (\Throwable) {
                     // Cho phép giao diện hoạt động trong lúc cài đặt.
                 }
@@ -78,7 +75,6 @@ class AppServiceProvider extends ServiceProvider
                 'aboutSettings' => $aboutSettings,
                 'homepageSettings' => $homepageSettings,
                 'seoSettings' => $seoSettings,
-                'trackingSettings' => $trackingSettings,
                 'popup' => $popup,
             ]);
         });

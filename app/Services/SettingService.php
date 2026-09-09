@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\Tracking\TrackingScripts;
+
 use App\Models\SiteAsset;
 use App\Settings\AboutSettings;
 use App\Settings\CompanySettings;
@@ -134,13 +136,7 @@ class SettingService
 
     public function updateTracking(array $data, TrackingSettings $settings): void
     {
-        $settings->head_code = $data['head_code'] ?? null;
-        $settings->body_open_code = $data['body_open_code'] ?? null;
-        $settings->body_close_code = $data['body_close_code'] ?? null;
-        $settings->google_analytics_code = $data['google_analytics_code'] ?? null;
-        $settings->meta_pixel_code = $data['meta_pixel_code'] ?? null;
-
-        $settings->save();
+        (new TrackingScripts($settings))->save($data);
     }
 
     public function updateHomepage(array $data, HomepageSettings $settings): void

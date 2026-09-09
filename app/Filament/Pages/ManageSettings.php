@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Forms\TrackingSchema;
+use App\Support\Tracking\TrackingScripts;
+
 use App\Models\Menu;
 use App\Models\SiteAsset;
 use App\Services\SettingService;
@@ -65,10 +68,10 @@ class ManageSettings extends Page
         $about = app(AboutSettings::class);
         $contact = app(ContactSettings::class);
         $seo = app(SeoSettings::class);
-        $tracking = app(TrackingSettings::class);
         $upload = app(UploadSettings::class);
 
         $this->form->fill([
+            ...app(TrackingScripts::class)->formData(),
             'site_status' => $website->site_status,
             'multilingual_enabled' => $website->multilingual_enabled,
             'timezone' => $website->timezone,
@@ -128,11 +131,6 @@ class ManageSettings extends Page
             'seo_description' => $seo->seo_description,
             'seo_keywords' => $seo->seo_keywords,
             'seo_image' => $this->currentMediaPath('seo_image'),
-            'head_code' => $tracking->head_code,
-            'body_open_code' => $tracking->body_open_code,
-            'body_close_code' => $tracking->body_close_code,
-            'google_analytics_code' => $tracking->google_analytics_code,
-            'meta_pixel_code' => $tracking->meta_pixel_code,
         ]);
     }
 
@@ -162,7 +160,7 @@ class ManageSettings extends Page
                             ->schema($this->seoSchema()),
                         Tab::make('Tracking')
                             ->icon(Heroicon::OutlinedChartBar)
-                            ->schema($this->trackingSchema()),
+                            ->schema(TrackingSchema::make()),
                     ])
                     ->persistTabInQueryString('tab')
                     ->columnSpanFull(),
@@ -624,44 +622,6 @@ class ManageSettings extends Page
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
-        ];
-    }
-
-    /** @return array<int, Section> */
-    private function trackingSchema(): array
-    {
-        return [
-            Section::make('Mã theo dõi')
-                ->icon(Heroicon::OutlinedChartBar)
-                ->description('Các mã đo lường và quảng cáo được chèn vào phần head của frontend. Đây không phải cấu hình SEO.')
-                ->schema([
-                    Textarea::make('head_code')
-                        ->label('Mã trong head')
-                        ->rows(6)
-                        ->helperText('Chèn ngay trước thẻ đóng head. Dùng cho mã cần nằm trong phần head.')
-                        ->columnSpanFull(),
-                    Textarea::make('body_open_code')
-                        ->label('Mã ngay sau body mở')
-                        ->rows(6)
-                        ->helperText('Chèn ngay sau thẻ mở body. Vị trí này phù hợp với mã noscript của Google Tag Manager.')
-                        ->columnSpanFull(),
-                    Textarea::make('body_close_code')
-                        ->label('Mã trước body đóng')
-                        ->rows(6)
-                        ->helperText('Chèn ngay trước thẻ đóng body. Dùng cho các script cần chạy gần cuối trang.')
-                        ->columnSpanFull(),
-                    Textarea::make('google_analytics_code')
-                        ->label('Mã Google Analytics / tracking')
-                        ->rows(6)
-                        ->helperText('Dán đoạn mã Google Analytics hoặc mã tracking khác do nền tảng cung cấp.')
-                        ->columnSpanFull(),
-                    Textarea::make('meta_pixel_code')
-                        ->label('Mã Meta Pixel')
-                        ->rows(6)
-                        ->helperText('Dán đoạn mã Meta Pixel do Meta cung cấp. Mã sẽ được chèn vào phần head frontend.')
-                        ->columnSpanFull(),
-                ])
-                ->columns(1),
         ];
     }
 
