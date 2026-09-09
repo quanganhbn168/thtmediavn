@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Frontend;
+use App\Http\Controllers\IntroController;
 use App\Models\SiteAsset;
 use App\Support\Branding\FaviconService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+
+Route::get('/bai-gioi-thieu/{slug}', IntroController::class)->name('intros.show');
 
 Route::get('/favicon.ico', function (FaviconService $favicons) {
     $favicon = Schema::hasTable('site_assets')

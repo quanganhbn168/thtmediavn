@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\SiteChromeCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Translatable\HasTranslations;
@@ -38,5 +39,16 @@ class Menu extends Model
     public function allItems(): HasMany
     {
         return $this->hasMany(MenuItem::class)->orderBy('sort_order');
+    }
+
+    public function topLevelItems(): HasMany
+    {
+        return $this->items();
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(fn () => app(SiteChromeCache::class)->forget());
+        static::deleted(fn () => app(SiteChromeCache::class)->forget());
     }
 }

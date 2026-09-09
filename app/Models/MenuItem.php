@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\SiteChromeCache;
+use App\Support\Menus\MenuSources;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +15,7 @@ class MenuItem extends Model
     use HasTranslations;
 
     protected $fillable = [
+        'linked_source_type', 'linked_source_id',
         'menu_id',
         'parent_id',
         'title',
@@ -73,6 +76,9 @@ class MenuItem extends Model
 
     public function getHrefAttribute(): string
     {
+        if ($this->linked_source_type && $this->linked_source_id) {
+            return MenuSources::url($this->linked_source_type, (int) $this->linked_source_id);
+        }
         if ($this->url) {
             return str_starts_with($this->url, 'http://') || str_starts_with($this->url, 'https://')
                 ? $this->url
@@ -90,5 +96,16 @@ class MenuItem extends Model
     public function hasCurrentDescendant(): bool
     {
         return $this->childrenRecursive->contains(fn (self $child) => $child->isCurrent() || $child->hasCurrentDescendant());
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $item): void {
+            if (! $item->menu_id && $item->parent_id) {
+                $item->menu_id = self::query()->whereKey($item->parent_id)->value('menu_id');
+            }
+        });
+        static::saved(fn () => app(SiteChromeCache::class)->forget());
+        static::deleted(fn () => app(SiteChromeCache::class)->forget());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Support\Seo;
 
+use App\Models\Intro;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
@@ -20,6 +21,10 @@ class SitemapBuilder
 
         $this->addNativePages($sitemap);
         $this->addNativeContent($sitemap);
+
+        foreach (Intro::query()->published()->get() as $intro) {
+            $sitemap->add(Url::create($intro->url)->setLastModificationDate($intro->updated_at)->setPriority(0.6));
+        }
 
         return $sitemap;
     }

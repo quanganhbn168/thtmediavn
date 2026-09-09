@@ -2,9 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\PreservesUnchangedSettings;
 use App\Filament\Forms\TrackingSchema;
-use App\Support\Tracking\TrackingScripts;
-
 use App\Models\Menu;
 use App\Models\SiteAsset;
 use App\Services\SettingService;
@@ -16,6 +15,7 @@ use App\Settings\SeoSettings;
 use App\Settings\TrackingSettings;
 use App\Settings\UploadSettings;
 use App\Settings\WebsiteSettings;
+use App\Support\Tracking\TrackingScripts;
 use BackedEnum;
 use DateTimeZone;
 use Filament\Actions\Action;
@@ -43,6 +43,8 @@ use UnitEnum;
 
 class ManageSettings extends Page
 {
+    use PreservesUnchangedSettings;
+
     protected static ?string $slug = 'settings';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
@@ -70,7 +72,7 @@ class ManageSettings extends Page
         $seo = app(SeoSettings::class);
         $upload = app(UploadSettings::class);
 
-        $this->form->fill([
+        $this->fillSettingsForm([
             ...app(TrackingScripts::class)->formData(),
             'site_status' => $website->site_status,
             'multilingual_enabled' => $website->multilingual_enabled,
@@ -149,7 +151,7 @@ class ManageSettings extends Page
                         Tab::make('Doanh nghiệp')
                             ->icon(Heroicon::OutlinedBuildingOffice2)
                             ->schema($this->companySchema()),
-                        Tab::make('Công ty / Giới thiệu')
+                        Tab::make('Trang Giới thiệu')
                             ->icon(Heroicon::OutlinedInformationCircle)
                             ->schema($this->aboutSchema()),
                         Tab::make('Liên hệ')
@@ -185,7 +187,7 @@ class ManageSettings extends Page
                 Actions::make($this->getFormActions())
                     ->alignment($this->getFormActionsAlignment())
                     ->fullWidth($this->hasFullWidthFormActions())
-                    ->sticky($this->areFormActionsSticky())
+                    ->sticky()
                     ->key('form-actions'),
             ]);
     }
@@ -194,6 +196,7 @@ class ManageSettings extends Page
     protected function getFormActions(): array
     {
         return [
+            Action::make('discard')->label('Hủy thay đổi')->color('gray')->action(fn () => app()->call([$this, 'mount'])),
             Action::make('save')
                 ->label('Lưu cài đặt')
                 ->submit('save')
@@ -208,7 +211,7 @@ class ManageSettings extends Page
 
     public function save(): void
     {
-        $data = $this->form->getState();
+        $data = $this->settingsFormData();
         $service = app(SettingService::class);
 
         $service->updateCompany($data, app(CompanySettings::class));
@@ -219,6 +222,8 @@ class ManageSettings extends Page
         $service->updateHomepage($data, app(HomepageSettings::class));
         $service->updateAbout($data, app(AboutSettings::class));
         $service->updateUpload($data, app(UploadSettings::class));
+
+        app()->call([$this, 'mount']);
 
         Notification::make()
             ->title('Đã lưu cài đặt website')
@@ -700,5 +705,10 @@ class ManageSettings extends Page
         }
 
         return [];
+    }
+
+    protected function customDehydratedSettingsFields(): array
+    {
+        return ['logo', 'logo_footer', 'footer_background', 'favicon', 'watermark', 'seo_image', 'about_image', 'default_promotion_banner', 'default_post_banner'];
     }
 }
